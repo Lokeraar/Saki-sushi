@@ -1,2 +1,9 @@
-# Saki-sushi
-Pagina de muestra a restaurante saki sushi ccs
+# Saki Sushi - Sistema de Gestión
+
+Sistema integral para restaurante de sushi.
+
+## Paneles
+
+- [Menú Cliente](./cliente/)
+- [Panel Cajero](./cajero/) 
+- [Panel Admin](./admin/)
