@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍣 Saki Sushi</title>
+    <title>🍣 Saki Sushi - Menú</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -102,6 +102,26 @@
             letter-spacing: 2px;
             font-family: 'Montserrat', sans-serif;
         }
+
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .sync-status.online { border: 2px solid var(--success); }
+        .sync-status.offline { border: 2px solid var(--primary); }
+        .sync-status.syncing { border: 2px solid var(--accent); }
 
         .categories-nav {
             background: var(--secondary);
@@ -246,6 +266,27 @@
             box-shadow: 0 20px 50px rgba(255, 152, 0, 0.2);
         }
 
+        .menu-item.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            filter: grayscale(0.8);
+        }
+
+        .menu-item.disabled::after {
+            content: 'NO DISPONIBLE';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-family: 'Montserrat', sans-serif;
+            z-index: 10;
+        }
+
         .item-image {
             height: 250px;
             width: 100%;
@@ -264,7 +305,6 @@
             background: linear-gradient(transparent, rgba(0,0,0,0.5));
         }
 
-        /* Imágenes únicas para cada platillo */
         .image-sashimi { background-image: url('https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
         .image-coquitos { background-image: url('https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
         .image-langostinos { background-image: url('https://images.unsplash.com/photo-1621996346565-e3dbc353d2af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
@@ -952,6 +992,36 @@
             font-family: 'Montserrat', sans-serif;
         }
 
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 2.5em; }
             .menu-grid { padding: 20px; }
@@ -960,6 +1030,7 @@
             .order-btn { padding: 20px 40px; font-size: 1.3em; }
             .ingredient-options { grid-template-columns: 1fr; }
             .footer { padding: 30px 20px; }
+            .sync-status { top: 10px; right: 10px; font-size: 0.8em; padding: 8px 15px; }
         }
 
         @media (max-width: 480px) {
@@ -974,6 +1045,17 @@
     </style>
 </head>
 <body>
+    <div class="sync-status offline" id="syncStatus">
+        <i class="fas fa-sync-alt"></i>
+        <span>Sincronizando...</span>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <h2>Cargando menú...</h2>
+        <p>Conectando con el servidor</p>
+    </div>
+
     <div class="overlay" id="overlay"></div>
 
     <div class="max-reached-notice" id="maxReachedNotice">
@@ -986,7 +1068,6 @@
         </button>
     </div>
 
-    <!-- Nuevo modal para error de inventario con cantidad máxima -->
     <div class="inventory-error" id="inventoryError">
         <div style="background: linear-gradient(135deg, #D32F2F, #B71C1C); padding: 30px; color: white;">
             <h2 style="font-size: 1.8em; display: flex; align-items: center; gap: 15px; font-family: 'Montserrat', sans-serif;">
@@ -996,10 +1077,8 @@
         </div>
         <div style="padding: 30px;">
             <div id="inventoryErrorContent" style="max-height: 300px; overflow-y: auto; padding: 20px; background: #F5F5F5; border-radius: 10px; margin-bottom: 20px;">
-                <!-- Los detalles del error aparecerán aquí -->
             </div>
             <p id="maxPossibleOrder" style="text-align: center; margin-top: 15px; color: #666; font-family: 'Roboto', sans-serif; font-style: italic;">
-                <!-- Cantidad máxima posible aparecerá aquí -->
             </p>
             <button onclick="closeInventoryError()" style="background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 10px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-family: 'Montserrat', sans-serif;">
                 Entendido
@@ -1181,65 +1260,161 @@
     </div>
 
     <script>
-        const TASA_CAMBIO = 400;
-        
-        const inventory = {
-            arroz_sushi: { name: "Arroz para sushi", quantity: 5000, icon: "🍚", unit: "g", priceReduction: 1.50 * TASA_CAMBIO, required: true },
-            alga_nori: { name: "Alga nori", quantity: 50, icon: "🌿", priceReduction: 0.80 * TASA_CAMBIO, required: true },
-            wasabi: { name: "Wasabi", quantity: 200, icon: "💚", unit: "g", priceReduction: 0.60 * TASA_CAMBIO },
-            jengibre: { name: "Jengibre encurtido", quantity: 300, icon: "🫚", unit: "g", priceReduction: 0.40 * TASA_CAMBIO },
-            salmon: { name: "Salmón fresco", quantity: 30, icon: "🐟", priceReduction: 3.50 * TASA_CAMBIO, required: true },
-            atun: { name: "Atún rojo", quantity: 25, icon: "🔴", priceReduction: 4.00 * TASA_CAMBIO, required: true },
-            pescado_blanco: { name: "Pescado blanco", quantity: 20, icon: "🐠", priceReduction: 3.00 * TASA_CAMBIO, required: true },
-            camaron: { name: "Camarón tigre", quantity: 40, icon: "🦐", priceReduction: 2.80 * TASA_CAMBIO },
-            pulpo: { name: "Pulpo", quantity: 20, icon: "🐙", priceReduction: 3.20 * TASA_CAMBIO },
-            aguacate: { name: "Aguacate", quantity: 25, icon: "🥑", priceReduction: 1.20 * TASA_CAMBIO },
-            pepino: { name: "Pepino japonés", quantity: 20, icon: "🥒", priceReduction: 0.70 * TASA_CAMBIO },
-            cangrejo: { name: "Carne de cangrejo", quantity: 30, icon: "🦀", priceReduction: 2.50 * TASA_CAMBIO },
-            salsa_soja: { name: "Salsa de soja", quantity: 1000, icon: "🥢", unit: "ml", priceReduction: 0.50 * TASA_CAMBIO },
-            salsa_teriyaki: { name: "Salsa teriyaki", quantity: 800, icon: "🍯", unit: "ml", priceReduction: 0.70 * TASA_CAMBIO },
-            mayonesa_japonesa: { name: "Mayonesa japonesa", quantity: 500, icon: "⚪", unit: "ml", priceReduction: 0.60 * TASA_CAMBIO },
-            tempura: { name: "Rebozado tempura", quantity: 30, icon: "🍤", priceReduction: 1.50 * TASA_CAMBIO },
-            sesamo: { name: "Semillas de sésamo", quantity: 200, icon: "⚫", unit: "g", priceReduction: 0.30 * TASA_CAMBIO },
-            cebollin: { name: "Cebollín", quantity: 20, icon: "🧅", priceReduction: 0.40 * TASA_CAMBIO },
-            aceite_sesamo: { name: "Aceite de sésamo", quantity: 300, icon: "🫒", unit: "ml", priceReduction: 0.40 * TASA_CAMBIO },
-            tequila: { name: "Tequila", quantity: 40, icon: "🍶", priceReduction: 2.50 * TASA_CAMBIO },
-            triple_sec: { name: "Triple sec", quantity: 30, icon: "🍊", unit: "ml", priceReduction: 1.20 * TASA_CAMBIO },
-            limon: { name: "Limón", quantity: 50, icon: "🍋", priceReduction: 0.30 * TASA_CAMBIO },
-            pollo: { name: "Pollo", quantity: 35, icon: "🍗", priceReduction: 2.00 * TASA_CAMBIO },
-            wantan: { name: "Wantan", quantity: 60, icon: "🥟", priceReduction: 0.80 * TASA_CAMBIO },
-            caldo_pollo: { name: "Caldo de pollo", quantity: 2000, icon: "🍲", unit: "ml", priceReduction: 1.00 * TASA_CAMBIO },
-            edamame: { name: "Edamame", quantity: 25, icon: "🫘", priceReduction: 1.50 * TASA_CAMBIO },
-            arroz_jasmin: { name: "Arroz jazmín", quantity: 3000, icon: "🍚", unit: "g", priceReduction: 1.20 * TASA_CAMBIO },
-            vegetales_mixtos: { name: "Vegetales mixtos", quantity: 40, icon: "🥕", priceReduction: 1.80 * TASA_CAMBIO },
-            fideos: { name: "Fideos", quantity: 20, icon: "🍜", priceReduction: 1.50 * TASA_CAMBIO },
-            nuggets: { name: "Nuggets de pollo", quantity: 45, icon: "🍗", priceReduction: 1.20 * TASA_CAMBIO },
-            papas: { name: "Papas fritas", quantity: 30, icon: "🍟", priceReduction: 0.80 * TASA_CAMBIO },
-            jugo: { name: "Jugo", quantity: 50, icon: "🧃", unit: "ml", priceReduction: 0.50 * TASA_CAMBIO },
-            langostino: { name: "Langostino", quantity: 35, icon: "🦞", priceReduction: 3.50 * TASA_CAMBIO },
-            queso_crema: { name: "Queso crema", quantity: 25, icon: "🧀", priceReduction: 1.00 * TASA_CAMBIO },
-            salsa_fuji: { name: "Salsa Fuji", quantity: 500, icon: "🍛", unit: "ml", priceReduction: 0.80 * TASA_CAMBIO },
-            anguilla: { name: "Anguilla", quantity: 15, icon: "🐍", priceReduction: 2.00 * TASA_CAMBIO },
-            ajonjoli: { name: "Ajonjolí", quantity: 150, icon: "⚫", unit: "g", priceReduction: 0.40 * TASA_CAMBIO },
-            salsa_dragon: { name: "Salsa dragón", quantity: 400, icon: "🐉", unit: "ml", priceReduction: 0.90 * TASA_CAMBIO },
-            cebolla_morada: { name: "Cebolla morada", quantity: 15, icon: "🧅", priceReduction: 0.50 * TASA_CAMBIO },
-            aji_dulce: { name: "Ají dulce", quantity: 20, icon: "🌶️", priceReduction: 0.60 * TASA_CAMBIO },
-            cilantro: { name: "Cilantro", quantity: 18, icon: "🌿", priceReduction: 0.40 * TASA_CAMBIO },
-            ajimoto: { name: "Ají moto", quantity: 100, icon: "🌶️", unit: "g", priceReduction: 0.70 * TASA_CAMBIO },
-            masago: { name: "Masago", quantity: 200, icon: "🐟", unit: "g", priceReduction: 1.50 * TASA_CAMBIO },
-            salsa_ponzu: { name: "Salsa ponzu", quantity: 400, icon: "🍶", unit: "ml", priceReduction: 0.90 * TASA_CAMBIO },
-            miso_dulce: { name: "Miso dulce", quantity: 300, icon: "🍯", unit: "ml", priceReduction: 0.80 * TASA_CAMBIO },
-            almendras: { name: "Almendras", quantity: 200, icon: "🌰", unit: "g", priceReduction: 1.00 * TASA_CAMBIO },
-            croquetas: { name: "Croquetas", quantity: 40, icon: "🥘", priceReduction: 0.80 * TASA_CAMBIO },
-            gyosas: { name: "Gyosas", quantity: 50, icon: "🥟", priceReduction: 0.90 * TASA_CAMBIO },
-            salsa_dinamita: { name: "Salsa dinamita", quantity: 350, icon: "🔥", unit: "ml", priceReduction: 0.85 * TASA_CAMBIO }
+        // ==========================================
+        // CONFIGURACIÓN JSONBIN.IO - TUS CREDENCIALES
+        // ==========================================
+        const JSONBIN_CONFIG = {
+            BIN_ID: '69879d6e43b1c97be96d2b13',
+            API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
+            BASE_URL: 'https://api.jsonbin.io/v3/b'
         };
 
-        // Variable para controlar alertas de inventario bajo ya mostradas
-        let lowInventoryAlertsShown = new Set();
+        // ==========================================
+        // VARIABLES GLOBALES
+        // ==========================================
+        let sistemaData = null;
+        let menuItems = [];
+        let currentCategory = 'todos';
+        let currentSubcategory = null;
+        let pedidoActual = [];
+        let syncInterval = null;
 
+        // ==========================================
+        // FUNCIONES DE SINCRONIZACIÓN
+        // ==========================================
+        
+        async function cargarDatos() {
+            actualizarEstadoSync('syncing');
+            
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error al cargar datos');
+                
+                const data = await response.json();
+                sistemaData = data.record || data;
+                
+                sincronizarMenuLocal();
+                
+                actualizarEstadoSync('online');
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                renderMenu();
+                return true;
+                
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                actualizarEstadoSync('offline');
+                mostrarErrorCarga();
+                return false;
+            }
+        }
+
+        async function guardarPedido(pedido) {
+            actualizarEstadoSync('syncing');
+            
+            try {
+                sistemaData.pedidos.push(pedido);
+                
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(sistemaData)
+                });
+                
+                if (!response.ok) throw new Error('Error al guardar pedido');
+                
+                actualizarEstadoSync('online');
+                return true;
+                
+            } catch (error) {
+                console.error('Error guardando pedido:', error);
+                actualizarEstadoSync('offline');
+                guardarPedidoLocal(pedido);
+                return false;
+            }
+        }
+
+        function actualizarEstadoSync(estado) {
+            const statusEl = document.getElementById('syncStatus');
+            const iconEl = statusEl.querySelector('i');
+            const textEl = statusEl.querySelector('span');
+            
+            statusEl.className = `sync-status ${estado}`;
+            
+            switch(estado) {
+                case 'online':
+                    iconEl.className = 'fas fa-check-circle';
+                    textEl.textContent = 'Sincronizado';
+                    break;
+                case 'syncing':
+                    iconEl.className = 'fas fa-sync-alt fa-spin';
+                    textEl.textContent = 'Sincronizando...';
+                    break;
+                case 'offline':
+                    iconEl.className = 'fas fa-exclamation-triangle';
+                    textEl.textContent = 'Modo offline';
+                    break;
+            }
+        }
+
+        function sincronizarMenuLocal() {
+            menuItems = sistemaData.menu.map(item => ({
+                id: item.id,
+                name: item.nombre,
+                category: item.categoria,
+                subcategory: item.subcategoria,
+                basePrice: item.precio,
+                description: item.descripcion,
+                ingredients: item.ingredientes || {},
+                stock: item.stockMaximo,
+                stockMaximo: item.stockMaximo,
+                disponible: item.disponible,
+                imageClass: item.imagen,
+                quantity: 0,
+                instances: [],
+                totalOrdered: 0,
+                currentSelections: new Set(),
+                order: menuItems.length + 1,
+                selectionType: "completo"
+            }));
+        }
+
+        function guardarPedidoLocal(pedido) {
+            let pedidosPendientes = JSON.parse(localStorage.getItem('pedidosPendientes') || '[]');
+            pedidosPendientes.push(pedido);
+            localStorage.setItem('pedidosPendientes', JSON.stringify(pedidosPendientes));
+            alert('Pedido guardado localmente. Se sincronizará cuando haya conexión.');
+        }
+
+        function mostrarErrorCarga() {
+            document.getElementById('loadingOverlay').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-wifi" style="font-size: 4em; color: var(--primary); margin-bottom: 20px;"></i>
+                    <h2>Error de conexión</h2>
+                    <p>No se pudo cargar el menú desde el servidor.</p>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // FUNCIONES DE UTILIDAD
+        // ==========================================
+        
         function convertirABs(dolares) {
-            return dolares * TASA_CAMBIO;
+            return dolares * (sistemaData?.config?.tasaCambio || 400);
         }
 
         function formatearPrecioBs(dolares) {
@@ -1247,306 +1422,146 @@
             return `Bs. ${precioBs.toFixed(2).replace('.', ',')}`;
         }
 
-        const menuItems = [
-            {
-                id: 1,
-                name: "Sashimi",
-                category: "entradas",
-                icon: "🐟",
-                basePrice: 14.00,
-                description: "Atún, salmón, pescado o mixto 5 piezas (20 gramos cada una).",
-                ingredients: {
-                    salmon: { amount: 0.4, required: false },
-                    atun: { amount: 0.4, required: false },
-                    pescado_blanco: { amount: 0.4, required: false },
-                    wasabi: { amount: 8, required: false },
-                    jengibre: { amount: 10, required: false },
-                    salsa_soja: { amount: 25, required: false }
-                },
-                stock: 12,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 1,
-                selectionType: "completo",
-                imageClass: "image-sashimi"
-            },
-            {
-                id: 2,
-                name: "Coquitos de Salmón",
-                category: "entradas",
-                icon: "🧀",
-                basePrice: 12.00,
-                description: "Salmón relleno de queso crema, aguacate empanizado con topping de salsa fuji y anguilla (4 piezas).",
-                ingredients: {
-                    salmon: { amount: 0.5, required: true },
-                    queso_crema: { amount: 0.3, required: false },
-                    aguacate: { amount: 0.3, required: false },
-                    salsa_fuji: { amount: 20, required: false },
-                    anguilla: { amount: 0.2, required: false },
-                    tempura: { amount: 0.3, required: true }
-                },
-                stock: 10,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 2,
-                selectionType: "completo",
-                imageClass: "image-coquitos"
-            },
-            {
-                id: 3,
-                name: "Festival de Langostinos",
-                category: "entradas",
-                icon: "🦐",
-                basePrice: 12.00,
-                description: "Langostinos tempurizados con salsa fuji, anguilla y lluvia de ajonjolí.",
-                ingredients: {
-                    langostino: { amount: 0.6, required: true },
-                    tempura: { amount: 0.4, required: true },
-                    salsa_fuji: { amount: 25, required: false },
-                    anguilla: { amount: 0.2, required: false },
-                    ajonjoli: { amount: 5, required: false },
-                    salsa_soja: { amount: 15, required: false }
-                },
-                stock: 10,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 3,
-                selectionType: "completo",
-                imageClass: "image-langostinos"
-            },
-            {
-                id: 4,
-                name: "Sushi Pizza",
-                category: "entradas",
-                icon: "🍕",
-                basePrice: 10.00,
-                description: "Atún o salmón, aguacate, salsa dragón, cebollín, salsa dinamita, miso dulce y salsa anguilla.",
-                ingredients: {
-                    salmon: { amount: 0.3, required: false },
-                    atun: { amount: 0.3, required: false },
-                    aguacate: { amount: 0.4, required: false },
-                    salsa_dragon: { amount: 20, required: false },
-                    cebollin: { amount: 0.1, required: false },
-                    salsa_dinamita: { amount: 15, required: false },
-                    miso_dulce: { amount: 10, required: false },
-                    anguilla: { amount: 0.1, required: false }
-                },
-                stock: 15,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 4,
-                selectionType: "completo",
-                imageClass: "image-sushi-pizza"
-            },
-            {
-                id: 5,
-                name: "Ceviche Tradicional",
-                category: "entradas",
-                icon: "🍋",
-                basePrice: 10.00,
-                description: "Cebolla morada, ají dulce, cilantro, limón, ajímoto, pescado blanco.",
-                ingredients: {
-                    pescado_blanco: { amount: 0.6, required: true },
-                    cebolla_morada: { amount: 0.3, required: false },
-                    aji_dulce: { amount: 0.2, required: false },
-                    cilantro: { amount: 0.1, required: false },
-                    limon: { amount: 1, required: false },
-                    ajimoto: { amount: 5, required: false }
-                },
-                stock: 12,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 5,
-                selectionType: "completo",
-                imageClass: "image-ceviche"
-            },
-            {
-                id: 6,
-                name: "Ceviche Mixto",
-                category: "entradas",
-                icon: "🦑",
-                basePrice: 14.00,
-                description: "Cebolla morada, ají dulce, cilantro, limón, ajímoto, pescado blanco, langostinos y pulpo.",
-                ingredients: {
-                    pescado_blanco: { amount: 0.4, required: true },
-                    langostino: { amount: 0.3, required: false },
-                    pulpo: { amount: 0.3, required: false },
-                    cebolla_morada: { amount: 0.3, required: false },
-                    aji_dulce: { amount: 0.2, required: false },
-                    cilantro: { amount: 0.1, required: false },
-                    limon: { amount: 1, required: false },
-                    ajimoto: { amount: 5, required: false }
-                },
-                stock: 10,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 6,
-                selectionType: "completo",
-                imageClass: "image-ceviche-mixto"
-            },
-            {
-                id: 7,
-                name: "Tiradito de Salmón",
-                category: "entradas",
-                icon: "🍣",
-                basePrice: 14.00,
-                description: "Salmón, aguacate, salsa ponzu, miso dulce, salsa dragón.",
-                ingredients: {
-                    salmon: { amount: 0.7, required: true },
-                    aguacate: { amount: 0.4, required: false },
-                    salsa_ponzu: { amount: 25, required: false },
-                    miso_dulce: { amount: 15, required: false },
-                    salsa_dragon: { amount: 15, required: false }
-                },
-                stock: 10,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 7,
-                selectionType: "completo",
-                imageClass: "image-tiradito"
-            },
-            {
-                id: 8,
-                name: "Maguro Tataki",
-                category: "entradas",
-                icon: "🔥",
-                basePrice: 14.00,
-                description: "Atún sellado con almendras, rebosado en salsa ponzu.",
-                ingredients: {
-                    atun: { amount: 0.8, required: true },
-                    almendras: { amount: 10, required: false },
-                    salsa_ponzu: { amount: 30, required: false },
-                    cebollin: { amount: 0.1, required: false },
-                    aceite_sesamo: { amount: 8, required: false }
-                },
-                stock: 8,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 8,
-                selectionType: "completo",
-                imageClass: "image-maguro"
-            },
-            {
-                id: 9,
-                name: "Sushi Saki Deluxe",
-                category: "sushi",
-                icon: "🍣",
-                basePrice: 24.99,
-                description: "12 piezas variadas: nigiri, maki y sashimi premium",
-                ingredients: {
-                    arroz_sushi: { amount: 200, required: true },
-                    salmon: { amount: 0.5, required: false },
-                    atun: { amount: 0.5, required: false },
-                    alga_nori: { amount: 2, required: true },
-                    aguacate: { amount: 0.25, required: false },
-                    pepino: { amount: 0.5, required: false },
-                    wasabi: { amount: 10, required: false },
-                    jengibre: { amount: 15, required: false },
-                    salsa_soja: { amount: 30, required: false },
-                    sesamo: { amount: 5, required: false }
-                },
-                stock: 8,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 9,
-                selectionType: "completo",
-                imageClass: "image-sushi-deluxe"
-            },
-            {
-                id: 10,
-                name: "Margarita Clásica",
-                category: "tragos",
-                icon: "🍸",
-                basePrice: 8.50,
-                description: "Tequila, triple sec y jugo de limón fresco",
-                ingredients: {
-                    tequila: { amount: 0.5, required: true },
-                    triple_sec: { amount: 15, required: false },
-                    limon: { amount: 1, required: false }
-                },
-                stock: 20,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: 10,
-                selectionType: "completo",
-                imageClass: "image-margarita"
-            }
-        ];
+        function getStockClass(stock) {
+            if (stock === 0) return 'sold-out';
+            if (stock <= 2) return 'low';
+            return 'available';
+        }
 
-        const jokes = [
-            "¿Seguro que quieres solo un plato vacío? 😅",
-            "¡Eso es solo aire en un plato! 🍃",
-            "¿Quieres que el chef te cante una canción en su lugar? 🎤",
-            "¡Incluso el wasabi se sentiría solo! 🍱",
-            "Prueba nuestro 'sushi de imaginación' - mismo precio! ✨",
-            "¡El arroz se sentirá abandonado! 🍚"
-        ];
-
-        let jokeIndex = {};
-        let currentCategory = 'todos';
-        let currentSubcategory = null;
-
-        const categoryOrder = {
-            'entradas': 1,
-            'sushi': 2,
-            'rolls-frios': 3,
-            'rolls-tempura': 4,
-            'tragos': 5,
-            'pokes': 6,
-            'ensaladas': 7,
-            'arroz-chino': 8,
-            'arroz-cantones': 9,
-            'chopsuey': 10,
-            'lomey': 11,
-            'chow-mein': 12,
-            'fideos-arroz': 13,
-            'tallarines-cantones': 14,
-            'mariscos': 15,
-            'foo-yung': 16,
-            'sopas': 17,
-            'entremeses': 18,
-            'yakimeshi': 19,
-            'yakisoba': 20,
-            'pasta-udon': 21,
-            'churrasco': 22,
-            'ninos': 23,
-            'ejecutivo': 24
-        };
-
-        function init() {
-            renderMenu();
-            updateOrderSummary();
-            menuItems.forEach(item => {
-                jokeIndex[item.id] = 0;
-            });
+        // ==========================================
+        // RENDERIZADO DEL MENÚ
+        // ==========================================
+        
+        function renderMenu() {
+            const menuGrid = document.getElementById('menuGrid');
             
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                if (tab.textContent.includes('Todos')) {
-                    tab.classList.add('active');
+            let filteredItems = [...menuItems];
+            
+            if (currentCategory !== 'todos') {
+                if (currentSubcategory) {
+                    filteredItems = menuItems.filter(item => item.subcategory === currentSubcategory);
+                } else {
+                    filteredItems = menuItems.filter(item => {
+                        if (currentCategory === 'sushi') {
+                            return item.category === 'sushi' || item.subcategory?.includes('roll');
+                        }
+                        return item.category === currentCategory;
+                    });
+                }
+            }
+            
+            if (filteredItems.length === 0) {
+                menuGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #888;">
+                        <i class="fas fa-utensils" style="font-size: 4em; margin-bottom: 20px; color: var(--primary);"></i>
+                        <p style="font-size: 1.4em;">No hay platillos disponibles</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            menuGrid.innerHTML = '';
+            
+            filteredItems.forEach((item) => {
+                const precioBs = formatearPrecioBs(item.basePrice);
+                const disponible = item.disponible && item.stock > 0;
+                
+                const menuItemDiv = document.createElement('div');
+                menuItemDiv.className = `menu-item ${!disponible ? 'disabled' : ''}`;
+                menuItemDiv.style.position = 'relative';
+                
+                menuItemDiv.innerHTML = `
+                    <div class="item-image ${item.imageClass}"></div>
+                    <div class="item-header">
+                        <div class="item-name">
+                            <span>${item.name}</span>
+                            <span class="item-price">${precioBs}</span>
+                        </div>
+                        <div class="item-description">${item.description}</div>
+                    </div>
+                    <div class="item-content">
+                        <div class="quantity-section">
+                            <div class="quantity-controls">
+                                <button class="qty-btn" onclick="changeQuantity('${item.id}', -1)" ${item.quantity === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <div class="item-quantity" id="qty-${item.id}">${item.quantity}</div>
+                                <button class="qty-btn" onclick="changeQuantity('${item.id}', 1)" ${!disponible || item.totalOrdered >= item.stock ? 'disabled' : ''}>
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="item-stock ${getStockClass(item.stock - item.totalOrdered)}">
+                                <i class="fas fa-box"></i> Disponibles: ${Math.max(0, item.stock - item.totalOrdered)} de ${item.stock}
+                            </div>
+                        </div>
+                        
+                        ${Object.keys(item.ingredients).length > 0 && disponible ? `
+                        <div class="ingredients-section hidden" id="ingredients-${item.id}">
+                            <div class="ingredients-title">
+                                <i class="fas fa-utensils"></i>
+                                <h3>Personaliza tu pedido</h3>
+                            </div>
+                            <div class="ingredient-options" id="options-${item.id}"></div>
+                            <div class="ingredient-actions">
+                                <button class="confirm-btn" onclick="confirmCustomization('${item.id}')" id="confirm-${item.id}" disabled>
+                                    <i class="fas fa-check"></i> Confirmar Selección
+                                </button>
+                            </div>
+                            <div class="price-adjustment" id="price-adj-${item.id}"></div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                menuGrid.appendChild(menuItemDiv);
+                
+                if (Object.keys(item.ingredients).length > 0 && disponible) {
+                    generateIngredientOptions(item.id);
                 }
             });
         }
 
+        function generateIngredientOptions(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            const optionsDiv = document.getElementById(`options-${itemId}`);
+            if (!optionsDiv) return;
+            
+            optionsDiv.innerHTML = '';
+            
+            const completeOption = document.createElement('div');
+            completeOption.className = `ingredient-option complete-option ${item.selectionType === 'completo' ? 'selected' : ''}`;
+            completeOption.onclick = () => selectComplete(itemId);
+            
+            completeOption.innerHTML = `
+                <div class="ingredient-checkbox ${item.selectionType === 'completo' ? 'checked' : ''}"></div>
+                <div class="ingredient-icon">✅</div>
+                <div class="ingredient-name">Platillo completo (con todos los ingredientes)</div>
+            `;
+            optionsDiv.appendChild(completeOption);
+            
+            Object.keys(item.ingredients).forEach(ingKey => {
+                const ingrediente = item.ingredients[ingKey];
+                if (!ingrediente.obligatorio) {
+                    const ingOption = document.createElement('div');
+                    ingOption.className = 'ingredient-option';
+                    ingOption.onclick = () => toggleIngredient(itemId, ingKey);
+                    
+                    const isSelected = item.currentSelections.has(ingKey);
+                    
+                    ingOption.innerHTML = `
+                        <div class="ingredient-checkbox ${isSelected ? 'checked' : ''}"></div>
+                        <div class="ingredient-icon">🥗</div>
+                        <div class="ingredient-name">Sin ${ingKey.replace(/_/g, ' ')}</div>
+                    `;
+                    optionsDiv.appendChild(ingOption);
+                }
+            });
+        }
+
+        // ==========================================
+        // INTERACCIÓN DEL USUARIO
+        // ==========================================
+        
         function filterCategory(category) {
             currentCategory = category;
             currentSubcategory = null;
@@ -1588,178 +1603,12 @@
             
             document.querySelectorAll('.subcategory-tab').forEach(tab => {
                 tab.style.background = 'rgba(255, 255, 255, 0.15)';
+                tab.style.color = 'white';
             });
             event.target.style.background = 'var(--accent)';
             event.target.style.color = 'var(--secondary)';
             
             renderMenu();
-        }
-
-        function ordenarItemsPorCategoria(items) {
-            return items.sort((a, b) => {
-                if (a.order && b.order) {
-                    return a.order - b.order;
-                }
-                if (a.order && !b.order) return -1;
-                if (!a.order && b.order) return 1;
-                
-                const orderA = categoryOrder[a.category] || 99;
-                const orderB = categoryOrder[b.category] || 99;
-                if (orderA !== orderB) {
-                    return orderA - orderB;
-                }
-                
-                return a.name.localeCompare(b.name);
-            });
-        }
-
-        function renderMenu() {
-            const menuGrid = document.getElementById('menuGrid');
-            
-            let filteredItems = [...menuItems];
-            
-            if (currentCategory === 'todos') {
-                filteredItems = ordenarItemsPorCategoria(filteredItems);
-            } else if (currentSubcategory) {
-                filteredItems = menuItems.filter(item => item.category === currentSubcategory);
-            } else if (currentCategory) {
-                if (currentCategory === 'sushi') {
-                    filteredItems = menuItems.filter(item => 
-                        item.category === 'sushi' || 
-                        item.category === 'rolls-frios' || 
-                        item.category === 'rolls-tempura'
-                    );
-                } else if (currentCategory === 'china') {
-                    const subcategoriasChina = [
-                        'arroz-chino', 'arroz-cantones', 'chopsuey', 'lomey', 
-                        'chow-mein', 'fideos-arroz', 'tallarines-cantones', 
-                        'mariscos', 'foo-yung', 'sopas', 'entremeses'
-                    ];
-                    filteredItems = menuItems.filter(item => 
-                        subcategoriasChina.includes(item.category)
-                    );
-                } else if (currentCategory === 'japonesa') {
-                    const subcategoriasJaponesa = [
-                        'yakimeshi', 'yakisoba', 'pasta-udon', 'churrasco'
-                    ];
-                    filteredItems = menuItems.filter(item => 
-                        subcategoriasJaponesa.includes(item.category)
-                    );
-                } else if (currentCategory === 'rolls') {
-                    filteredItems = menuItems.filter(item => 
-                        item.category === 'rolls-frios' || 
-                        item.category === 'rolls-tempura'
-                    );
-                } else {
-                    filteredItems = menuItems.filter(item => item.category === currentCategory);
-                }
-                
-                filteredItems = ordenarItemsPorCategoria(filteredItems);
-            }
-            
-            if (filteredItems.length === 0) {
-                menuGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #888; font-style: italic;">
-                        <i class="fas fa-utensils" style="font-size: 4em; margin-bottom: 20px; color: var(--primary);"></i>
-                        <p style="font-size: 1.4em;">Próximamente en esta categoría</p>
-                        <p style="margin-top: 10px;">Estamos preparando los mejores platillos para ti</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            menuGrid.innerHTML = '';
-            
-            filteredItems.forEach((item) => {
-                const precioBs = formatearPrecioBs(item.basePrice);
-                const menuItemDiv = document.createElement('div');
-                menuItemDiv.className = 'menu-item';
-                menuItemDiv.innerHTML = `
-                    <div class="item-image ${item.imageClass}"></div>
-                    <div class="item-header">
-                        <div class="item-name">
-                            <span>${item.name}</span>
-                            <span class="item-price">${precioBs}</span>
-                        </div>
-                        <div class="item-description">${item.description}</div>
-                    </div>
-                    <div class="item-content">
-                        <div class="quantity-section">
-                            <div class="quantity-controls">
-                                <button class="qty-btn" onclick="changeQuantity(${item.id}, -1)" ${item.quantity === 0 ? 'disabled' : ''}>
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <div class="item-quantity" id="qty-${item.id}">${item.quantity}</div>
-                                <button class="qty-btn" onclick="changeQuantity(${item.id}, 1)" ${item.totalOrdered >= item.stock ? 'disabled' : ''}>
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                            <div class="item-stock ${getStockClass(item.stock - item.totalOrdered)}">
-                                <i class="fas fa-box"></i> Disponibles: ${item.stock - item.totalOrdered} de ${item.stock}
-                            </div>
-                        </div>
-                        
-                        ${Object.keys(item.ingredients).length > 0 ? `
-                        <div class="ingredients-section hidden" id="ingredients-${item.id}">
-                            <div class="ingredients-title">
-                                <i class="fas fa-utensils"></i>
-                                <h3>Personaliza tu pedido</h3>
-                            </div>
-                            <div class="ingredient-options" id="options-${item.id}"></div>
-                            <div class="joke-notice" id="joke-${item.id}"></div>
-                            <div class="ingredient-actions">
-                                <button class="confirm-btn" onclick="confirmCustomization(${item.id})" id="confirm-${item.id}" disabled>
-                                    <i class="fas fa-check"></i> Confirmar Selección
-                                </button>
-                            </div>
-                            <div class="price-adjustment" id="price-adj-${item.id}"></div>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-                menuGrid.appendChild(menuItemDiv);
-                
-                if (Object.keys(item.ingredients).length > 0) {
-                    generateIngredientOptions(item.id);
-                }
-            });
-        }
-
-        function generateIngredientOptions(itemId) {
-            const item = menuItems.find(i => i.id === itemId);
-            const optionsDiv = document.getElementById(`options-${itemId}`);
-            optionsDiv.innerHTML = '';
-            
-            // Primero agregar la opción "Completo" como un checkbox más
-            const completeOption = document.createElement('div');
-            completeOption.className = `ingredient-option complete-option ${item.selectionType === 'completo' ? 'selected' : ''}`;
-            completeOption.onclick = () => selectComplete(itemId);
-            
-            completeOption.innerHTML = `
-                <div class="ingredient-checkbox ${item.selectionType === 'completo' ? 'checked' : ''}"></div>
-                <div class="ingredient-icon">✅</div>
-                <div class="ingredient-name">Platillo completo (con todos los ingredientes)</div>
-            `;
-            optionsDiv.appendChild(completeOption);
-            
-            // Luego agregar las opciones para quitar ingredientes
-            Object.keys(item.ingredients).forEach(ingredientKey => {
-                const ingredient = item.ingredients[ingredientKey];
-                if (!ingredient.required) {
-                    const ingOption = document.createElement('div');
-                    ingOption.className = 'ingredient-option';
-                    ingOption.onclick = () => toggleIngredient(itemId, ingredientKey);
-                    
-                    const isSelected = item.currentSelections.has(ingredientKey);
-                    
-                    ingOption.innerHTML = `
-                        <div class="ingredient-checkbox ${isSelected ? 'checked' : ''}"></div>
-                        <div class="ingredient-icon">${inventory[ingredientKey].icon}</div>
-                        <div class="ingredient-name">Sin ${inventory[ingredientKey].name.toLowerCase()}</div>
-                    `;
-                    optionsDiv.appendChild(ingOption);
-                }
-            });
         }
 
         function selectComplete(itemId) {
@@ -1809,17 +1658,13 @@
                 item.quantity = newQty;
             }
             
-            document.getElementById(`qty-${itemId}`).textContent = item.quantity;
-            
-            // Actualizar botones de cantidad en todas las categorías
-            updateQuantityButtons(itemId);
+            const qtyEl = document.getElementById(`qty-${itemId}`);
+            if (qtyEl) qtyEl.textContent = item.quantity;
             
             const ingredientsSection = document.getElementById(`ingredients-${itemId}`);
             if (ingredientsSection) {
                 if (item.quantity > 0) {
-                    setTimeout(() => {
-                        ingredientsSection.classList.remove('hidden');
-                    }, 10);
+                    setTimeout(() => ingredientsSection.classList.remove('hidden'), 10);
                     
                     if (change > 0) {
                         item.instances.push({
@@ -1840,130 +1685,9 @@
                     item.selectionType = "completo";
                     generateIngredientOptions(itemId);
                 }
-            } else {
-                if (item.quantity > 0 && change > 0) {
-                    item.instances.push({
-                        id: item.instances.length + 1,
-                        removedIngredients: [],
-                        isComplete: true,
-                        price: convertirABs(item.basePrice),
-                        selectionType: "completo"
-                    });
-                }
-                else if (change < 0 && item.instances.length > 0) {
-                    item.instances.pop();
-                }
             }
-            
-            // Actualizar stock display en todas las categorías
-            updateStockDisplay(itemId);
             
             updateOrderSummary();
-        }
-
-        function updateQuantityButtons(itemId) {
-            const item = menuItems.find(i => i.id === itemId);
-            
-            // Buscar todos los elementos de este item en la vista actual
-            const allQuantityControls = document.querySelectorAll(`.menu-item:nth-child(${itemId}) .quantity-controls`);
-            
-            allQuantityControls.forEach(controls => {
-                const minusBtn = controls.querySelector('.qty-btn:first-child');
-                const plusBtn = controls.querySelector('.qty-btn:last-child');
-                
-                if (minusBtn) minusBtn.disabled = item.quantity === 0;
-                if (plusBtn) plusBtn.disabled = (item.totalOrdered + item.quantity) >= item.stock;
-            });
-        }
-
-        function updateStockDisplay(itemId) {
-            const item = menuItems.find(i => i.id === itemId);
-            const availableStock = item.stock - item.totalOrdered;
-            const stockClass = getStockClass(availableStock);
-            
-            // Buscar todos los elementos de stock de este item
-            const allStockDisplays = document.querySelectorAll(`.menu-item:nth-child(${itemId}) .item-stock`);
-            
-            allStockDisplays.forEach(stockDisplay => {
-                stockDisplay.className = `item-stock ${stockClass}`;
-                stockDisplay.innerHTML = `<i class="fas fa-box"></i> Disponibles: ${availableStock} de ${item.stock}`;
-            });
-        }
-
-        function showMaxReachedNotice(itemName, quantity) {
-            document.getElementById('maxQuantity').textContent = quantity;
-            document.getElementById('maxReachedNotice').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-        }
-
-        function closeMaxNotice() {
-            document.getElementById('maxReachedNotice').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        function confirmCustomization(itemId) {
-            const item = menuItems.find(i => i.id === itemId);
-            
-            if (item.instances.length === 0) return;
-            
-            const currentInstance = item.instances[item.instances.length - 1];
-            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-            
-            // Si es personalizado, verificar que no se quitaron todos
-            if (item.selectionType === "personalizado") {
-                if (item.currentSelections.size === allNonRequired.length) {
-                    alert("¡No puedes quitar todos los ingredientes! Por favor, deja al menos uno.");
-                    return;
-                }
-            }
-            
-            const selectedIngredients = Array.from(item.currentSelections);
-            let totalReduction = 0;
-            
-            selectedIngredients.forEach(ingredientKey => {
-                totalReduction += (inventory[ingredientKey].priceReduction || 0);
-            });
-            
-            // Actualizar instancia
-            currentInstance.removedIngredients = selectedIngredients;
-            currentInstance.isComplete = selectedIngredients.length === 0;
-            currentInstance.price = selectedIngredients.length > 0 
-                ? Math.max(convertirABs(item.basePrice) - totalReduction, convertirABs(item.basePrice) * 0.4)
-                : convertirABs(item.basePrice);
-            currentInstance.selectionType = item.selectionType;
-            
-            // Resetear contador y plegar sección
-            item.totalOrdered += item.quantity;
-            item.quantity = 0;
-            
-            // Limpiar selecciones actuales y volver a "completo" por defecto
-            item.currentSelections.clear();
-            item.selectionType = "completo";
-            
-            // Actualizar UI - Primero ocultar la sección con transición suave
-            const ingredientsSection = document.getElementById(`ingredients-${itemId}`);
-            if (ingredientsSection) {
-                ingredientsSection.classList.add('hidden');
-            }
-            
-            setTimeout(() => {
-                document.getElementById(`qty-${itemId}`).textContent = '0';
-                const confirmBtn = document.getElementById(`confirm-${itemId}`);
-                if (confirmBtn) confirmBtn.disabled = true;
-                const priceAdjDiv = document.getElementById(`price-adj-${itemId}`);
-                if (priceAdjDiv) priceAdjDiv.style.display = 'none';
-                const jokeDiv = document.getElementById(`joke-${itemId}`);
-                if (jokeDiv) jokeDiv.style.display = 'none';
-                
-                // Actualizar botones de cantidad y stock en todas las vistas
-                updateQuantityButtons(itemId);
-                updateStockDisplay(itemId);
-                
-                // Actualizar UI de ingredientes
-                generateIngredientOptions(itemId);
-                
-                updateOrderSummary();
-            }, 500);
         }
 
         function updateConfirmButton(itemId) {
@@ -1971,30 +1695,28 @@
             const confirmBtn = document.getElementById(`confirm-${itemId}`);
             const priceAdjDiv = document.getElementById(`price-adj-${itemId}`);
             
+            if (!confirmBtn) return;
+            
             if (item.instances.length === 0) {
-                if (confirmBtn) confirmBtn.disabled = true;
+                confirmBtn.disabled = true;
                 return;
             }
             
-            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
+            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].obligatorio);
             
             if (item.selectionType === "personalizado") {
                 const allSelected = allNonRequired.length > 0 && item.currentSelections.size === allNonRequired.length;
                 
                 if (allSelected) {
-                    if (confirmBtn) confirmBtn.disabled = true;
+                    confirmBtn.disabled = true;
                     if (priceAdjDiv) priceAdjDiv.style.display = 'none';
                 } else {
-                    if (confirmBtn) confirmBtn.disabled = false;
+                    confirmBtn.disabled = false;
                     
                     if (item.currentSelections.size > 0) {
-                        let totalReduction = 0;
-                        item.currentSelections.forEach(ingredientKey => {
-                            totalReduction += (inventory[ingredientKey].priceReduction || 0);
-                        });
-                        const newPrice = Math.max(convertirABs(item.basePrice) - totalReduction, convertirABs(item.basePrice) * 0.4);
+                        const newPrice = convertirABs(item.basePrice) * 0.9;
                         if (priceAdjDiv) {
-                            priceAdjDiv.innerHTML = `<i class="fas fa-tag"></i> Nuevo precio: <strong>Bs. ${newPrice.toFixed(2).replace('.', ',')}</strong> (Bs. ${totalReduction.toFixed(2).replace('.', ',')} menos)`;
+                            priceAdjDiv.innerHTML = `<i class="fas fa-tag"></i> Precio ajustado: <strong>Bs. ${newPrice.toFixed(2).replace('.', ',')}</strong>`;
                             priceAdjDiv.style.display = 'block';
                         }
                     } else {
@@ -2005,8 +1727,7 @@
                     }
                 }
             } else {
-                // Para selección "completa"
-                if (confirmBtn) confirmBtn.disabled = false;
+                confirmBtn.disabled = false;
                 if (priceAdjDiv) {
                     priceAdjDiv.innerHTML = `<i class="fas fa-tag"></i> Precio completo: <strong>${formatearPrecioBs(item.basePrice)}</strong>`;
                     priceAdjDiv.style.display = 'block';
@@ -2014,25 +1735,57 @@
             }
         }
 
-        function getStockClass(stock) {
-            if (stock === 0) return 'sold-out';
-            if (stock <= 2) return 'low';
-            return 'available';
+        function confirmCustomization(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            
+            if (item.instances.length === 0) return;
+            
+            const currentInstance = item.instances[item.instances.length - 1];
+            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].obligatorio);
+            
+            if (item.selectionType === "personalizado") {
+                if (item.currentSelections.size === allNonRequired.length) {
+                    alert("¡No puedes quitar todos los ingredientes opcionales!");
+                    return;
+                }
+            }
+            
+            currentInstance.removedIngredients = Array.from(item.currentSelections);
+            currentInstance.isComplete = item.currentSelections.size === 0;
+            currentInstance.selectionType = item.selectionType;
+            
+            if (currentInstance.removedIngredients.length > 0) {
+                currentInstance.price = convertirABs(item.basePrice) * 0.9;
+            } else {
+                currentInstance.price = convertirABs(item.basePrice);
+            }
+            
+            item.totalOrdered += item.quantity;
+            item.quantity = 0;
+            item.currentSelections.clear();
+            item.selectionType = "completo";
+            
+            const ingredientsSection = document.getElementById(`ingredients-${itemId}`);
+            if (ingredientsSection) ingredientsSection.classList.add('hidden');
+            
+            const qtyEl = document.getElementById(`qty-${itemId}`);
+            if (qtyEl) qtyEl.textContent = '0';
+            
+            generateIngredientOptions(itemId);
+            updateOrderSummary();
+            renderMenu();
         }
 
         function updateOrderSummary() {
             const orderSummaryContent = document.getElementById('orderSummaryContent');
             const orderBtn = document.getElementById('orderBtn');
             
-            const validItems = menuItems.filter(item => {
-                return item.instances.some(instance => {
-                    if (Object.keys(item.ingredients).length > 0) {
-                        const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                        return instance.removedIngredients.length < allNonRequired.length;
-                    }
-                    return true;
-                });
-            });
+            const validItems = menuItems.filter(item => 
+                item.instances.some(instance => {
+                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
+                    return instance.removedIngredients.length < allNonRequired.length;
+                })
+            );
             
             if (validItems.length === 0) {
                 orderSummaryContent.innerHTML = `
@@ -2052,11 +1805,8 @@
             
             validItems.forEach(item => {
                 const validInstances = item.instances.filter(instance => {
-                    if (Object.keys(item.ingredients).length > 0) {
-                        const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                        return instance.removedIngredients.length < allNonRequired.length;
-                    }
-                    return true;
+                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
+                    return instance.removedIngredients.length < allNonRequired.length;
                 });
                 
                 if (validInstances.length === 0) return;
@@ -2070,16 +1820,11 @@
                     
                     let modifiers = '';
                     if (instance.removedIngredients.length > 0) {
-                        modifiers = 'Personalizado (sin: ';
-                        instance.removedIngredients.forEach((ingredientKey, idx) => {
-                            modifiers += inventory[ingredientKey].name.toLowerCase();
-                            if (idx < instance.removedIngredients.length - 1) {
-                                modifiers += ', ';
-                            }
-                        });
-                        modifiers += ')';
+                        modifiers = 'Personalizado (sin: ' + 
+                            instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + 
+                            ')';
                     } else {
-                        modifiers = 'Completo (todos los ingredientes)';
+                        modifiers = 'Completo';
                     }
                     
                     html += `
@@ -2114,332 +1859,86 @@
             orderBtn.disabled = false;
         }
 
-        function calculateMaxPossibleItems(item) {
-            let maxItems = item.stock;
-            
-            for (const [ingredientKey, ingredient] of Object.entries(item.ingredients)) {
-                const available = inventory[ingredientKey].quantity;
-                const neededPerItem = ingredient.amount;
-                
-                if (neededPerItem > 0) {
-                    const maxFromThisIngredient = Math.floor(available / neededPerItem);
-                    maxItems = Math.min(maxItems, maxFromThisIngredient);
-                }
-            }
-            
-            return Math.max(0, maxItems);
-        }
-
-        function placeOrder() {
-            const validItems = menuItems.filter(item => {
-                return item.instances.some(instance => {
-                    if (Object.keys(item.ingredients).length > 0) {
-                        const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                        return instance.removedIngredients.length < allNonRequired.length;
-                    }
-                    return true;
-                });
-            });
+        async function placeOrder() {
+            const validItems = menuItems.filter(item => 
+                item.instances.some(instance => {
+                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
+                    return instance.removedIngredients.length < allNonRequired.length;
+                })
+            );
             
             if (validItems.length === 0) {
                 alert('¡No tienes platillos válidos en tu pedido!');
                 return;
             }
             
-            const inventoryCheck = checkInventory(validItems);
-            if (!inventoryCheck.canProcess) {
-                showInventoryError(validItems, inventoryCheck.maxPossible);
-                return;
-            }
-            
-            showOrderConfirmation(validItems);
-            updateInventory(validItems);
-            
-            // Resetear el conjunto de alertas mostradas para el próximo pedido
-            lowInventoryAlertsShown.clear();
-            
-            const lowInventoryItems = checkLowInventory(validItems);
-            
-            // Limpiar todas las instancias de pedidos
-            menuItems.forEach(item => {
-                item.instances = [];
-                item.quantity = 0;
-                item.totalOrdered = 0;
-                item.currentSelections.clear();
-                item.selectionType = "completo";
-                
-                // Forzar actualización de UI en todas las vistas
-                document.getElementById(`qty-${item.id}`).textContent = '0';
-                
-                // Actualizar botones de cantidad y stock en todas las vistas
-                updateQuantityButtons(item.id);
-                updateStockDisplay(item.id);
-                
-                // Actualizar UI de ingredientes si el item está visible
-                const ingredientsSection = document.getElementById(`ingredients-${item.id}`);
-                if (ingredientsSection) {
-                    ingredientsSection.classList.add('hidden');
-                    generateIngredientOptions(item.id);
-                }
-            });
-            
-            // Forzar re-renderizado del menú
-            renderMenu();
-            updateOrderSummary();
-            
-            document.getElementById('thankYouMessage').style.display = 'block';
-            
-            setTimeout(() => {
-                if (lowInventoryItems.length > 0) {
-                    showInventoryAlert(lowInventoryItems);
-                }
-            }, 1500);
-        }
-
-        function checkInventory(validItems) {
-            const result = {
-                canProcess: true,
-                maxPossible: {},
-                insufficientIngredients: []
+            const pedido = {
+                id: 'PED-' + Date.now(),
+                timestamp: new Date().toISOString(),
+                estado: 'pendiente',
+                mesa: null,
+                items: [],
+                total: 0,
+                metodoPago: null,
+                cajero: null,
+                tiempoPreparacion: null,
+                origen: 'cliente_web'
             };
             
-            // Calcular cuántos de cada platillo se pueden hacer con el inventario actual
-            validItems.forEach(item => {
-                const itemInstances = item.instances.filter(instance => {
-                    if (Object.keys(item.ingredients).length > 0) {
-                        const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                        return instance.removedIngredients.length < allNonRequired.length;
-                    }
-                    return true;
-                });
-                
-                if (itemInstances.length === 0) return;
-                
-                const maxPossible = calculateMaxPossibleItems(item);
-                result.maxPossible[item.id] = maxPossible;
-                
-                if (itemInstances.length > maxPossible) {
-                    result.canProcess = false;
-                    
-                    // Identificar ingredientes insuficientes
-                    for (const [ingredientKey, ingredient] of Object.entries(item.ingredients)) {
-                        const available = inventory[ingredientKey].quantity;
-                        const neededPerItem = ingredient.amount;
-                        const totalNeeded = itemInstances.length * neededPerItem;
-                        
-                        if (totalNeeded > available) {
-                            result.insufficientIngredients.push({
-                                itemName: item.name,
-                                ingredientName: inventory[ingredientKey].name,
-                                available: available,
-                                needed: totalNeeded,
-                                shortBy: totalNeeded - available
-                            });
-                        }
-                    }
-                }
-            });
-            
-            return result;
-        }
-
-        function showInventoryError(validItems, maxPossible) {
-            const inventoryError = document.getElementById('inventoryError');
-            const errorContent = document.getElementById('inventoryErrorContent');
-            const maxPossibleOrder = document.getElementById('maxPossibleOrder');
-            const overlay = document.getElementById('overlay');
-            
-            let html = '<p style="margin-bottom: 20px; color: #666; font-size: 1.1em;">No tenemos suficiente inventario para tu pedido completo:</p>';
-            
-            validItems.forEach(item => {
-                const itemInstances = item.instances.filter(instance => {
-                    if (Object.keys(item.ingredients).length > 0) {
-                        const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                        return instance.removedIngredients.length < allNonRequired.length;
-                    }
-                    return true;
-                });
-                
-                if (itemInstances.length === 0) return;
-                
-                const maxForThisItem = maxPossible[item.id] || 0;
-                
-                if (itemInstances.length > maxForThisItem) {
-                    html += `
-                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #E0E0E0;">
-                            <div style="font-weight: bold; color: var(--primary); margin-bottom: 5px;">${item.name}</div>
-                            <div style="font-size: 0.9em; color: #666;">
-                                Pediste: ${itemInstances.length} unidades<br>
-                                Máximo posible: ${maxForThisItem} unidades
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-            
-            // Construir mensaje de cantidad máxima posible
-            let maxOrderMessage = 'Cantidad máxima que puedes ordenar: ';
-            let first = true;
-            
-            validItems.forEach(item => {
-                const maxForThisItem = maxPossible[item.id] || 0;
-                if (maxForThisItem > 0) {
-                    if (!first) maxOrderMessage += ', ';
-                    maxOrderMessage += `${maxForThisItem} de ${item.name}`;
-                    first = false;
-                }
-            });
-            
-            if (!first) {
-                maxPossibleOrder.textContent = maxOrderMessage;
-                maxPossibleOrder.style.display = 'block';
-            } else {
-                maxPossibleOrder.style.display = 'none';
-            }
-            
-            errorContent.innerHTML = html;
-            inventoryError.style.display = 'block';
-            overlay.style.display = 'block';
-        }
-
-        function closeInventoryError() {
-            document.getElementById('inventoryError').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        function updateInventory(validItems) {
             validItems.forEach(item => {
                 item.instances.forEach(instance => {
-                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                    if (instance.removedIngredients.length >= allNonRequired.length) return;
-                    
-                    for (const [ingredientKey, ingredient] of Object.entries(item.ingredients)) {
-                        if (!instance.removedIngredients.includes(ingredientKey)) {
-                            inventory[ingredientKey].quantity = Math.round((inventory[ingredientKey].quantity - ingredient.amount) * 100) / 100;
-                        }
-                    }
-                });
-            });
-        }
-
-        function checkLowInventory(orderedItems) {
-            const lowInventoryItems = [];
-            const usedIngredients = new Set();
-            
-            // Primero, identificar qué ingredientes se usaron en este pedido
-            orderedItems.forEach(item => {
-                item.instances.forEach(instance => {
-                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                    if (instance.removedIngredients.length >= allNonRequired.length) return;
-                    
-                    for (const ingredientKey of Object.keys(item.ingredients)) {
-                        if (!instance.removedIngredients.includes(ingredientKey)) {
-                            usedIngredients.add(ingredientKey);
-                        }
-                    }
-                });
-            });
-            
-            // Solo verificar inventario bajo para ingredientes usados
-            for (const [key, ingredient] of Object.entries(inventory)) {
-                if (usedIngredients.has(key)) {
-                    if (!ingredient.unit) {
-                        if (ingredient.quantity <= 5 && ingredient.quantity > 0 && !lowInventoryAlertsShown.has(key)) {
-                            lowInventoryItems.push({
-                                key: key,
-                                name: ingredient.name,
-                                icon: ingredient.icon,
-                                quantity: ingredient.quantity,
-                                unit: ingredient.unit || 'unidades'
-                            });
-                            lowInventoryAlertsShown.add(key);
-                        }
-                    } else if (ingredient.quantity <= 100 && !lowInventoryAlertsShown.has(key)) {
-                        lowInventoryItems.push({
-                            key: key,
-                            name: ingredient.name,
-                            icon: ingredient.icon,
-                            quantity: ingredient.quantity,
-                            unit: ingredient.unit
+                    if (instance.removedIngredients.length < Object.keys(item.ingredients).filter(k => !item.ingredients[k].obligatorio).length) {
+                        pedido.items.push({
+                            platilloId: item.id,
+                            nombre: item.name,
+                            cantidad: 1,
+                            personalizacion: instance.removedIngredients,
+                            precioUnitario: item.basePrice,
+                            subtotal: instance.price / (sistemaData?.config?.tasaCambio || 400)
                         });
-                        lowInventoryAlertsShown.add(key);
+                        pedido.total += instance.price / (sistemaData?.config?.tasaCambio || 400);
                     }
-                }
-            }
-            
-            return lowInventoryItems;
-        }
-
-        function showInventoryAlert(lowInventoryItems) {
-            if (lowInventoryItems.length === 0) return;
-            
-            const alertContent = document.getElementById('alertContent');
-            const inventoryAlert = document.getElementById('inventoryAlert');
-            const overlay = document.getElementById('overlay');
-            
-            let html = '<p style="margin-bottom: 20px; color: #666; font-size: 1.1em;">Los siguientes ingredientes están bajos:</p>';
-            
-            lowInventoryItems.forEach(item => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #FFE0B2;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="font-size: 1.3em;">${item.icon}</div>
-                            <div>${item.name}</div>
-                        </div>
-                        <div style="font-weight: bold; color: #D84315;">${item.quantity} ${item.unit}</div>
-                    </div>
-                `;
+                });
             });
             
-            html += '<p style="margin-top: 20px; color: #D84315; font-weight: bold; font-size: 1.1em;"><i class="fas fa-exclamation-circle"></i> Sería prudente comprar más.</p>';
+            const guardado = await guardarPedido(pedido);
             
-            alertContent.innerHTML = html;
-            inventoryAlert.style.display = 'block';
-            overlay.style.display = 'block';
-            
-            setTimeout(() => {
-                if (inventoryAlert.style.display === 'block') {
-                    closeInventoryAlert();
-                }
-            }, 10000);
+            if (guardado) {
+                showOrderConfirmation(validItems, pedido);
+                
+                menuItems.forEach(item => {
+                    item.instances = [];
+                    item.quantity = 0;
+                    item.currentSelections.clear();
+                    item.selectionType = "completo";
+                });
+                
+                renderMenu();
+                updateOrderSummary();
+                
+                document.getElementById('thankYouMessage').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('thankYouMessage').style.display = 'none';
+                }, 5000);
+            }
         }
 
-        function closeInventoryAlert() {
-            document.getElementById('inventoryAlert').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        function showOrderConfirmation(validItems) {
+        function showOrderConfirmation(validItems, pedido) {
             const notification = document.getElementById('notification');
             const orderDetails = document.getElementById('orderDetails');
             const overlay = document.getElementById('overlay');
             const orderTotalPrice = document.getElementById('orderTotalPrice');
             
-            let total = 0;
             let html = '';
+            let total = 0;
             
             validItems.forEach(item => {
-                const validInstances = item.instances.filter(instance => {
-                    if (Object.keys(item.ingredients).length > 0) {
-                        const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].required);
-                        return instance.removedIngredients.length < allNonRequired.length;
-                    }
-                    return true;
-                });
-                
-                validInstances.forEach((instance, index) => {
+                item.instances.forEach((instance, index) => {
                     total += instance.price;
                     
                     let modifiers = '';
                     if (instance.removedIngredients.length > 0) {
-                        modifiers = ' (personalizado, sin: ';
-                        instance.removedIngredients.forEach((ingredientKey, idx) => {
-                            modifiers += inventory[ingredientKey].name.toLowerCase();
-                            if (idx < instance.removedIngredients.length - 1) {
-                                modifiers += ', ';
-                            }
-                        });
-                        modifiers += ')';
+                        modifiers = ' (sin: ' + instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + ')';
                     } else {
                         modifiers = ' (completo)';
                     }
@@ -2447,9 +1946,9 @@
                     html += `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #E0E0E0;">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="font-size: 1.5em;">${item.icon}</div>
+                                <div style="font-size: 1.5em;">🍣</div>
                                 <div>
-                                    <div style="font-weight: bold;">${item.name} #${index + 1}</div>
+                                    <div style="font-weight: bold;">${item.name}</div>
                                     <div style="font-size: 0.9em; color: #666;">${modifiers}</div>
                                 </div>
                             </div>
@@ -2466,12 +1965,40 @@
             overlay.style.display = 'block';
         }
 
+        function showMaxReachedNotice(itemName, quantity) {
+            document.getElementById('maxQuantity').textContent = quantity;
+            document.getElementById('maxReachedNotice').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closeMaxNotice() {
+            document.getElementById('maxReachedNotice').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function closeInventoryError() {
+            document.getElementById('inventoryError').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
         function closeNotification() {
             document.getElementById('notification').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
         }
 
-        document.addEventListener('DOMContentLoaded', init);
+        function closeInventoryAlert() {
+            document.getElementById('inventoryAlert').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarDatos();
+            syncInterval = setInterval(cargarDatos, 30000);
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (syncInterval) clearInterval(syncInterval);
+        });
     </script>
 </body>
 </html>
