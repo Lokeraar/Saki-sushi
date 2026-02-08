@@ -24,6 +24,7 @@
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --info: #1976D2;
         }
 
         body {
@@ -63,6 +64,39 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+        }
+
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .notification-badge:hover {
+            background: var(--bg-hover);
+        }
+
+        .notification-badge i {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .badge-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn {
@@ -262,29 +296,6 @@
             font-weight: 600;
         }
 
-        .price-conversion {
-            background: var(--bg-hover);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 0.5rem;
-            border-left: 3px solid var(--primary);
-        }
-
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .price-row:last-child {
-            margin-bottom: 0;
-            padding-top: 0.5rem;
-            border-top: 1px solid var(--border);
-            font-weight: 600;
-            color: var(--success);
-        }
-
         /* Tables */
         .table-container {
             overflow-x: auto;
@@ -407,7 +418,7 @@
         .modal-content {
             background: var(--bg-card);
             border-radius: 1rem;
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -494,6 +505,79 @@
             background: var(--danger);
         }
 
+        /* Ingredient List */
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ingredient-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Tasa Config */
+        .tasa-config {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tasa-config h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tasa-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .tasa-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Notification Modal */
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -555,54 +639,67 @@
             50% { opacity: 0.5; }
         }
 
-        /* Ingredient List */
-        .ingredient-item {
+        /* Plato card for menu management */
+        .plato-card {
+            background: var(--bg-dark);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .plato-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem;
-            background: var(--bg-dark);
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
-        .ingredient-controls {
-            display: flex;
-            gap: 0.5rem;
+        .plato-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .plato-ingredients {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .ingredient-tag {
+            display: inline-flex;
             align-items: center;
-        }
-
-        .btn-small {
-            padding: 0.25rem 0.75rem;
+            gap: 0.25rem;
+            background: var(--bg-hover);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.25rem;
             font-size: 0.75rem;
         }
 
-        /* Tasa Config */
-        .tasa-config {
-            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
-            border: 2px solid var(--primary);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .tasa-config h3 {
-            color: var(--primary);
-            margin-bottom: 1rem;
+        /* Unidad selector */
+        .unidad-selector {
             display: flex;
-            align-items: center;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
-        .tasa-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .tasa-label {
+        .unidad-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--bg-dark);
             color: var(--text-secondary);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
             font-size: 0.875rem;
+        }
+
+        .unidad-btn:hover, .unidad-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
     </style>
 </head>
@@ -611,6 +708,10 @@
     <header class="header">
         <div class="logo">Saki Sushi Admin</div>
         <div class="header-actions">
+            <div class="notification-badge" onclick="showNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="badge-count" id="notifCount" style="display: none;">0</span>
+            </div>
             <div class="sync-status">
                 <div class="sync-dot"></div>
                 <span>Sincronizado</span>
@@ -655,10 +756,10 @@
                     <div class="stat-value" id="productos-activos">0</div>
                     <div class="card-subtitle">en el menú</div>
                 </div>
-                <div class="card">
+                <div class="card" style="cursor: pointer;" onclick="showStockAlerts()">
                     <div class="stat-label">Alertas Stock</div>
                     <div class="stat-value" id="alertas-stock" style="color: var(--warning)">0</div>
-                    <div class="card-subtitle">ingredientes bajos</div>
+                    <div class="card-subtitle">ingredientes bajos (clic para ver)</div>
                 </div>
             </div>
 
@@ -726,23 +827,8 @@
                         + Nuevo Platillo
                     </button>
                 </div>
-                <div class="table-container">
-                    <table id="tabla-menu">
-                        <thead>
-                            <tr>
-                                <th>Platillo</th>
-                                <th>Categoría</th>
-                                <th>Precio USD</th>
-                                <th>Precio Bs.</th>
-                                <th>Stock</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="menu-body">
-                            <!-- Se llena dinámicamente -->
-                        </tbody>
-                    </table>
+                <div id="platos-container">
+                    <!-- Se llena dinámicamente -->
                 </div>
             </div>
         </div>
@@ -754,7 +840,7 @@
                     <div class="card-header">
                         <div>
                             <div class="card-title">Inventario de Ingredientes</div>
-                            <div class="card-subtitle">Gestiona stock y alertas</div>
+                            <div class="card-subtitle">Gestiona stock en unidades/piezas</div>
                         </div>
                         <button class="btn btn-success" onclick="abrirModalIngrediente()">
                             + Nuevo Ingrediente
@@ -872,6 +958,21 @@
         </div>
     </div>
 
+    <!-- Modal Notificaciones -->
+    <div id="modal-notificaciones" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-bell"></i> Historial de Alertas</h3>
+                <button class="close-btn" onclick="cerrarModal('modal-notificaciones')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notification-list" id="notificationList">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Editar Platillo -->
     <div id="modal-platillo" class="modal">
         <div class="modal-content">
@@ -890,9 +991,8 @@
                     <select class="form-select" id="edit-categoria">
                         <option value="entradas">Entradas</option>
                         <option value="rolls">Rolls</option>
-                        <option value="bowls">Bowls</option>
+                        <option value="tragos">Tragos/Bebidas</option>
                         <option value="especiales">Especiales</option>
-                        <option value="bebidas">Bebidas</option>
                         <option value="postres">Postres</option>
                     </select>
                 </div>
@@ -900,30 +1000,25 @@
                     <label class="form-label">Precio en USD ($)</label>
                     <div class="input-group">
                         <span class="input-prefix">$</span>
-                        <input type="number" step="0.01" class="form-input" id="edit-precio-usd" oninput="calcularConversion()">
-                    </div>
-                    <div class="price-conversion">
-                        <div class="price-row">
-                            <span>Precio USD:</span>
-                            <span id="preview-usd">$0.00</span>
-                        </div>
-                        <div class="price-row">
-                            <span>Tasa de cambio:</span>
-                            <span id="preview-tasa">400 Bs/$</span>
-                        </div>
-                        <div class="price-row">
-                            <span>Precio en Bs. (lo ve el cliente):</span>
-                            <span id="preview-bs">0 Bs.</span>
-                        </div>
+                        <input type="number" step="0.01" class="form-input" id="edit-precio-usd">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Descripción</label>
-                    <textarea class="form-input" id="edit-descripcion" rows="3"></textarea>
+                    <label class="form-label">Descripción (incluye piezas de cada ingrediente)</label>
+                    <textarea class="form-input" id="edit-descripcion" rows="3" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Stock Máximo</label>
-                    <input type="number" class="form-input" id="edit-stock-maximo">
+                    <label class="form-label">Stock (unidades disponibles)</label>
+                    <input type="number" class="form-input" id="edit-stock">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ingredientes (cantidad en piezas/unidades)</label>
+                    <div id="edit-ingredientes-list">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <button class="btn btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;">
+                        + Agregar Ingrediente
+                    </button>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Disponible</label>
@@ -954,17 +1049,6 @@
                 <div class="form-group">
                     <label class="form-label">Nueva Tasa (Bs. por $1 USD)</label>
                     <input type="number" class="form-input" id="nueva-tasa" placeholder="400">
-                    <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
-                        Ejemplo: Si 1$ = 450 Bs., introduce 450
-                    </p>
-                </div>
-                <div style="background: var(--bg-hover); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
-                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                        Vista previa de conversión:
-                    </p>
-                    <p style="font-size: 1.125rem;">
-                        $10 USD = <strong id="preview-conversion">4,000 Bs.</strong>
-                    </p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -989,33 +1073,27 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Stock Actual</label>
-                    <input type="number" step="0.1" class="form-input" id="ingrediente-stock">
+                    <input type="number" class="form-input" id="ingrediente-stock">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Unidad</label>
-                    <select class="form-select" id="ingrediente-unidad">
-                        <option value="kg">Kilogramos (kg)</option>
-                        <option value="g">Gramos (g)</option>
-                        <option value="l">Litros (l)</option>
-                        <option value="ml">Mililitros (ml)</option>
-                        <option value="unidades">Unidades</option>
-                        <option value="porciones">Porciones</option>
-                    </select>
+                    <div class="unidad-selector">
+                        <button type="button" class="unidad-btn active" onclick="selectUnidad('unidades')">Unidades/Piezas</button>
+                        <button type="button" class="unidad-btn" onclick="selectUnidad('gramos')">Gramos</button>
+                        <button type="button" class="unidad-btn" onclick="selectUnidad('ml')">Mililitros</button>
+                    </div>
+                    <input type="hidden" id="ingrediente-unidad" value="unidades">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Stock Mínimo (alerta)</label>
-                    <input type="number" step="0.1" class="form-input" id="ingrediente-minimo">
+                    <input type="number" class="form-input" id="ingrediente-minimo">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Precio Unitario (costo)</label>
+                    <label class="form-label">Precio Unitario (costo en $)</label>
                     <div class="input-group">
                         <span class="input-prefix">$</span>
                         <input type="number" step="0.01" class="form-input" id="ingrediente-costo">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Proveedor</label>
-                    <input type="text" class="form-input" id="ingrediente-proveedor">
                 </div>
             </div>
             <div class="modal-footer">
@@ -1036,8 +1114,12 @@
             menu: [],
             inventario: {},
             pedidos: [],
-            ventas: { diarias: [], semanales: [], mensuales: [] }
+            ventas: { diarias: [], semanales: [], mensuales: [] },
+            notificaciones: []
         };
+
+        // Historial de alertas de stock
+        let stockAlertHistory = [];
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1066,11 +1148,86 @@
                 if (!datos.inventario) datos.inventario = {};
                 if (!datos.pedidos) datos.pedidos = [];
                 if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
+                if (!datos.notificaciones) datos.notificaciones = [];
+                
+                // Cargar historial de alertas
+                stockAlertHistory = datos.notificaciones || [];
+                
+                // Verificar alertas de stock
+                verificarAlertasStock();
                 
             } catch (error) {
                 console.error('Error cargando datos:', error);
                 mostrarAlerta('Error al cargar datos. Verifica la conexión.', 'error');
             }
+        }
+
+        // Verificar alertas de stock y guardar historial
+        function verificarAlertasStock() {
+            const alertas = [];
+            
+            Object.entries(datos.inventario).forEach(([id, ing]) => {
+                if (ing.stock <= ing.minimo) {
+                    alertas.push({
+                        ingrediente: ing.nombre,
+                        stock: ing.stock,
+                        minimo: ing.minimo,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            });
+            
+            // Si hay nuevas alertas, agregarlas al historial
+            if (alertas.length > 0) {
+                alertas.forEach(alerta => {
+                    // Verificar si ya existe una alerta similar reciente (últimas 2 horas)
+                    const existe = stockAlertHistory.some(h => 
+                        h.ingrediente === alerta.ingrediente && 
+                        new Date(h.timestamp) > new Date(Date.now() - 2 * 60 * 60 * 1000)
+                    );
+                    
+                    if (!existe) {
+                        stockAlertHistory.unshift(alerta);
+                    }
+                });
+                
+                // Guardar en datos
+                datos.notificaciones = stockAlertHistory;
+                
+                // Actualizar badge
+                document.getElementById('notifCount').textContent = alertas.length;
+                document.getElementById('notifCount').style.display = 'block';
+            } else {
+                document.getElementById('notifCount').style.display = 'none';
+            }
+            
+            return alertas.length;
+        }
+
+        // Mostrar notificaciones
+        function showNotifications() {
+            const modal = document.getElementById('modal-notificaciones');
+            const list = document.getElementById('notificationList');
+            
+            if (stockAlertHistory.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No hay alertas recientes</p>';
+            } else {
+                list.innerHTML = stockAlertHistory.map(notif => `
+                    <div class="notification-item">
+                        <div>
+                            <strong style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> ${notif.ingrediente}</strong>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                Stock: ${notif.stock} ${notif.unidad || 'unidades'} / Mínimo: ${notif.minimo}
+                            </div>
+                        </div>
+                        <div class="notification-time">
+                            ${new Date(notif.timestamp).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.classList.add('active');
         }
 
         // Guardar datos en JSONBin
@@ -1099,7 +1256,8 @@
                 console.error('Error guardando:', error);
                 mostrarAlerta('❌ Error al guardar cambios', 'error');
             } finally {
-                btn.innerHTML = originalText;
+                const btn = document.querySelector('.btn-primary');
+                btn.innerHTML = '💾 Guardar Todo';
                 btn.disabled = false;
             }
         }
@@ -1131,10 +1289,7 @@
             document.getElementById('productos-activos').textContent = activos;
             
             // Alertas stock
-            let alertas = 0;
-            Object.values(datos.inventario).forEach(ing => {
-                if (ing.stock <= ing.minimo) alertas++;
-            });
+            const alertas = verificarAlertasStock();
             document.getElementById('alertas-stock').textContent = alertas;
             
             // Pedidos recientes
@@ -1171,14 +1326,14 @@
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span style="font-weight: 600;">${ing.nombre}</span>
                         <span style="color: var(--danger); font-weight: 600;">
-                            ${ing.stock} ${ing.unidad}
+                            ${ing.stock} ${ing.unidad || 'unidades'}
                         </span>
                     </div>
                     <div class="stock-bar">
-                        <div class="stock-fill danger" style="width: ${(ing.stock / ing.minimo) * 100}%"></div>
+                        <div class="stock-fill danger" style="width: ${Math.min((ing.stock / ing.minimo) * 100, 100)}%"></div>
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                        Mínimo: ${ing.minimo} ${ing.unidad}
+                        Mínimo: ${ing.minimo} ${ing.unidad || 'unidades'}
                     </div>
                 </div>
             `).join('');
@@ -1187,61 +1342,65 @@
                 '<p style="color: var(--success); text-align: center; padding: 2rem;">✓ Todo el stock está en niveles óptimos</p>';
         }
 
-        // Renderizar Menú
+        // Renderizar Menú - Nuevo formato con unidades
         function renderizarMenu() {
-            const tbody = document.getElementById('menu-body');
-            tbody.innerHTML = datos.menu.map(item => {
+            const container = document.getElementById('platos-container');
+            
+            container.innerHTML = datos.menu.map(item => {
                 const precioBs = (item.precio * datos.config.tasaCambio).toFixed(2);
-                const stockPercent = (item.stockMaximo ? (item.stock / item.stockMaximo) * 100 : 100);
+                
+                // Procesar ingredientes para mostrar
+                let ingredientesHtml = '';
+                if (item.ingredientes) {
+                    ingredientesHtml = Object.entries(item.ingredientes).map(([key, val]) => {
+                        const ingInfo = datos.inventario[key];
+                        return `
+                            <span class="ingredient-tag">
+                                ${ingInfo ? ingInfo.nombre : key}: ${val.cantidad} ${ingInfo ? ingInfo.unidad : 'unidades'}
+                            </span>
+                        `;
+                    }).join('');
+                }
                 
                 return `
-                    <tr>
-                        <td>
-                            <div style="font-weight: 600;">${item.nombre}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                ${item.descripcion?.substring(0, 50)}...
+                    <div class="plato-card">
+                        <div class="plato-header">
+                            <div>
+                                <div class="plato-title">${item.nombre}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    $${item.precio?.toFixed(2)} = ${precioBs} Bs. | Stock: ${item.stock || 0} unidades
+                                </div>
                             </div>
-                        </td>
-                        <td>
-                            <span class="badge badge-success">${item.categoria}</span>
-                        </td>
-                        <td>$${item.precio?.toFixed(2)}</td>
-                        <td style="font-weight: 600; color: var(--success);">
-                            ${precioBs} Bs.
-                        </td>
-                        <td>
-                            <div style="font-size: 0.875rem;">
-                                ${item.stock !== undefined ? item.stock : 'N/A'} / ${item.stockMaximo || '∞'}
+                            <div style="display: flex; gap: 0.5rem;">
+                                <label class="toggle" style="margin-right: 1rem;">
+                                    <input type="checkbox" ${item.disponible ? 'checked' : ''} 
+                                           onchange="toggleDisponible('${item.id}', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                                <button class="btn btn-secondary btn-small" onclick="editarPlatillo('${item.id}')">
+                                    ✏️ Editar
+                                </button>
                             </div>
-                            <div class="stock-bar" style="margin-top: 4px;">
-                                <div class="stock-fill ${stockPercent < 30 ? 'danger' : stockPercent < 60 ? 'warning' : ''}" 
-                                     style="width: ${stockPercent}%"></div>
-                            </div>
-                        </td>
-                        <td>
-                            <label class="toggle">
-                                <input type="checkbox" ${item.disponible ? 'checked' : ''} 
-                                       onchange="toggleDisponible('${item.id}', this.checked)">
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <button class="btn btn-small btn-secondary" onclick="editarPlatillo('${item.id}')">
-                                ✏️ Editar
-                            </button>
-                        </td>
-                    </tr>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            ${item.descripcion || 'Sin descripción'}
+                        </div>
+                        <div class="plato-ingredients">
+                            <strong>Ingredientes:</strong><br>
+                            ${ingredientesHtml || 'No especificados'}
+                        </div>
+                    </div>
                 `;
             }).join('');
         }
 
-        // Renderizar Inventario
+        // Renderizar Inventario - Unidades/Piezas
         function renderizarInventario() {
             const container = document.getElementById('lista-inventario');
             const items = Object.entries(datos.inventario);
             
             container.innerHTML = items.map(([id, ing]) => {
-                const percent = (ing.stock / (ing.minimo * 3)) * 100;
+                const percent = ing.minimo > 0 ? (ing.stock / (ing.minimo * 3)) * 100 : 100;
                 const isLow = ing.stock <= ing.minimo;
                 
                 return `
@@ -1249,9 +1408,10 @@
                         <div style="flex: 1;">
                             <div style="font-weight: 600;">${ing.nombre}</div>
                             <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                ${ing.stock} ${ing.unidad} ${isLow ? '⚠️ BAJO' : ''} | 
-                                Mín: ${ing.minimo} ${ing.unidad} | 
-                                $${ing.precioUnitario?.toFixed(2)}/${ing.unidad}
+                                ${ing.stock} ${ing.unidad || 'unidades'} 
+                                ${isLow ? '<span style="color: var(--danger);">⚠️ BAJO</span>' : ''} | 
+                                Mín: ${ing.minimo} ${ing.unidad || 'unidades'} | 
+                                $${ing.precioUnitario?.toFixed(2)}/${ing.unidad || 'unidad'}
                             </div>
                             <div class="stock-bar">
                                 <div class="stock-fill ${isLow ? 'danger' : percent < 50 ? 'warning' : ''}" 
@@ -1356,8 +1516,7 @@
             document.body.appendChild(toast);
             
             setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
+                toast.remove();
             }, 3000);
         }
 
@@ -1370,25 +1529,53 @@
             document.getElementById('edit-nombre').value = platillo.nombre;
             document.getElementById('edit-categoria').value = platillo.categoria;
             document.getElementById('edit-descripcion').value = platillo.descripcion || '';
-            document.getElementById('edit-stock-maximo').value = platillo.stockMaximo || '';
+            document.getElementById('edit-stock').value = platillo.stock || 0;
             document.getElementById('edit-disponible').checked = platillo.disponible;
+            document.getElementById('edit-precio-usd').value = platillo.precio;
             
-            // Calcular precio USD desde el precio en Bs almacenado
-            const precioUSD = platillo.precio; // Ya está en USD en la base de datos
-            document.getElementById('edit-precio-usd').value = precioUSD.toFixed(2);
+            // Renderizar lista de ingredientes
+            renderEditIngredientes(platillo.ingredientes || {});
             
-            calcularConversion();
             document.getElementById('modal-platillo').classList.add('active');
         }
 
-        function calcularConversion() {
-            const usd = parseFloat(document.getElementById('edit-precio-usd').value) || 0;
-            const tasa = datos.config.tasaCambio;
-            const bs = usd * tasa;
+        function renderEditIngredientes(ingredientes) {
+            const container = document.getElementById('edit-ingredientes-list');
             
-            document.getElementById('preview-usd').textContent = `$${usd.toFixed(2)}`;
-            document.getElementById('preview-tasa').textContent = `${tasa} Bs/$`;
-            document.getElementById('preview-bs').textContent = `${bs.toFixed(2)} Bs.`;
+            if (Object.keys(ingredientes).length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary);">Ningún ingrediente agregado</p>';
+                return;
+            }
+            
+            container.innerHTML = Object.entries(ingredientes).map(([key, val]) => {
+                const ing = datos.inventario[key];
+                return `
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+                        <select class="form-select" style="flex: 2;" onchange="updateIngKey('${key}', this.value)">
+                            ${Object.entries(datos.inventario).map(([id, ing]) => 
+                                `<option value="${id}" ${id === key ? 'selected' : ''}>${ing.nombre}</option>`
+                            ).join('')}
+                        </select>
+                        <input type="number" class="form-input" style="flex: 1;" value="${val.cantidad}" 
+                               placeholder="Cantidad" onchange="updateIngVal('${key}', this.value)">
+                        <button class="btn btn-danger btn-small" onclick="removeIng('${key}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function agregarIngredienteAPlato() {
+            const id = 'ing_' + Date.now();
+            const platillo = datos.menu.find(p => p.id === document.getElementById('edit-id').value);
+            if (!platillo.ingredientes) platillo.ingredientes = {};
+            
+            // Agregar primer ingrediente disponible o vacío
+            const firstIng = Object.keys(datos.inventario)[0] || '';
+            platillo.ingredientes[id] = { cantidad: 1, obligatorio: false };
+            
+            renderEditIngredientes(platillo.ingredientes);
         }
 
         function guardarPlatillo() {
@@ -1397,13 +1584,11 @@
             
             if (!platillo) return;
             
-            const precioUSD = parseFloat(document.getElementById('edit-precio-usd').value) || 0;
-            
             platillo.nombre = document.getElementById('edit-nombre').value;
             platillo.categoria = document.getElementById('edit-categoria').value;
-            platillo.precio = precioUSD; // Guardamos en USD
+            platillo.precio = parseFloat(document.getElementById('edit-precio-usd').value) || 0;
             platillo.descripcion = document.getElementById('edit-descripcion').value;
-            platillo.stockMaximo = parseInt(document.getElementById('edit-stock-maximo').value) || 0;
+            platillo.stock = parseInt(document.getElementById('edit-stock').value) || 0;
             platillo.disponible = document.getElementById('edit-disponible').checked;
             
             cerrarModal('modal-platillo');
@@ -1442,15 +1627,22 @@
         }
 
         // Gestión de Inventario
+        function selectUnidad(unidad) {
+            document.querySelectorAll('.unidad-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('ingrediente-unidad').value = unidad;
+        }
+
         function abrirModalIngrediente() {
             document.getElementById('ingrediente-id').value = '';
             document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente';
             document.getElementById('ingrediente-nombre').value = '';
             document.getElementById('ingrediente-stock').value = '';
-            document.getElementById('ingrediente-unidad').value = 'kg';
             document.getElementById('ingrediente-minimo').value = '';
             document.getElementById('ingrediente-costo').value = '';
-            document.getElementById('ingrediente-proveedor').value = '';
+            document.querySelectorAll('.unidad-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.unidad-btn').classList.add('active');
+            document.getElementById('ingrediente-unidad').value = 'unidades';
             document.getElementById('modal-ingrediente').classList.add('active');
         }
 
@@ -1462,24 +1654,27 @@
             document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente';
             document.getElementById('ingrediente-nombre').value = ing.nombre;
             document.getElementById('ingrediente-stock').value = ing.stock;
-            document.getElementById('ingrediente-unidad').value = ing.unidad;
             document.getElementById('ingrediente-minimo').value = ing.minimo;
             document.getElementById('ingrediente-costo').value = ing.precioUnitario || '';
-            document.getElementById('ingrediente-proveedor').value = ing.proveedor || '';
+            
+            // Seleccionar unidad correcta
+            document.querySelectorAll('.unidad-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(ing.unidad || 'unidades'));
+            });
+            document.getElementById('ingrediente-unidad').value = ing.unidad || 'unidades';
+            
             document.getElementById('modal-ingrediente').classList.add('active');
         }
 
         function guardarIngrediente() {
-            const id = document.getElementById('ingrediente-id').value || 
-                       'ing_' + Date.now();
+            const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
             
             datos.inventario[id] = {
                 nombre: document.getElementById('ingrediente-nombre').value,
                 stock: parseFloat(document.getElementById('ingrediente-stock').value) || 0,
                 unidad: document.getElementById('ingrediente-unidad').value,
                 minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
-                precioUnitario: parseFloat(document.getElementById('ingrediente-costo').value) || 0,
-                proveedor: document.getElementById('ingrediente-proveedor').value
+                precioUnitario: parseFloat(document.getElementById('ingrediente-costo').value) || 0
             };
             
             cerrarModal('modal-ingrediente');
@@ -1489,9 +1684,7 @@
 
         function ajustarStock(id, delta) {
             if (datos.inventario[id]) {
-                datos.inventario[id].stock = Math.max(0, 
-                    (datos.inventario[id].stock || 0) + delta
-                );
+                datos.inventario[id].stock = Math.max(0, (datos.inventario[id].stock || 0) + delta);
                 renderizarInventario();
                 guardarCambios();
             }
@@ -1525,12 +1718,9 @@
             mostrarAlerta('✅ Datos sincronizados', 'success');
         }
 
-        // Preview conversión en modal tasa
-        document.getElementById('nueva-tasa')?.addEventListener('input', (e) => {
-            const tasa = parseFloat(e.target.value) || 400;
-            document.getElementById('preview-conversion').textContent = 
-                (10 * tasa).toLocaleString() + ' Bs.';
-        });
+        function showStockAlerts() {
+            showNotifications();
+        }
     </script>
 </body>
 </html>
