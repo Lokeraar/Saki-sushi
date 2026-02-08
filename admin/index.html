@@ -1,1 +1,1536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saki Sushi - Panel Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        :root {
+            --primary: #dc2626;
+            --primary-dark: #b91c1c;
+            --bg-dark: #0a0a0a;
+            --bg-card: #121212;
+            --bg-hover: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --border: #27272a;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: "🍣";
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: black;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .input-prefix {
+            background: var(--bg-hover);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .price-conversion {
+            background: var(--bg-hover);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .price-row:last-child {
+            margin-bottom: 0;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-hover);
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        /* Stock Indicator */
+        .stock-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .stock-fill.warning {
+            background: var(--warning);
+        }
+
+        .stock-fill.danger {
+            background: var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .tabs {
+                gap: 0.25rem;
+            }
+            
+            .tab {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Sync Status */
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Ingredient List */
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ingredient-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Tasa Config */
+        .tasa-config {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tasa-config h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tasa-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .tasa-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Saki Sushi Admin</div>
+        <div class="header-actions">
+            <div class="sync-status">
+                <div class="sync-dot"></div>
+                <span>Sincronizado</span>
+            </div>
+            <button class="btn btn-secondary" onclick="window.open('https://lokeraar.github.io/Saki-sushi/cliente/', '_blank')">
+                Ver Menú Cliente
+            </button>
+            <button class="btn btn-secondary" onclick="window.open('https://lokeraar.github.io/Saki-sushi/cajero/', '_blank')">
+                Panel Cajero
+            </button>
+            <button class="btn btn-primary" onclick="guardarCambios()">
+                💾 Guardar Todo
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="cambiarTab('menu')">🍱 Menú & Precios</button>
+            <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
+            <button class="tab" onclick="cambiarTab('reportes')">📈 Reportes</button>
+            <button class="tab" onclick="cambiarTab('config')">⚙️ Configuración</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="grid grid-4">
+                <div class="card">
+                    <div class="stat-label">Ventas Hoy</div>
+                    <div class="stat-value" id="ventas-hoy">$0</div>
+                    <div class="card-subtitle" id="ordenes-hoy">0 órdenes</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Tasa de Cambio</div>
+                    <div class="stat-value" id="tasa-display">400</div>
+                    <div class="card-subtitle">Bs. por $1</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Productos Activos</div>
+                    <div class="stat-value" id="productos-activos">0</div>
+                    <div class="card-subtitle">en el menú</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Alertas Stock</div>
+                    <div class="stat-value" id="alertas-stock" style="color: var(--warning)">0</div>
+                    <div class="card-subtitle">ingredientes bajos</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Pedidos Recientes</div>
+                            <div class="card-subtitle">Últimas 5 órdenes</div>
+                        </div>
+                    </div>
+                    <div id="pedidos-recientes">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            Cargando...
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Stock Crítico</div>
+                            <div class="card-subtitle">Ingredientes por debajo del mínimo</div>
+                        </div>
+                    </div>
+                    <div id="stock-critico">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            Cargando...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú Tab -->
+        <div id="menu" class="tab-content">
+            <div class="tasa-config">
+                <h3>💱 Configuración de Precios</h3>
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Los precios se ingresan en USD ($) y se convierten automáticamente a Bs. según la tasa actual.
+                    El cliente ve los precios en Bs.
+                </p>
+                <div class="grid grid-4">
+                    <div>
+                        <div class="tasa-label">Tasa Actual</div>
+                        <div class="tasa-value" id="tasa-config">400</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Bs. por cada $1
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" onclick="abrirModalTasa()">
+                            Actualizar Tasa
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Gestión de Platillos</div>
+                        <div class="card-subtitle">Administra precios, disponibilidad e ingredientes</div>
+                    </div>
+                    <button class="btn btn-success" onclick="abrirModalNuevoPlatillo()">
+                        + Nuevo Platillo
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="tabla-menu">
+                        <thead>
+                            <tr>
+                                <th>Platillo</th>
+                                <th>Categoría</th>
+                                <th>Precio USD</th>
+                                <th>Precio Bs.</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menu-body">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventario Tab -->
+        <div id="inventario" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Inventario de Ingredientes</div>
+                            <div class="card-subtitle">Gestiona stock y alertas</div>
+                        </div>
+                        <button class="btn btn-success" onclick="abrirModalIngrediente()">
+                            + Nuevo Ingrediente
+                        </button>
+                    </div>
+                    <div id="lista-inventario">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Movimientos Recientes</div>
+                            <div class="card-subtitle">Entradas y salidas de stock</div>
+                        </div>
+                    </div>
+                    <div id="movimientos-recientes">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            No hay movimientos recientes
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reportes Tab -->
+        <div id="reportes" class="tab-content">
+            <div class="grid grid-4">
+                <div class="card">
+                    <div class="stat-label">Ventas del Día</div>
+                    <div class="stat-value" id="reporte-ventas-dia">$0</div>
+                    <div class="card-subtitle" id="reporte-ordenes-dia">0 órdenes</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Ventas Semana</div>
+                    <div class="stat-value" id="reporte-ventas-semana">$0</div>
+                    <div class="card-subtitle">Últimos 7 días</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Ticket Promedio</div>
+                    <div class="stat-value" id="ticket-promedio">$0</div>
+                    <div class="card-subtitle">por orden</div>
+                </div>
+                <div class="card">
+                    <div class="stat-label">Platillo Top</div>
+                    <div class="stat-value" id="platillo-top" style="font-size: 1.25rem;">-</div>
+                    <div class="card-subtitle">más vendido</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Detalle de Ventas</div>
+                        <div class="card-subtitle">Historial completo de transacciones</div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tabla-ventas">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>ID Pedido</th>
+                                <th>Items</th>
+                                <th>Total USD</th>
+                                <th>Total Bs.</th>
+                                <th>Método Pago</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-body">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración Tab -->
+        <div id="config" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Configuración General</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Restaurante</label>
+                        <input type="text" class="form-input" id="config-nombre" value="Saki Sushi">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tasa de Cambio Default (Bs. por $1)</label>
+                        <input type="number" class="form-input" id="config-tasa-default" value="400">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email de Notificaciones</label>
+                        <input type="email" class="form-input" id="config-email" placeholder="admin@sakisushi.com">
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarConfig()">Guardar Configuración</button>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Backup y Sincronización</div>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        Los datos se sincronizan automáticamente con JSONBin. Puedes forzar una sincronización manual.
+                    </p>
+                    <button class="btn btn-secondary" onclick="sincronizarDatos()" style="margin-bottom: 0.5rem;">
+                        🔄 Sincronizar Ahora
+                    </button>
+                    <button class="btn btn-warning" onclick="exportarDatos()">
+                        📥 Exportar Backup JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Platillo -->
+    <div id="modal-platillo" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Platillo</h3>
+                <button class="close-btn" onclick="cerrarModal('modal-platillo')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Platillo</label>
+                    <input type="text" class="form-input" id="edit-nombre">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" id="edit-categoria">
+                        <option value="entradas">Entradas</option>
+                        <option value="rolls">Rolls</option>
+                        <option value="bowls">Bowls</option>
+                        <option value="especiales">Especiales</option>
+                        <option value="bebidas">Bebidas</option>
+                        <option value="postres">Postres</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio en USD ($)</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" step="0.01" class="form-input" id="edit-precio-usd" oninput="calcularConversion()">
+                    </div>
+                    <div class="price-conversion">
+                        <div class="price-row">
+                            <span>Precio USD:</span>
+                            <span id="preview-usd">$0.00</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Tasa de cambio:</span>
+                            <span id="preview-tasa">400 Bs/$</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Precio en Bs. (lo ve el cliente):</span>
+                            <span id="preview-bs">0 Bs.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" id="edit-descripcion" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Máximo</label>
+                    <input type="number" class="form-input" id="edit-stock-maximo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Disponible</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="edit-disponible">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modal-platillo')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarPlatillo()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tasa de Cambio -->
+    <div id="modal-tasa" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Actualizar Tasa de Cambio</h3>
+                <button class="close-btn" onclick="cerrarModal('modal-tasa')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    ⚠️ <strong>Importante:</strong> Cambiar la tasa actualizará automáticamente todos los precios en Bs. del menú.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nueva Tasa (Bs. por $1 USD)</label>
+                    <input type="number" class="form-input" id="nueva-tasa" placeholder="400">
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                        Ejemplo: Si 1$ = 450 Bs., introduce 450
+                    </p>
+                </div>
+                <div style="background: var(--bg-hover); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        Vista previa de conversión:
+                    </p>
+                    <p style="font-size: 1.125rem;">
+                        $10 USD = <strong id="preview-conversion">4,000 Bs.</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modal-tasa')">Cancelar</button>
+                <button class="btn btn-primary" onclick="actualizarTasa()">Actualizar Tasa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ingrediente -->
+    <div id="modal-ingrediente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="titulo-ingrediente">Nuevo Ingrediente</h3>
+                <button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ingrediente-id">
+                <div class="form-group">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-input" id="ingrediente-nombre">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Actual</label>
+                    <input type="number" step="0.1" class="form-input" id="ingrediente-stock">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unidad</label>
+                    <select class="form-select" id="ingrediente-unidad">
+                        <option value="kg">Kilogramos (kg)</option>
+                        <option value="g">Gramos (g)</option>
+                        <option value="l">Litros (l)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                        <option value="unidades">Unidades</option>
+                        <option value="porciones">Porciones</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Mínimo (alerta)</label>
+                    <input type="number" step="0.1" class="form-input" id="ingrediente-minimo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio Unitario (costo)</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" step="0.01" class="form-input" id="ingrediente-costo">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proveedor</label>
+                    <input type="text" class="form-input" id="ingrediente-proveedor">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modal-ingrediente')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarIngrediente()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración JSONBin
+        const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69879d6e43b1c97be96d2b13';
+        const JSONBIN_API_KEY = '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K';
+        
+        // Estado global
+        let datos = {
+            config: { tasaCambio: 400 },
+            menu: [],
+            inventario: {},
+            pedidos: [],
+            ventas: { diarias: [], semanales: [], mensuales: [] }
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarDatos();
+            actualizarUI();
+            
+            // Auto-refresh cada 30 segundos
+            setInterval(async () => {
+                await cargarDatos();
+                actualizarUI();
+            }, 30000);
+        });
+
+        // Cargar datos desde JSONBin
+        async function cargarDatos() {
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                });
+                const result = await response.json();
+                datos = result.record;
+                
+                // Asegurar estructura mínima
+                if (!datos.config) datos.config = { tasaCambio: 400 };
+                if (!datos.menu) datos.menu = [];
+                if (!datos.inventario) datos.inventario = {};
+                if (!datos.pedidos) datos.pedidos = [];
+                if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
+                
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                mostrarAlerta('Error al cargar datos. Verifica la conexión.', 'error');
+            }
+        }
+
+        // Guardar datos en JSONBin
+        async function guardarCambios() {
+            try {
+                const btn = document.querySelector('.btn-primary');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loading"></span> Guardando...';
+                btn.disabled = true;
+
+                const response = await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                if (response.ok) {
+                    mostrarAlerta('✅ Cambios guardados y sincronizados correctamente', 'success');
+                } else {
+                    throw new Error('Error al guardar');
+                }
+            } catch (error) {
+                console.error('Error guardando:', error);
+                mostrarAlerta('❌ Error al guardar cambios', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Actualizar toda la UI
+        function actualizarUI() {
+            actualizarDashboard();
+            renderizarMenu();
+            renderizarInventario();
+            renderizarReportes();
+            document.getElementById('tasa-display').textContent = datos.config.tasaCambio;
+            document.getElementById('tasa-config').textContent = datos.config.tasaCambio;
+        }
+
+        // Dashboard
+        function actualizarDashboard() {
+            // Ventas hoy
+            const hoy = new Date().toISOString().split('T')[0];
+            const pedidosHoy = datos.pedidos.filter(p => 
+                p.timestamp.startsWith(hoy) && p.estado === 'cobrado'
+            );
+            const totalHoy = pedidosHoy.reduce((sum, p) => sum + (p.total || 0), 0);
+            
+            document.getElementById('ventas-hoy').textContent = `$${totalHoy.toFixed(2)}`;
+            document.getElementById('ordenes-hoy').textContent = `${pedidosHoy.length} órdenes`;
+            
+            // Productos activos
+            const activos = datos.menu.filter(p => p.disponible).length;
+            document.getElementById('productos-activos').textContent = activos;
+            
+            // Alertas stock
+            let alertas = 0;
+            Object.values(datos.inventario).forEach(ing => {
+                if (ing.stock <= ing.minimo) alertas++;
+            });
+            document.getElementById('alertas-stock').textContent = alertas;
+            
+            // Pedidos recientes
+            const recientes = datos.pedidos
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 5);
+            
+            const htmlPedidos = recientes.map(p => `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600;">${p.id}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            ${new Date(p.timestamp).toLocaleString()}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600; color: var(--primary);">$${p.total?.toFixed(2)}</div>
+                        <span class="badge ${p.estado === 'cobrado' ? 'badge-success' : 'badge-warning'}">
+                            ${p.estado}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('pedidos-recientes').innerHTML = htmlPedidos || 
+                '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay pedidos recientes</p>';
+            
+            // Stock crítico
+            const criticos = Object.entries(datos.inventario)
+                .filter(([_, ing]) => ing.stock <= ing.minimo);
+            
+            const htmlStock = criticos.map(([id, ing]) => `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600;">${ing.nombre}</span>
+                        <span style="color: var(--danger); font-weight: 600;">
+                            ${ing.stock} ${ing.unidad}
+                        </span>
+                    </div>
+                    <div class="stock-bar">
+                        <div class="stock-fill danger" style="width: ${(ing.stock / ing.minimo) * 100}%"></div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        Mínimo: ${ing.minimo} ${ing.unidad}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('stock-critico').innerHTML = htmlStock || 
+                '<p style="color: var(--success); text-align: center; padding: 2rem;">✓ Todo el stock está en niveles óptimos</p>';
+        }
+
+        // Renderizar Menú
+        function renderizarMenu() {
+            const tbody = document.getElementById('menu-body');
+            tbody.innerHTML = datos.menu.map(item => {
+                const precioBs = (item.precio * datos.config.tasaCambio).toFixed(2);
+                const stockPercent = (item.stockMaximo ? (item.stock / item.stockMaximo) * 100 : 100);
+                
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${item.nombre}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                ${item.descripcion?.substring(0, 50)}...
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-success">${item.categoria}</span>
+                        </td>
+                        <td>$${item.precio?.toFixed(2)}</td>
+                        <td style="font-weight: 600; color: var(--success);">
+                            ${precioBs} Bs.
+                        </td>
+                        <td>
+                            <div style="font-size: 0.875rem;">
+                                ${item.stock !== undefined ? item.stock : 'N/A'} / ${item.stockMaximo || '∞'}
+                            </div>
+                            <div class="stock-bar" style="margin-top: 4px;">
+                                <div class="stock-fill ${stockPercent < 30 ? 'danger' : stockPercent < 60 ? 'warning' : ''}" 
+                                     style="width: ${stockPercent}%"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" ${item.disponible ? 'checked' : ''} 
+                                       onchange="toggleDisponible('${item.id}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <button class="btn btn-small btn-secondary" onclick="editarPlatillo('${item.id}')">
+                                ✏️ Editar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Renderizar Inventario
+        function renderizarInventario() {
+            const container = document.getElementById('lista-inventario');
+            const items = Object.entries(datos.inventario);
+            
+            container.innerHTML = items.map(([id, ing]) => {
+                const percent = (ing.stock / (ing.minimo * 3)) * 100;
+                const isLow = ing.stock <= ing.minimo;
+                
+                return `
+                    <div class="ingredient-item">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${ing.nombre}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                ${ing.stock} ${ing.unidad} ${isLow ? '⚠️ BAJO' : ''} | 
+                                Mín: ${ing.minimo} ${ing.unidad} | 
+                                $${ing.precioUnitario?.toFixed(2)}/${ing.unidad}
+                            </div>
+                            <div class="stock-bar">
+                                <div class="stock-fill ${isLow ? 'danger' : percent < 50 ? 'warning' : ''}" 
+                                     style="width: ${Math.min(percent, 100)}%"></div>
+                            </div>
+                        </div>
+                        <div class="ingredient-controls">
+                            <button class="btn btn-small btn-secondary" onclick="ajustarStock('${id}', -1)">-</button>
+                            <button class="btn btn-small btn-secondary" onclick="ajustarStock('${id}', 1)">+</button>
+                            <button class="btn btn-small btn-primary" onclick="editarIngrediente('${id}')">Editar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p style="color: var(--text-secondary); text-align: center;">No hay ingredientes registrados</p>';
+        }
+
+        // Renderizar Reportes
+        function renderizarReportes() {
+            // Calcular métricas
+            const ahora = new Date();
+            const inicioDia = new Date(ahora.setHours(0,0,0,0));
+            const inicioSemana = new Date(ahora.setDate(ahora.getDate() - 7));
+            
+            const pedidosCobrados = datos.pedidos.filter(p => p.estado === 'cobrado');
+            
+            const ventasDia = pedidosCobrados
+                .filter(p => new Date(p.timestamp) >= inicioDia)
+                .reduce((sum, p) => sum + (p.total || 0), 0);
+            
+            const ventasSemana = pedidosCobrados
+                .filter(p => new Date(p.timestamp) >= inicioSemana)
+                .reduce((sum, p) => sum + (p.total || 0), 0);
+            
+            const ordenesDia = pedidosCobrados.filter(p => new Date(p.timestamp) >= inicioDia).length;
+            const ticketPromedio = ordenesDia > 0 ? ventasDia / ordenesDia : 0;
+            
+            // Platillo más vendido
+            const conteoPlatillos = {};
+            pedidosCobrados.forEach(p => {
+                p.items?.forEach(item => {
+                    conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + item.cantidad;
+                });
+            });
+            const platilloTop = Object.entries(conteoPlatillos)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            document.getElementById('reporte-ventas-dia').textContent = `$${ventasDia.toFixed(2)}`;
+            document.getElementById('reporte-ordenes-dia').textContent = `${ordenesDia} órdenes`;
+            document.getElementById('reporte-ventas-semana').textContent = `$${ventasSemana.toFixed(2)}`;
+            document.getElementById('ticket-promedio').textContent = `$${ticketPromedio.toFixed(2)}`;
+            document.getElementById('platillo-top').textContent = platilloTop ? platilloTop[0] : '-';
+            
+            // Tabla de ventas
+            const tbody = document.getElementById('ventas-body');
+            tbody.innerHTML = pedidosCobrados
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .map(p => {
+                    const totalBs = (p.total * datos.config.tasaCambio).toFixed(2);
+                    return `
+                        <tr>
+                            <td>${new Date(p.timestamp).toLocaleDateString()}</td>
+                            <td>${p.id}</td>
+                            <td>${p.items?.length || 0} items</td>
+                            <td>$${p.total?.toFixed(2)}</td>
+                            <td>${totalBs} Bs.</td>
+                            <td>${p.metodoPago || 'N/A'}</td>
+                            <td><span class="badge badge-success">${p.estado}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        // Funciones de utilidad
+        function cambiarTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            // Crear notificación toast
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: ${tipo === 'success' ? 'var(--success)' : 'var(--danger)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = mensaje;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Gestión de Platillos
+        function editarPlatillo(id) {
+            const platillo = datos.menu.find(p => p.id === id);
+            if (!platillo) return;
+            
+            document.getElementById('edit-id').value = platillo.id;
+            document.getElementById('edit-nombre').value = platillo.nombre;
+            document.getElementById('edit-categoria').value = platillo.categoria;
+            document.getElementById('edit-descripcion').value = platillo.descripcion || '';
+            document.getElementById('edit-stock-maximo').value = platillo.stockMaximo || '';
+            document.getElementById('edit-disponible').checked = platillo.disponible;
+            
+            // Calcular precio USD desde el precio en Bs almacenado
+            const precioUSD = platillo.precio; // Ya está en USD en la base de datos
+            document.getElementById('edit-precio-usd').value = precioUSD.toFixed(2);
+            
+            calcularConversion();
+            document.getElementById('modal-platillo').classList.add('active');
+        }
+
+        function calcularConversion() {
+            const usd = parseFloat(document.getElementById('edit-precio-usd').value) || 0;
+            const tasa = datos.config.tasaCambio;
+            const bs = usd * tasa;
+            
+            document.getElementById('preview-usd').textContent = `$${usd.toFixed(2)}`;
+            document.getElementById('preview-tasa').textContent = `${tasa} Bs/$`;
+            document.getElementById('preview-bs').textContent = `${bs.toFixed(2)} Bs.`;
+        }
+
+        function guardarPlatillo() {
+            const id = document.getElementById('edit-id').value;
+            const platillo = datos.menu.find(p => p.id === id);
+            
+            if (!platillo) return;
+            
+            const precioUSD = parseFloat(document.getElementById('edit-precio-usd').value) || 0;
+            
+            platillo.nombre = document.getElementById('edit-nombre').value;
+            platillo.categoria = document.getElementById('edit-categoria').value;
+            platillo.precio = precioUSD; // Guardamos en USD
+            platillo.descripcion = document.getElementById('edit-descripcion').value;
+            platillo.stockMaximo = parseInt(document.getElementById('edit-stock-maximo').value) || 0;
+            platillo.disponible = document.getElementById('edit-disponible').checked;
+            
+            cerrarModal('modal-platillo');
+            renderizarMenu();
+            guardarCambios();
+        }
+
+        function toggleDisponible(id, disponible) {
+            const platillo = datos.menu.find(p => p.id === id);
+            if (platillo) {
+                platillo.disponible = disponible;
+                guardarCambios();
+            }
+        }
+
+        // Gestión de Tasa de Cambio
+        function abrirModalTasa() {
+            document.getElementById('nueva-tasa').value = datos.config.tasaCambio;
+            document.getElementById('modal-tasa').classList.add('active');
+        }
+
+        function actualizarTasa() {
+            const nuevaTasa = parseFloat(document.getElementById('nueva-tasa').value);
+            if (!nuevaTasa || nuevaTasa <= 0) {
+                alert('Introduce una tasa válida');
+                return;
+            }
+            
+            datos.config.tasaCambio = nuevaTasa;
+            datos.config.ultimaActualizacion = new Date().toISOString();
+            
+            cerrarModal('modal-tasa');
+            actualizarUI();
+            guardarCambios();
+            mostrarAlerta(`✅ Tasa actualizada a ${nuevaTasa} Bs/$`, 'success');
+        }
+
+        // Gestión de Inventario
+        function abrirModalIngrediente() {
+            document.getElementById('ingrediente-id').value = '';
+            document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente';
+            document.getElementById('ingrediente-nombre').value = '';
+            document.getElementById('ingrediente-stock').value = '';
+            document.getElementById('ingrediente-unidad').value = 'kg';
+            document.getElementById('ingrediente-minimo').value = '';
+            document.getElementById('ingrediente-costo').value = '';
+            document.getElementById('ingrediente-proveedor').value = '';
+            document.getElementById('modal-ingrediente').classList.add('active');
+        }
+
+        function editarIngrediente(id) {
+            const ing = datos.inventario[id];
+            if (!ing) return;
+            
+            document.getElementById('ingrediente-id').value = id;
+            document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente';
+            document.getElementById('ingrediente-nombre').value = ing.nombre;
+            document.getElementById('ingrediente-stock').value = ing.stock;
+            document.getElementById('ingrediente-unidad').value = ing.unidad;
+            document.getElementById('ingrediente-minimo').value = ing.minimo;
+            document.getElementById('ingrediente-costo').value = ing.precioUnitario || '';
+            document.getElementById('ingrediente-proveedor').value = ing.proveedor || '';
+            document.getElementById('modal-ingrediente').classList.add('active');
+        }
+
+        function guardarIngrediente() {
+            const id = document.getElementById('ingrediente-id').value || 
+                       'ing_' + Date.now();
+            
+            datos.inventario[id] = {
+                nombre: document.getElementById('ingrediente-nombre').value,
+                stock: parseFloat(document.getElementById('ingrediente-stock').value) || 0,
+                unidad: document.getElementById('ingrediente-unidad').value,
+                minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
+                precioUnitario: parseFloat(document.getElementById('ingrediente-costo').value) || 0,
+                proveedor: document.getElementById('ingrediente-proveedor').value
+            };
+            
+            cerrarModal('modal-ingrediente');
+            renderizarInventario();
+            guardarCambios();
+        }
+
+        function ajustarStock(id, delta) {
+            if (datos.inventario[id]) {
+                datos.inventario[id].stock = Math.max(0, 
+                    (datos.inventario[id].stock || 0) + delta
+                );
+                renderizarInventario();
+                guardarCambios();
+            }
+        }
+
+        // Configuración
+        function guardarConfig() {
+            datos.config.nombre = document.getElementById('config-nombre').value;
+            datos.config.tasaCambio = parseFloat(document.getElementById('config-tasa-default').value) || 400;
+            datos.config.email = document.getElementById('config-email').value;
+            
+            guardarCambios();
+            mostrarAlerta('✅ Configuración guardada', 'success');
+        }
+
+        // Exportar/Backup
+        function exportarDatos() {
+            const dataStr = JSON.stringify(datos, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `saki-sushi-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function sincronizarDatos() {
+            await cargarDatos();
+            actualizarUI();
+            mostrarAlerta('✅ Datos sincronizados', 'success');
+        }
+
+        // Preview conversión en modal tasa
+        document.getElementById('nueva-tasa')?.addEventListener('input', (e) => {
+            const tasa = parseFloat(e.target.value) || 400;
+            document.getElementById('preview-conversion').textContent = 
+                (10 * tasa).toLocaleString() + ' Bs.';
+        });
+    </script>
+</body>
+</html>
