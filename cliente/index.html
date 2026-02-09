@@ -568,6 +568,33 @@
             box-shadow: 0 20px 50px rgba(255, 152, 0, 0.2);
         }
 
+        /* ESTADO AGOTADO */
+        .menu-item.agotado {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .menu-item.agotado .item-image {
+            filter: grayscale(100%) brightness(0.5);
+        }
+
+        .menu-item.agotado::after {
+            content: 'AGOTADO';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--secondary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-family: 'Montserrat', sans-serif;
+            z-index: 10;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
         .menu-item.disabled {
             opacity: 0.6;
             pointer-events: none;
@@ -595,6 +622,7 @@
             background-size: cover;
             background-position: center;
             position: relative;
+            transition: var(--transition);
         }
 
         .item-image::after {
@@ -684,7 +712,7 @@
             box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
         }
 
-        .qty-btn:hover {
+        .qty-btn:hover:not(:disabled) {
             transform: scale(1.1);
             box-shadow: 0 8px 20px rgba(211, 47, 47, 0.4);
         }
@@ -2067,79 +2095,15 @@
         let menuItems = [];
         let currentCategory = 'todos';
         let currentSubcategory = null;
-        // pedidoActual ahora persiste en localStorage
+        let pedidoActual = [];
         let syncInterval = null;
         let isInRestaurant = false;
         let tableNumber = null;
         let selectedDate = null;
         let paymentTimer = null;
         let sessionId = null;
-        let pedidosCliente = []; // Array para almacenar pedidos del cliente
+        let pedidosCliente = [];
         let notificacionesInterval = null;
-
-        // ==========================================
-        // PERSISTENCIA DEL PEDIDO EN LOCALSTORAGE
-        // ==========================================
-        
-        // Guardar pedido actual en localStorage
-        function guardarPedidoEnStorage() {
-            const pedidoParaGuardar = menuItems
-                .filter(item => item.instances.length > 0)
-                .map(item => ({
-                    id: item.id,
-                    instances: item.instances,
-                    totalOrdered: item.totalOrdered
-                }));
-            
-            localStorage.setItem('sakiPedidoActual', JSON.stringify({
-                timestamp: new Date().toISOString(),
-                items: pedidoParaGuardar,
-                sessionId: sessionId
-            }));
-        }
-
-        // Cargar pedido desde localStorage
-        function cargarPedidoDesdeStorage() {
-            const guardado = localStorage.getItem('sakiPedidoActual');
-            if (!guardado) return false;
-            
-            try {
-                const data = JSON.parse(guardado);
-                
-                // Verificar que sea de la misma sesión y no sea muy antiguo (30 min)
-                if (data.sessionId !== sessionId) {
-                    localStorage.removeItem('sakiPedidoActual');
-                    return false;
-                }
-                
-                const tiempoTranscurrido = new Date() - new Date(data.timestamp);
-                if (tiempoTranscurrido > 30 * 60 * 1000) { // 30 minutos
-                    localStorage.removeItem('sakiPedidoActual');
-                    return false;
-                }
-                
-                // Restaurar el pedido en menuItems
-                if (data.items && menuItems.length > 0) {
-                    data.items.forEach(savedItem => {
-                        const menuItem = menuItems.find(m => m.id === savedItem.id);
-                        if (menuItem) {
-                            menuItem.instances = savedItem.instances || [];
-                            menuItem.totalOrdered = savedItem.totalOrdered || 0;
-                        }
-                    });
-                    return true;
-                }
-            } catch (e) {
-                console.error('Error cargando pedido guardado:', e);
-                localStorage.removeItem('sakiPedidoActual');
-            }
-            return false;
-        }
-
-        // Limpiar pedido del storage
-        function limpiarPedidoStorage() {
-            localStorage.removeItem('sakiPedidoActual');
-        }
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2260,28 +2224,23 @@
         async function initApp() {
             showLoading();
             await cargarDatos();
-            
-            // Cargar pedido guardado DESPUÉS de cargar el menú
-            const pedidoRestaurado = cargarPedidoDesdeStorage();
-            
             renderSidebar();
             renderMenu();
             initCalendar();
-            
-            // Si había un pedido guardado, actualizar la vista
-            if (pedidoRestaurado) {
-                updateOrderSummary();
-            }
             
             // Iniciar polling de notificaciones
             iniciarPollingNotificaciones();
             
             hideLoading();
             
-            // Auto-refresh cada 5 segundos - AHORA CON PERSISTENCIA
+            // Auto-refresh cada 30 segundos - NO borra el pedido actual
             syncInterval = setInterval(async () => {
-                await sincronizarDatosSinPerderPedido();
-            }, 5000);
+                await cargarDatos();
+                // Solo renderizar el menú, no tocar el pedido actual
+                renderMenu();
+                // Actualizar el resumen del pedido para reflejar cambios de stock si es necesario
+                updateOrderSummary();
+            }, 30000);
         }
 
         async function cargarDatos() {
@@ -2310,85 +2269,15 @@
             }
         }
 
-        // NUEVA FUNCIÓN: Sincronizar sin perder el pedido actual
-        async function sincronizarDatosSinPerderPedido() {
-            try {
-                actualizarEstadoSync('syncing');
-                
-                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
-                    method: 'GET',
-                    headers: {
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
-                        'X-Bin-Meta': 'false'
-                    }
-                });
-                
-                if (!response.ok) throw new Error('Error al cargar datos');
-                
-                const data = await response.json();
-                const nuevaData = data.record || data;
-                
-                // Guardar el estado actual del pedido antes de actualizar
-                const pedidoActualGuardado = menuItems
-                    .filter(item => item.instances.length > 0)
-                    .map(item => ({
-                        id: item.id,
-                        instances: JSON.parse(JSON.stringify(item.instances)), // Deep copy
-                        totalOrdered: item.totalOrdered,
-                        quantity: item.quantity,
-                        currentSelections: Array.from(item.currentSelections || []),
-                        selectionType: item.selectionType
-                    }));
-                
-                // Actualizar los datos del sistema
-                sistemaData = nuevaData;
-                
-                // Volver a sincronizar el menú
-                sincronizarMenuLocal();
-                
-                // Restaurar el pedido del cliente
-                pedidoActualGuardado.forEach(savedItem => {
-                    const menuItem = menuItems.find(m => m.id === savedItem.id);
-                    if (menuItem) {
-                        menuItem.instances = savedItem.instances || [];
-                        menuItem.totalOrdered = savedItem.totalOrdered || 0;
-                        menuItem.quantity = savedItem.quantity || 0;
-                        menuItem.currentSelections = new Set(savedItem.currentSelections || []);
-                        menuItem.selectionType = savedItem.selectionType || "completo";
-                    }
-                });
-                
-                // Actualizar la UI manteniendo el pedido
-                renderMenu();
-                updateOrderSummary();
-                
-                actualizarEstadoSync('online');
-                
-            } catch (error) {
-                console.error('Error en sincronización:', error);
-                actualizarEstadoSync('offline');
-            }
-        }
-
         function sincronizarMenuLocal() {
             if (!sistemaData.menu) return;
             
-            // Si ya tenemos items en el pedido, preservarlos
-            const pedidoExistente = new Map();
-            menuItems.forEach(item => {
-                if (item.instances.length > 0) {
-                    pedidoExistente.set(item.id, {
-                        instances: item.instances,
-                        totalOrdered: item.totalOrdered,
-                        quantity: item.quantity,
-                        currentSelections: item.currentSelections,
-                        selectionType: item.selectionType
-                    });
-                }
-            });
+            // Guardar el estado actual del pedido antes de sincronizar
+            const pedidoGuardado = JSON.parse(JSON.stringify(menuItems.filter(item => item.instances && item.instances.length > 0)));
             
             menuItems = sistemaData.menu.map(item => {
-                const existente = pedidoExistente.get(item.id);
+                // Buscar si este item ya estaba en el pedido
+                const itemEnPedido = pedidoGuardado.find(p => p.id === item.id);
                 
                 return {
                     id: item.id,
@@ -2402,13 +2291,13 @@
                     stockMaximo: item.stockMaximo || item.stock || 0,
                     disponible: item.disponible,
                     imageClass: item.imagen,
-                    // Preservar estado del pedido si existe
-                    quantity: existente ? existente.quantity : 0,
-                    instances: existente ? existente.instances : [],
-                    totalOrdered: existente ? existente.totalOrdered : 0,
-                    currentSelections: existente ? existente.currentSelections : new Set(),
+                    // Restaurar cantidad e instancias si existían en el pedido
+                    quantity: itemEnPedido ? itemEnPedido.quantity : 0,
+                    instances: itemEnPedido ? itemEnPedido.instances : [],
+                    totalOrdered: itemEnPedido ? itemEnPedido.totalOrdered : 0,
+                    currentSelections: itemEnPedido ? new Set(itemEnPedido.currentSelections) : new Set(),
                     order: menuItems.length + 1,
-                    selectionType: existente ? existente.selectionType : "completo"
+                    selectionType: itemEnPedido ? itemEnPedido.selectionType : "completo"
                 };
             });
         }
@@ -2428,8 +2317,7 @@
             if (!sessionId || pedidosCliente.length === 0) return;
             
             try {
-                // Usar la función de sincronización que preserva el pedido
-                await sincronizarDatosSinPerderPedido();
+                await cargarDatos();
                 
                 let hayCambios = false;
                 
@@ -2696,14 +2584,22 @@
             
             menuGrid.innerHTML = filteredItems.map(item => {
                 const precioBs = formatearPrecioBs(item.basePrice);
-                const disponible = item.disponible && item.stock > 0;
-                const availableStock = item.stock - item.totalOrdered;
                 
-                // Verificar restricciones de ingredientes
-                const restricciones = checkIngredientRestrictions(item);
+                // Verificar si hay ingredientes principales disponibles
+                const ingredientesPrincipales = verificarIngredientesPrincipales(item);
+                const hayIngredientes = ingredientesPrincipales.disponible;
+                const esAgotado = !hayIngredientes && item.instances.length === 0;
+                
+                // Si está agotado por falta de ingredientes principales
+                const claseAgotado = esAgotado ? 'agotado' : '';
+                const estaEnPedido = item.instances.length > 0;
+                
+                // Calcular stock disponible real (restando lo ya pedido)
+                const stockReal = Math.max(0, item.stock - item.totalOrdered);
+                const disponible = item.disponible && stockReal > 0 && hayIngredientes;
                 
                 return `
-                    <div class="menu-item ${!disponible || availableStock <= 0 ? 'disabled' : ''}" data-id="${item.id}">
+                    <div class="menu-item ${claseAgotado} ${!disponible && !estaEnPedido ? 'disabled' : ''}" data-id="${item.id}">
                         <div class="item-image ${item.imageClass}"></div>
                         <div class="item-header">
                             <div class="item-name">
@@ -2711,12 +2607,13 @@
                                 <span class="item-price">${precioBs}</span>
                             </div>
                             <div class="item-description">${item.description}</div>
+                            ${!hayIngredientes ? '<div style="color: #ff6b6b; font-size: 0.9em; margin-top: 5px;"><i class="fas fa-exclamation-circle"></i> Sin ingredientes principales</div>' : ''}
                         </div>
                         <div class="item-content">
-                            ${restricciones.tieneRestricciones ? `
+                            ${!hayIngredientes ? `
                                 <div class="stock-warning show">
                                     <i class="fas fa-exclamation-triangle"></i> 
-                                    ${restricciones.mensaje}
+                                    Ingredientes principales agotados: ${ingredientesPrincipales.faltantes.join(', ')}
                                 </div>
                             ` : ''}
                             
@@ -2727,17 +2624,18 @@
                                     </button>
                                     <div class="item-quantity" id="qty-${item.id}">${item.quantity}</div>
                                     <button class="qty-btn" onclick="changeQuantity('${item.id}', 1)" 
-                                            ${!disponible || availableStock <= 0 ? 'disabled' : ''}>
+                                            ${!disponible ? 'disabled' : ''}>
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
-                                <div class="item-stock ${getStockClass(availableStock)}">
-                                    <i class="fas fa-box"></i> Disponibles: ${Math.max(0, availableStock)} de ${item.stock}
+                                <div class="item-stock ${getStockClass(stockReal, hayIngredientes)}">
+                                    <i class="fas fa-box"></i> 
+                                    ${!hayIngredientes ? 'Agotado' : `Disponibles: ${stockReal} de ${item.stockMaximo}`}
                                 </div>
                             </div>
                             
-                            ${Object.keys(item.ingredients).length > 0 && disponible && availableStock > 0 ? `
-                            <div class="ingredients-section hidden" id="ingredients-${item.id}">
+                            ${Object.keys(item.ingredients).length > 0 && hayIngredientes && (disponible || estaEnPedido) ? `
+                            <div class="ingredients-section ${item.quantity === 0 ? 'hidden' : ''}" id="ingredients-${item.id}">
                                 <div class="ingredients-title">
                                     <i class="fas fa-utensils"></i>
                                     <h3>Personaliza tu pedido</h3>
@@ -2762,37 +2660,55 @@
             
             // Inicializar opciones de ingredientes
             filteredItems.forEach(item => {
-                if (Object.keys(item.ingredients).length > 0 && item.disponible && (item.stock - item.totalOrdered) > 0) {
+                if (Object.keys(item.ingredients).length > 0 && 
+                    verificarIngredientesPrincipales(item).disponible && 
+                    (item.disponible || item.instances.length > 0)) {
                     generateIngredientOptions(item.id);
                 }
             });
         }
 
-        function checkIngredientRestrictions(item) {
-            const result = { tieneRestricciones: false, mensaje: '', ingredientesBloqueados: [] };
+        // Verificar si hay ingredientes principales disponibles
+        function verificarIngredientesPrincipales(item) {
+            if (!item.ingredients || Object.keys(item.ingredients).length === 0) {
+                return { disponible: true, faltantes: [] };
+            }
             
-            if (!item.ingredients) return result;
+            const faltantes = [];
+            let disponible = true;
             
-            // Verificar cada ingrediente no obligatorio
-            Object.entries(item.ingredients).forEach(([key, ing]) => {
-                if (!ing.obligatorio) {
+            Object.entries(item.ingredients).forEach(([key, ingData]) => {
+                // Solo verificar ingredientes no obligatorios (los principales son removibles)
+                if (!ingData.obligatorio) {
                     const stockIng = sistemaData.inventario[key]?.stock || 0;
-                    if (stockIng <= 0) {
-                        result.tieneRestricciones = true;
-                        result.ingredientesBloqueados.push(key);
+                    // Considerar también lo ya reservado en el pedido actual
+                    const reservado = calcularReservado(key);
+                    const stockReal = stockIng - reservado;
+                    
+                    if (stockReal <= 0) {
+                        faltantes.push(sistemaData.inventario[key]?.nombre || key);
+                        disponible = false;
                     }
                 }
             });
             
-            if (result.ingredientesBloqueados.length > 0) {
-                if (result.ingredientesBloqueados.length === Object.keys(item.ingredients).filter(k => !item.ingredients[k].obligatorio).length) {
-                    result.mensaje = `Solo disponible sin: ${result.ingredientesBloqueados.map(i => i.replace(/_/g, ' ')).join(', ')}`;
-                } else {
-                    result.mensaje = `Disponible sin: ${result.ingredientesBloqueados.map(i => i.replace(/_/g, ' ')).join(', ')}`;
+            return { disponible, faltantes };
+        }
+
+        // Calcular cuánto de un ingrediente está reservado en el pedido actual
+        function calcularReservado(ingredienteId) {
+            let total = 0;
+            menuItems.forEach(item => {
+                if (item.instances && item.ingredients && item.ingredients[ingredienteId]) {
+                    item.instances.forEach(inst => {
+                        // Solo contar si el ingrediente NO fue removido
+                        if (!inst.removedIngredients.includes(ingredienteId)) {
+                            total += item.ingredients[ingredienteId].cantidad;
+                        }
+                    });
                 }
-            }
-            
-            return result;
+            });
+            return total;
         }
 
         function generateIngredientOptions(itemId) {
@@ -2806,11 +2722,11 @@
             
             // Opción "Completo" - seleccionada por defecto
             const completeOption = document.createElement('div');
-            completeOption.className = `ingredient-option complete-option ${item.selectionType === 'completo' ? 'selected' : ''}`;
+            completeOption.className = `ingredient-option complete-option ${item.currentSelections.size === 0 ? 'selected' : ''}`;
             completeOption.onclick = () => selectComplete(itemId);
             
             completeOption.innerHTML = `
-                <div class="ingredient-checkbox ${item.selectionType === 'completo' ? 'checked' : ''}"></div>
+                <div class="ingredient-checkbox ${item.currentSelections.size === 0 ? 'checked' : ''}"></div>
                 <div class="ingredient-icon">✅</div>
                 <div class="ingredient-name">Platillo completo (con todos los ingredientes)</div>
             `;
@@ -2821,7 +2737,9 @@
                 const ingrediente = item.ingredients[ingKey];
                 if (!ingrediente.obligatorio) {
                     const stockIng = sistemaData.inventario[ingKey]?.stock || 0;
-                    const disabled = stockIng <= 0 || restricciones.ingredientesBloqueados.includes(ingKey);
+                    const reservado = calcularReservado(ingKey);
+                    const stockReal = stockIng - reservado;
+                    const disabled = stockReal <= 0;
                     
                     const ingOption = document.createElement('div');
                     ingOption.className = `ingredient-option ${disabled ? 'disabled' : ''}`;
@@ -2840,11 +2758,6 @@
                         </div>
                     `;
                     optionsDiv.appendChild(ingOption);
-                    
-                    // Pre-seleccionar ingredientes no disponibles
-                    if (disabled && !item.currentSelections.has(ingKey)) {
-                        item.currentSelections.add(ingKey);
-                    }
                 }
             });
             
@@ -2881,17 +2794,25 @@
             
             if (newQty < 0) return;
             
-            const availableStock = item.stock - item.totalOrdered;
+            // Calcular stock real disponible
+            const stockReal = item.stock - item.totalOrdered;
             
             if (change > 0) {
-                if (availableStock <= 0) {
+                // Verificar ingredientes principales
+                const ingCheck = verificarIngredientesPrincipales(item);
+                if (!ingCheck.disponible) {
+                    showToast('No hay ingredientes principales disponibles', 'error');
+                    return;
+                }
+                
+                if (stockReal <= 0) {
                     showToast('No hay stock disponible', 'error');
                     return;
                 }
                 
-                if (newQty > availableStock) {
-                    item.quantity = availableStock;
-                    showToast(`Solo quedan ${availableStock} unidades disponibles`, 'error');
+                if (newQty > stockReal) {
+                    item.quantity = stockReal;
+                    showToast(`Solo quedan ${stockReal} unidades disponibles`, 'error');
                 } else {
                     item.quantity = newQty;
                 }
@@ -2913,26 +2834,31 @@
                         item.currentSelections.clear();
                         generateIngredientOptions(itemId);
                         
-                        item.instances.push({
-                            id: item.instances.length + 1,
-                            removedIngredients: [],
-                            isComplete: true,
-                            price: convertirABs(item.basePrice),
-                            selectionType: "completo"
-                        });
+                        // No agregamos a instancias todavía, esperamos confirmación
                     } else if (change < 0 && item.instances.length > 0) {
-                        item.instances.pop();
+                        // Si reduce cantidad, remover la última instancia no confirmada
+                        // o la última instancia si no hay pendientes
+                        const instanciaPendiente = item.instances.findIndex(inst => !inst.confirmada);
+                        if (instanciaPendiente >= 0) {
+                            // Restaurar stock de ingredientes
+                            restaurarStockIngredientes(item, item.instances[instanciaPendiente].removedIngredients);
+                            item.instances.splice(instanciaPendiente, 1);
+                            item.totalOrdered--;
+                        } else if (item.instances.length > 0) {
+                            // Remover la última
+                            const lastInst = item.instances[item.instances.length - 1];
+                            restaurarStockIngredientes(item, lastInst.removedIngredients);
+                            item.instances.pop();
+                            item.totalOrdered--;
+                        }
                     }
                 } else {
                     ingredientsSection.classList.add('hidden');
-                    item.instances = [];
-                    item.currentSelections.clear();
-                    item.selectionType = "completo";
+                    // No limpiamos instancias aquí, solo si se elimina manualmente del pedido
                 }
             }
             
             updateOrderSummary();
-            guardarPedidoEnStorage(); // GUARDAR EN STORAGE
         }
 
         function updateConfirmButton(itemId) {
@@ -2943,10 +2869,11 @@
             
             if (!confirmBtn) return;
             
-            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].obligatorio);
+            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
             const availableNonRequired = allNonRequired.filter(key => {
                 const stock = sistemaData.inventario[key]?.stock || 0;
-                return stock > 0;
+                const reservado = calcularReservado(key);
+                return (stock - reservado) > 0;
             });
             
             // Verificar si seleccionó todos los ingredientes disponibles
@@ -2979,13 +2906,13 @@
         function confirmCustomization(itemId) {
             const item = menuItems.find(i => i.id === itemId);
             
-            if (item.instances.length === 0) return;
+            if (item.quantity === 0) return;
             
-            const currentInstance = item.instances[item.instances.length - 1];
-            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key].obligatorio);
+            const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
             const availableNonRequired = allNonRequired.filter(key => {
                 const stock = sistemaData.inventario[key]?.stock || 0;
-                return stock > 0;
+                const reservado = calcularReservado(key);
+                return (stock - reservado) > 0;
             });
             
             // Verificar si quiere quitar todos los ingredientes disponibles
@@ -2994,19 +2921,20 @@
                 return;
             }
             
-            currentInstance.removedIngredients = Array.from(item.currentSelections);
-            currentInstance.isComplete = item.currentSelections.size === 0;
-            currentInstance.selectionType = item.selectionType;
-            
-            if (currentInstance.removedIngredients.length > 0) {
-                currentInstance.price = convertirABs(item.basePrice) * 0.9;
-            } else {
-                currentInstance.price = convertirABs(item.basePrice);
-            }
+            // Crear nueva instancia confirmada
+            const nuevaInstancia = {
+                id: item.instances.length + 1,
+                removedIngredients: Array.from(item.currentSelections),
+                isComplete: item.currentSelections.size === 0,
+                selectionType: item.selectionType,
+                price: item.currentSelections.size > 0 ? convertirABs(item.basePrice) * 0.9 : convertirABs(item.basePrice),
+                confirmada: true
+            };
             
             // Reducir stock de ingredientes
-            reducirStockIngredientes(item, currentInstance.removedIngredients);
+            reducirStockIngredientes(item, nuevaInstancia.removedIngredients);
             
+            item.instances.push(nuevaInstancia);
             item.totalOrdered += item.quantity;
             item.quantity = 0;
             item.currentSelections.clear();
@@ -3019,8 +2947,7 @@
             if (qtyEl) qtyEl.textContent = '0';
             
             updateOrderSummary();
-            renderMenu();
-            guardarPedidoEnStorage(); // GUARDAR EN STORAGE
+            renderMenu(); // Re-renderizar para actualizar stock mostrado
             showToast('Platillo añadido al pedido', 'success');
         }
 
@@ -3061,15 +2988,9 @@
             const onlineOptions = document.getElementById('onlineOrderOptions');
             const restaurantSection = document.getElementById('restaurantOrderSection');
             
+            // Filtrar items que tienen instancias confirmadas
             const validItems = menuItems.filter(item => 
-                item.instances.some(instance => {
-                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
-                    const availableNonRequired = allNonRequired.filter(key => {
-                        const stock = sistemaData.inventario[key]?.stock || 0;
-                        return stock > 0;
-                    });
-                    return instance.removedIngredients.length < availableNonRequired.length;
-                })
+                item.instances.some(instance => instance.confirmada)
             );
             
             if (validItems.length === 0) {
@@ -3091,14 +3012,7 @@
             let totalItems = 0;
             
             validItems.forEach(item => {
-                const validInstances = item.instances.filter(instance => {
-                    const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
-                    const availableNonRequired = allNonRequired.filter(key => {
-                        const stock = sistemaData.inventario[key]?.stock || 0;
-                        return stock > 0;
-                    });
-                    return instance.removedIngredients.length < availableNonRequired.length;
-                });
+                const validInstances = item.instances.filter(instance => instance.confirmada);
                 
                 if (validInstances.length === 0) return;
                 
@@ -3183,8 +3097,7 @@
             item.instances.splice(instanceIndex, 1);
             
             updateOrderSummary();
-            renderMenu();
-            guardarPedidoEnStorage(); // GUARDAR EN STORAGE
+            renderMenu(); // Re-renderizar para actualizar stock mostrado
             showToast('Platillo eliminado del pedido', 'success');
         }
 
@@ -3203,7 +3116,7 @@
             let total = 0;
             
             menuItems.forEach(item => {
-                item.instances.forEach(instance => {
+                item.instances.filter(inst => inst.confirmada).forEach(instance => {
                     total += instance.price;
                     
                     let modifiers = '';
@@ -3276,9 +3189,8 @@
                         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }, 1000);
                 
-                // Limpiar pedido y storage
+                // Limpiar pedido
                 limpiarPedido();
-                limpiarPedidoStorage();
                 
                 // Agregar notificación inicial
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido está pendiente de confirmación por el cajero.');
@@ -3354,10 +3266,7 @@
                     timestamp: pedido.timestamp
                 });
                 
-                // Limpiar pedido y storage
                 limpiarPedido();
-                limpiarPedidoStorage();
-                
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
             }
         }
@@ -3484,10 +3393,7 @@
                     timestamp: pedido.timestamp
                 });
                 
-                // Limpiar pedido y storage
                 limpiarPedido();
-                limpiarPedidoStorage();
-                
                 agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
             }
         }
@@ -3509,7 +3415,7 @@
             };
             
             menuItems.forEach(item => {
-                item.instances.forEach(instance => {
+                item.instances.filter(inst => inst.confirmada).forEach(instance => {
                     pedido.items.push({
                         platilloId: item.id,
                         nombre: item.name,
@@ -3550,6 +3456,11 @@
 
         function limpiarPedido() {
             menuItems.forEach(item => {
+                // Restaurar stock de ingredientes de todas las instancias
+                item.instances.forEach(inst => {
+                    restaurarStockIngredientes(item, inst.removedIngredients);
+                });
+                
                 item.instances = [];
                 item.quantity = 0;
                 item.currentSelections.clear();
@@ -3569,7 +3480,8 @@
             return `Bs. ${precioBs.toFixed(2).replace('.', ',')}`;
         }
 
-        function getStockClass(stock) {
+        function getStockClass(stock, hayIngredientes) {
+            if (!hayIngredientes) return 'sold-out';
             if (stock === 0) return 'sold-out';
             if (stock <= 2) return 'low';
             return 'available';
@@ -3628,9 +3540,6 @@
             if (syncInterval) clearInterval(syncInterval);
             if (paymentTimer) clearInterval(paymentTimer);
             if (notificacionesInterval) clearInterval(notificacionesInterval);
-            
-            // Guardar pedido antes de salir
-            guardarPedidoEnStorage();
         });
     </script>
 </body>
