@@ -2067,7 +2067,7 @@
         let menuItems = [];
         let currentCategory = 'todos';
         let currentSubcategory = null;
-        let pedidoActual = [];
+        // pedidoActual ahora persiste en localStorage
         let syncInterval = null;
         let isInRestaurant = false;
         let tableNumber = null;
@@ -2076,6 +2076,70 @@
         let sessionId = null;
         let pedidosCliente = []; // Array para almacenar pedidos del cliente
         let notificacionesInterval = null;
+
+        // ==========================================
+        // PERSISTENCIA DEL PEDIDO EN LOCALSTORAGE
+        // ==========================================
+        
+        // Guardar pedido actual en localStorage
+        function guardarPedidoEnStorage() {
+            const pedidoParaGuardar = menuItems
+                .filter(item => item.instances.length > 0)
+                .map(item => ({
+                    id: item.id,
+                    instances: item.instances,
+                    totalOrdered: item.totalOrdered
+                }));
+            
+            localStorage.setItem('sakiPedidoActual', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                items: pedidoParaGuardar,
+                sessionId: sessionId
+            }));
+        }
+
+        // Cargar pedido desde localStorage
+        function cargarPedidoDesdeStorage() {
+            const guardado = localStorage.getItem('sakiPedidoActual');
+            if (!guardado) return false;
+            
+            try {
+                const data = JSON.parse(guardado);
+                
+                // Verificar que sea de la misma sesión y no sea muy antiguo (30 min)
+                if (data.sessionId !== sessionId) {
+                    localStorage.removeItem('sakiPedidoActual');
+                    return false;
+                }
+                
+                const tiempoTranscurrido = new Date() - new Date(data.timestamp);
+                if (tiempoTranscurrido > 30 * 60 * 1000) { // 30 minutos
+                    localStorage.removeItem('sakiPedidoActual');
+                    return false;
+                }
+                
+                // Restaurar el pedido en menuItems
+                if (data.items && menuItems.length > 0) {
+                    data.items.forEach(savedItem => {
+                        const menuItem = menuItems.find(m => m.id === savedItem.id);
+                        if (menuItem) {
+                            menuItem.instances = savedItem.instances || [];
+                            menuItem.totalOrdered = savedItem.totalOrdered || 0;
+                        }
+                    });
+                    return true;
+                }
+            } catch (e) {
+                console.error('Error cargando pedido guardado:', e);
+                localStorage.removeItem('sakiPedidoActual');
+            }
+            return false;
+        }
+
+        // Limpiar pedido del storage
+        function limpiarPedidoStorage() {
+            localStorage.removeItem('sakiPedidoActual');
+        }
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2196,21 +2260,28 @@
         async function initApp() {
             showLoading();
             await cargarDatos();
+            
+            // Cargar pedido guardado DESPUÉS de cargar el menú
+            const pedidoRestaurado = cargarPedidoDesdeStorage();
+            
             renderSidebar();
             renderMenu();
             initCalendar();
+            
+            // Si había un pedido guardado, actualizar la vista
+            if (pedidoRestaurado) {
+                updateOrderSummary();
+            }
             
             // Iniciar polling de notificaciones
             iniciarPollingNotificaciones();
             
             hideLoading();
             
-            // Auto-refresh cada 30 segundos
+            // Auto-refresh cada 5 segundos - AHORA CON PERSISTENCIA
             syncInterval = setInterval(async () => {
-                await cargarDatos();
-                renderMenu();
-                updateOrderSummary();
-            }, 30000);
+                await sincronizarDatosSinPerderPedido();
+            }, 5000);
         }
 
         async function cargarDatos() {
@@ -2239,28 +2310,107 @@
             }
         }
 
+        // NUEVA FUNCIÓN: Sincronizar sin perder el pedido actual
+        async function sincronizarDatosSinPerderPedido() {
+            try {
+                actualizarEstadoSync('syncing');
+                
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error al cargar datos');
+                
+                const data = await response.json();
+                const nuevaData = data.record || data;
+                
+                // Guardar el estado actual del pedido antes de actualizar
+                const pedidoActualGuardado = menuItems
+                    .filter(item => item.instances.length > 0)
+                    .map(item => ({
+                        id: item.id,
+                        instances: JSON.parse(JSON.stringify(item.instances)), // Deep copy
+                        totalOrdered: item.totalOrdered,
+                        quantity: item.quantity,
+                        currentSelections: Array.from(item.currentSelections || []),
+                        selectionType: item.selectionType
+                    }));
+                
+                // Actualizar los datos del sistema
+                sistemaData = nuevaData;
+                
+                // Volver a sincronizar el menú
+                sincronizarMenuLocal();
+                
+                // Restaurar el pedido del cliente
+                pedidoActualGuardado.forEach(savedItem => {
+                    const menuItem = menuItems.find(m => m.id === savedItem.id);
+                    if (menuItem) {
+                        menuItem.instances = savedItem.instances || [];
+                        menuItem.totalOrdered = savedItem.totalOrdered || 0;
+                        menuItem.quantity = savedItem.quantity || 0;
+                        menuItem.currentSelections = new Set(savedItem.currentSelections || []);
+                        menuItem.selectionType = savedItem.selectionType || "completo";
+                    }
+                });
+                
+                // Actualizar la UI manteniendo el pedido
+                renderMenu();
+                updateOrderSummary();
+                
+                actualizarEstadoSync('online');
+                
+            } catch (error) {
+                console.error('Error en sincronización:', error);
+                actualizarEstadoSync('offline');
+            }
+        }
+
         function sincronizarMenuLocal() {
             if (!sistemaData.menu) return;
             
-            menuItems = sistemaData.menu.map(item => ({
-                id: item.id,
-                name: item.nombre,
-                category: item.categoria,
-                subcategory: item.subcategoria,
-                basePrice: item.precio,
-                description: item.descripcion,
-                ingredients: item.ingredientes || {},
-                stock: item.stockMaximo,
-                stockMaximo: item.stockMaximo,
-                disponible: item.disponible,
-                imageClass: item.imagen,
-                quantity: 0,
-                instances: [],
-                totalOrdered: 0,
-                currentSelections: new Set(),
-                order: menuItems.length + 1,
-                selectionType: "completo"
-            }));
+            // Si ya tenemos items en el pedido, preservarlos
+            const pedidoExistente = new Map();
+            menuItems.forEach(item => {
+                if (item.instances.length > 0) {
+                    pedidoExistente.set(item.id, {
+                        instances: item.instances,
+                        totalOrdered: item.totalOrdered,
+                        quantity: item.quantity,
+                        currentSelections: item.currentSelections,
+                        selectionType: item.selectionType
+                    });
+                }
+            });
+            
+            menuItems = sistemaData.menu.map(item => {
+                const existente = pedidoExistente.get(item.id);
+                
+                return {
+                    id: item.id,
+                    name: item.nombre,
+                    category: item.categoria,
+                    subcategory: item.subcategoria,
+                    basePrice: item.precio,
+                    description: item.descripcion,
+                    ingredients: item.ingredientes || {},
+                    stock: item.stockMaximo || item.stock || 0,
+                    stockMaximo: item.stockMaximo || item.stock || 0,
+                    disponible: item.disponible,
+                    imageClass: item.imagen,
+                    // Preservar estado del pedido si existe
+                    quantity: existente ? existente.quantity : 0,
+                    instances: existente ? existente.instances : [],
+                    totalOrdered: existente ? existente.totalOrdered : 0,
+                    currentSelections: existente ? existente.currentSelections : new Set(),
+                    order: menuItems.length + 1,
+                    selectionType: existente ? existente.selectionType : "completo"
+                };
+            });
         }
 
         // ==========================================
@@ -2278,7 +2428,8 @@
             if (!sessionId || pedidosCliente.length === 0) return;
             
             try {
-                await cargarDatos();
+                // Usar la función de sincronización que preserva el pedido
+                await sincronizarDatosSinPerderPedido();
                 
                 let hayCambios = false;
                 
@@ -2655,11 +2806,11 @@
             
             // Opción "Completo" - seleccionada por defecto
             const completeOption = document.createElement('div');
-            completeOption.className = `ingredient-option complete-option selected`;
+            completeOption.className = `ingredient-option complete-option ${item.selectionType === 'completo' ? 'selected' : ''}`;
             completeOption.onclick = () => selectComplete(itemId);
             
             completeOption.innerHTML = `
-                <div class="ingredient-checkbox checked"></div>
+                <div class="ingredient-checkbox ${item.selectionType === 'completo' ? 'checked' : ''}"></div>
                 <div class="ingredient-icon">✅</div>
                 <div class="ingredient-name">Platillo completo (con todos los ingredientes)</div>
             `;
@@ -2781,6 +2932,7 @@
             }
             
             updateOrderSummary();
+            guardarPedidoEnStorage(); // GUARDAR EN STORAGE
         }
 
         function updateConfirmButton(itemId) {
@@ -2868,6 +3020,7 @@
             
             updateOrderSummary();
             renderMenu();
+            guardarPedidoEnStorage(); // GUARDAR EN STORAGE
             showToast('Platillo añadido al pedido', 'success');
         }
 
@@ -3031,6 +3184,7 @@
             
             updateOrderSummary();
             renderMenu();
+            guardarPedidoEnStorage(); // GUARDAR EN STORAGE
             showToast('Platillo eliminado del pedido', 'success');
         }
 
@@ -3122,8 +3276,9 @@
                         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }, 1000);
                 
-                // Limpiar pedido
+                // Limpiar pedido y storage
                 limpiarPedido();
+                limpiarPedidoStorage();
                 
                 // Agregar notificación inicial
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido está pendiente de confirmación por el cajero.');
@@ -3199,7 +3354,10 @@
                     timestamp: pedido.timestamp
                 });
                 
+                // Limpiar pedido y storage
                 limpiarPedido();
+                limpiarPedidoStorage();
+                
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
             }
         }
@@ -3326,7 +3484,10 @@
                     timestamp: pedido.timestamp
                 });
                 
+                // Limpiar pedido y storage
                 limpiarPedido();
+                limpiarPedidoStorage();
+                
                 agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
             }
         }
@@ -3467,6 +3628,9 @@
             if (syncInterval) clearInterval(syncInterval);
             if (paymentTimer) clearInterval(paymentTimer);
             if (notificacionesInterval) clearInterval(notificacionesInterval);
+            
+            // Guardar pedido antes de salir
+            guardarPedidoEnStorage();
         });
     </script>
 </body>
