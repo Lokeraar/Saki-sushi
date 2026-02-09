@@ -1,1726 +1,968 @@
+<!-- ========================================== -->
+<!-- PANEL ADMIN - Saki Sushi -->
+<!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saki Sushi - Panel Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #dc2626;
-            --primary-dark: #b91c1c;
-            --bg-dark: #0a0a0a;
-            --bg-card: #121212;
-            --bg-hover: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --border: #27272a;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #1976D2;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo::before {
-            content: "🍣";
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .notification-badge {
-            position: relative;
-            cursor: pointer;
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #e5e5e5; }
+        .glass-panel { background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .sidebar { background: #111; border-right: 1px solid #333; }
+        .nav-item { transition: all 0.3s; border-left: 3px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: rgba(220, 38, 38, 0.1); border-left-color: #dc2626; }
+        .stock-field { background: #1a1a1a; border: 1px solid #333; }
+        .stock-field:disabled { background: #0f0f0f; color: #666; cursor: not-allowed; }
+        .tooltip { position: relative; }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
             padding: 0.5rem;
             border-radius: 0.5rem;
-            transition: all 0.3s;
-        }
-
-        .notification-badge:hover {
-            background: var(--bg-hover);
-        }
-
-        .notification-badge i {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-        }
-
-        .badge-count {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--danger);
-            color: white;
             font-size: 0.75rem;
-            font-weight: 700;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.875rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: black;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        /* Layout */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .grid-4 {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
-
-        .grid-2 {
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        }
-
-        /* Cards */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .card-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-top: 0.5rem;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
-            overflow-x: auto;
-        }
-
-        .tab {
-            padding: 0.75rem 1.5rem;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-weight: 500;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
             white-space: nowrap;
-        }
-
-        .tab:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
+            z-index: 10;
             margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
         }
-
-        .form-input, .form-select {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .input-group {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .input-prefix {
-            background: var(--bg-hover);
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: var(--bg-hover);
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-
-        tr:hover {
-            background: var(--bg-hover);
-        }
-
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
-        }
-
-        .badge-warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .badge-danger {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-
-        /* Toggle Switch */
-        .toggle {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
-
-        .toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
+        .ingredient-row { transition: all 0.2s; }
+        .ingredient-row:hover { background: rgba(255,255,255,0.05); }
+        .badge-notification { position: relative; }
+        .badge-notification::after {
+            content: attr(data-count);
             position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--border);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
+            top: -5px;
+            right: -5px;
+            background: #dc2626;
+            color: white;
+            border-radius: 50%;
             width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--success);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
+            height: 18px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            padding: 1rem;
+            font-weight: bold;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            border-radius: 1rem;
-            max-width: 800px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.25rem;
-            line-height: 1;
-        }
-
-        .close-btn:hover {
-            color: var(--text-primary);
-        }
-
-        /* Alert */
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        .alert-warning {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid var(--warning);
-            color: var(--warning);
-        }
-
-        /* Stock Indicator */
-        .stock-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 0.5rem;
-        }
-
-        .stock-fill {
-            height: 100%;
-            background: var(--success);
-            transition: width 0.3s, background 0.3s;
-        }
-
-        .stock-fill.warning {
-            background: var(--warning);
-        }
-
-        .stock-fill.danger {
-            background: var(--danger);
-        }
-
-        /* Ingredient List */
-        .ingredient-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            background: var(--bg-dark);
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .ingredient-controls {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .btn-small {
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        /* Tasa Config */
-        .tasa-config {
-            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
-            border: 2px solid var(--primary);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .tasa-config h3 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .tasa-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .tasa-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        /* Notification Modal */
-        .notification-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .notification-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-
-        .notification-time {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                padding: 1rem;
-            }
-            
-            .tabs {
-                gap: 0.25rem;
-            }
-            
-            .tab {
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-            }
-        }
-
-        /* Loading */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Sync Status */
-        .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .sync-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Plato card for menu management */
-        .plato-card {
-            background: var(--bg-dark);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border);
-        }
-
-        .plato-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .plato-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .plato-ingredients {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-
-        .ingredient-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: var(--bg-hover);
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.25rem;
-            font-size: 0.75rem;
-        }
-
-        /* Unidad selector */
-        .unidad-selector {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .unidad-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--border);
-            background: var(--bg-dark);
-            color: var(--text-secondary);
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.875rem;
-        }
-
-        .unidad-btn:hover, .unidad-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
+        .notification-dropdown { max-height: 300px; overflow-y: auto; }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">Saki Sushi Admin</div>
-        <div class="header-actions">
-            <div class="notification-badge" onclick="showNotifications()">
-                <i class="fas fa-bell"></i>
-                <span class="badge-count" id="notifCount" style="display: none;">0</span>
-            </div>
-            <div class="sync-status">
-                <div class="sync-dot"></div>
-                <span>Sincronizado</span>
-            </div>
-            <button class="btn btn-secondary" onclick="window.open('https://lokeraar.github.io/Saki-sushi/cliente/', '_blank')">
-                Ver Menú Cliente
-            </button>
-            <button class="btn btn-secondary" onclick="window.open('https://lokeraar.github.io/Saki-sushi/cajero/', '_blank')">
-                Panel Cajero
-            </button>
-            <button class="btn btn-primary" onclick="guardarCambios()">
-                💾 Guardar Todo
-            </button>
+<body class="h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 flex-shrink-0 flex flex-col">
+        <div class="p-6 border-b border-gray-800">
+            <h1 class="text-2xl font-bold text-red-500">Saki Sushi</h1>
+            <p class="text-xs text-gray-500 mt-1">Panel Administrativo</p>
         </div>
-    </header>
-
-    <div class="container">
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
-            <button class="tab" onclick="cambiarTab('menu')">🍱 Menú & Precios</button>
-            <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
-            <button class="tab" onclick="cambiarTab('reportes')">📈 Reportes</button>
-            <button class="tab" onclick="cambiarTab('config')">⚙️ Configuración</button>
-        </div>
-
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="grid grid-4">
-                <div class="card">
-                    <div class="stat-label">Ventas Hoy</div>
-                    <div class="stat-value" id="ventas-hoy">$0</div>
-                    <div class="card-subtitle" id="ordenes-hoy">0 órdenes</div>
-                </div>
-                <div class="card">
-                    <div class="stat-label">Tasa de Cambio</div>
-                    <div class="stat-value" id="tasa-display">400</div>
-                    <div class="card-subtitle">Bs. por $1</div>
-                </div>
-                <div class="card">
-                    <div class="stat-label">Productos Activos</div>
-                    <div class="stat-value" id="productos-activos">0</div>
-                    <div class="card-subtitle">en el menú</div>
-                </div>
-                <div class="card" style="cursor: pointer;" onclick="showStockAlerts()">
-                    <div class="stat-label">Alertas Stock</div>
-                    <div class="stat-value" id="alertas-stock" style="color: var(--warning)">0</div>
-                    <div class="card-subtitle">ingredientes bajos (clic para ver)</div>
-                </div>
-            </div>
-
-            <div class="grid grid-2" style="margin-top: 1.5rem;">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">Pedidos Recientes</div>
-                            <div class="card-subtitle">Últimas 5 órdenes</div>
-                        </div>
-                    </div>
-                    <div id="pedidos-recientes">
-                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
-                            Cargando...
-                        </p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">Stock Crítico</div>
-                            <div class="card-subtitle">Ingredientes por debajo del mínimo</div>
-                        </div>
-                    </div>
-                    <div id="stock-critico">
-                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
-                            Cargando...
-                        </p>
-                    </div>
+        
+        <nav class="flex-1 py-4">
+            <a href="#dashboard" class="nav-item active flex items-center gap-3 px-6 py-3 text-gray-300 hover:text-white" onclick="showSection('dashboard')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Dashboard
+            </a>
+            <a href="#inventario" class="nav-item flex items-center gap-3 px-6 py-3 text-gray-300 hover:text-white" onclick="showSection('inventario')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                Inventario
+            </a>
+            <a href="#menu" class="nav-item flex items-center gap-3 px-6 py-3 text-gray-300 hover:text-white" onclick="showSection('menu')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                Menú & Precios
+            </a>
+            <a href="#reportes" class="nav-item flex items-center gap-3 px-6 py-3 text-gray-300 hover:text-white" onclick="showSection('reportes')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Reportes
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-sm font-bold">A</div>
+                <div>
+                    <p class="text-sm font-semibold">Admin</p>
+                    <p class="text-xs text-gray-500">Online</p>
                 </div>
             </div>
         </div>
+    </aside>
 
-        <!-- Menú Tab -->
-        <div id="menu" class="tab-content">
-            <div class="tasa-config">
-                <h3>💱 Configuración de Precios</h3>
-                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
-                    Los precios se ingresan en USD ($) y se convierten automáticamente a Bs. según la tasa actual.
-                    El cliente ve los precios en Bs.
-                </p>
-                <div class="grid grid-4">
-                    <div>
-                        <div class="tasa-label">Tasa Actual</div>
-                        <div class="tasa-value" id="tasa-config">400</div>
-                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                            Bs. por cada $1
-                        </div>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-900">
+        <!-- Header -->
+        <header class="sticky top-0 z-30 glass-panel border-b border-gray-800 px-8 py-4 flex justify-between items-center">
+            <h2 id="sectionTitle" class="text-2xl font-bold">Dashboard</h2>
+            
+            <!-- Badge Notificaciones -->
+            <div class="relative">
+                <button id="notificationBtn" class="badge-notification p-2 rounded-full hover:bg-gray-800 transition-colors relative" data-count="0">
+                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                </button>
+                
+                <!-- Dropdown Notificaciones -->
+                <div id="notificationDropdown" class="hidden absolute right-0 top-12 w-80 glass-panel rounded-xl shadow-2xl border border-gray-700 z-50">
+                    <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                        <h3 class="font-bold">Notificaciones</h3>
+                        <button onclick="markAllRead()" class="text-xs text-red-400 hover:text-red-300">Marcar todo leído</button>
                     </div>
-                    <div style="display: flex; align-items: flex-end;">
-                        <button class="btn btn-primary" onclick="abrirModalTasa()">
-                            Actualizar Tasa
+                    <div id="notificationList" class="notification-dropdown p-2 space-y-2">
+                        <p class="text-gray-500 text-center py-4">No hay notificaciones</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-8">
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-xl">
+                        <p class="text-gray-400 text-sm mb-2">Ventas Hoy</p>
+                        <p class="text-3xl font-bold text-green-400" id="dashTodaySales">$0</p>
+                        <p class="text-sm text-gray-500" id="dashTodayCount">0 pedidos</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl">
+                        <p class="text-gray-400 text-sm mb-2">Stock Bajo</p>
+                        <p class="text-3xl font-bold text-yellow-400" id="dashLowStock">0</p>
+                        <p class="text-sm text-gray-500">ingredientes</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl">
+                        <p class="text-gray-400 text-sm mb-2">Platillos Activos</p>
+                        <p class="text-3xl font-bold text-blue-400" id="dashActiveItems">0</p>
+                        <p class="text-sm text-gray-500">en menú</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl">
+                        <p class="text-gray-400 text-sm mb-2">Tasa de Cambio</p>
+                        <p class="text-3xl font-bold text-white">Bs. <span id="dashTasa">400</span></p>
+                        <button onclick="editTasa()" class="text-xs text-red-400 hover:text-red-300 mt-1">Editar</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="text-lg font-bold mb-4">Actividad Reciente</h3>
+                    <div id="recentActivity" class="space-y-3">
+                        <p class="text-gray-500">Cargando...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVENTARIO -->
+            <section id="inventario" class="hidden space-y-6">
+                <!-- Tabs -->
+                <div class="flex gap-4 border-b border-gray-800 pb-4">
+                    <button class="inv-tab active text-red-400 border-b-2 border-red-400 pb-2 font-semibold" onclick="showInvTab('current')">Stock Actual</button>
+                    <button class="inv-tab text-gray-400 hover:text-white pb-2 font-semibold" onclick="showInvTab('new')">Ingredientes y Mercancía Nueva</button>
+                </div>
+
+                <!-- Stock Actual -->
+                <div id="invCurrent" class="space-y-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">Inventario Actual</h3>
+                        <button onclick="unlockStock()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            Desbloquear Edición
                         </button>
                     </div>
-                </div>
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div>
-                        <div class="card-title">Gestión de Platillos</div>
-                        <div class="card-subtitle">Administra precios, disponibilidad e ingredientes</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-800 text-left">
+                                <tr>
+                                    <th class="p-4 rounded-tl-lg">Ingrediente</th>
+                                    <th class="p-4">Stock Actual</th>
+                                    <th class="p-4">Unidad</th>
+                                    <th class="p-4">Stock Mínimo</th>
+                                    <th class="p-4 tooltip" data-tooltip="Precio deducido al cliente al excluir ingrediente">Precio Unitario ($)</th>
+                                    <th class="p-4 rounded-tr-lg">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTable" class="divide-y divide-gray-800">
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
-                    <button class="btn btn-success" onclick="abrirModalNuevoPlatillo()">
-                        + Nuevo Platillo
-                    </button>
                 </div>
-                <div id="platos-container">
-                    <!-- Se llena dinámicamente -->
-                </div>
-            </div>
-        </div>
 
-        <!-- Inventario Tab -->
-        <div id="inventario" class="tab-content">
-            <div class="grid grid-2">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">Inventario de Ingredientes</div>
-                            <div class="card-subtitle">Gestiona stock en unidades/piezas</div>
+                <!-- Mercancía Nueva -->
+                <div id="invNew" class="hidden space-y-6">
+                    <div class="glass-panel p-6 rounded-xl border border-gray-800">
+                        <h3 class="text-lg font-bold mb-4 text-red-400">Registrar Nueva Mercancía</h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-2">Nombre del Ingrediente</label>
+                                <select id="newInvName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white">
+                                    <option value="">Seleccionar existente o escribir nuevo...</option>
+                                </select>
+                                <input type="text" id="newInvNameText" placeholder="O escribir nombre nuevo" class="mt-2 w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-2">Cantidad</label>
+                                <input type="number" id="newInvQty" step="0.01" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white" placeholder="0.00">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-2">Unidad</label>
+                                <select id="newInvUnit" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white">
+                                    <option value="kg">Kilogramos (kg)</option>
+                                    <option value="g">Gramos (g)</option>
+                                    <option value="L">Litros (L)</option>
+                                    <option value="ml">Mililitros (ml)</option>
+                                    <option value="unidades">Unidades/Piezas</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-2 tooltip" data-tooltip="Precio total de la compra de esta mercancía">
+                                    Precio de Costo Total ($)
+                                    <svg class="w-4 h-4 inline ml-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </label>
+                                <input type="number" id="newInvCost" step="0.01" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white" placeholder="0.00">
+                            </div>
                         </div>
-                        <button class="btn btn-success" onclick="abrirModalIngrediente()">
-                            + Nuevo Ingrediente
-                        </button>
-                    </div>
-                    <div id="lista-inventario">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">Movimientos Recientes</div>
-                            <div class="card-subtitle">Entradas y salidas de stock</div>
+
+                        <div class="bg-gray-800/50 p-4 rounded-lg mb-4">
+                            <p class="text-sm text-gray-400 mb-2">Cálculo de Precio Unitario Promedio:</p>
+                            <p class="text-lg font-mono" id="priceCalcPreview">$0.00 / unidad</p>
+                            <p class="text-xs text-gray-500 mt-1">Precio de costo total ÷ Cantidad = Precio unitario promedio</p>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="clearInvForm()" class="px-6 py-3 border border-gray-600 rounded-lg hover:bg-gray-800">Limpiar</button>
+                            <button onclick="saveNewInventory()" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold">Guardar y Agregar al Stock</button>
                         </div>
                     </div>
-                    <div id="movimientos-recientes">
-                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
-                            No hay movimientos recientes
-                        </p>
+                </div>
+            </section>
+
+            <!-- MENÚ -->
+            <section id="menu" class="hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold">Gestión de Menú</h3>
+                    <button onclick="openNewDishModal()" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Nuevo Platillo
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="menuGridAdmin">
+                    <!-- Platillos se cargan aquí -->
+                </div>
+            </section>
+
+            <!-- REPORTES -->
+            <section id="reportes" class="hidden space-y-6">
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="text-lg font-bold mb-4">Reporte de Ventas</h3>
+                    <div class="h-64 flex items-center justify-center text-gray-500">
+                        Gráficos de ventas próximamente...
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
+    </main>
 
-        <!-- Reportes Tab -->
-        <div id="reportes" class="tab-content">
-            <div class="grid grid-4">
-                <div class="card">
-                    <div class="stat-label">Ventas del Día</div>
-                    <div class="stat-value" id="reporte-ventas-dia">$0</div>
-                    <div class="card-subtitle" id="reporte-ordenes-dia">0 órdenes</div>
-                </div>
-                <div class="card">
-                    <div class="stat-label">Ventas Semana</div>
-                    <div class="stat-value" id="reporte-ventas-semana">$0</div>
-                    <div class="card-subtitle">Últimos 7 días</div>
-                </div>
-                <div class="card">
-                    <div class="stat-label">Ticket Promedio</div>
-                    <div class="stat-value" id="ticket-promedio">$0</div>
-                    <div class="card-subtitle">por orden</div>
-                </div>
-                <div class="card">
-                    <div class="stat-label">Platillo Top</div>
-                    <div class="stat-value" id="platillo-top" style="font-size: 1.25rem;">-</div>
-                    <div class="card-subtitle">más vendido</div>
-                </div>
+    <!-- Modal Nuevo Platillo -->
+    <div id="newDishModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Nuevo Platillo</h3>
+                <button onclick="closeNewDishModal()" class="text-gray-400 hover:text-white">✕</button>
             </div>
 
-            <div class="card" style="margin-top: 1.5rem;">
-                <div class="card-header">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Nombre del Platillo</label>
+                    <input type="text" id="dishName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white" placeholder="Ej: Sashimi de Salmón">
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
                     <div>
-                        <div class="card-title">Detalle de Ventas</div>
-                        <div class="card-subtitle">Historial completo de transacciones</div>
+                        <label class="block text-sm text-gray-400 mb-2">Precio ($)</label>
+                        <input type="number" id="dishPrice" step="0.01" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Categoría</label>
+                        <select id="dishCategory" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white">
+                            <option value="entradas">Entradas</option>
+                            <option value="rolls">Rolls</option>
+                            <option value="especiales">Especiales</option>
+                            <option value="bebidas">Bebidas</option>
+                        </select>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table id="tabla-ventas">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>ID Pedido</th>
-                                <th>Items</th>
-                                <th>Total USD</th>
-                                <th>Total Bs.</th>
-                                <th>Método Pago</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ventas-body">
-                            <!-- Se llena dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
-        <!-- Configuración Tab -->
-        <div id="config" class="tab-content">
-            <div class="grid grid-2">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Configuración General</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nombre del Restaurante</label>
-                        <input type="text" class="form-input" id="config-nombre" value="Saki Sushi">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tasa de Cambio Default (Bs. por $1)</label>
-                        <input type="number" class="form-input" id="config-tasa-default" value="400">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email de Notificaciones</label>
-                        <input type="email" class="form-input" id="config-email" placeholder="admin@sakisushi.com">
-                    </div>
-                    <button class="btn btn-primary" onclick="guardarConfig()">Guardar Configuración</button>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Descripción</label>
+                    <textarea id="dishDesc" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white" placeholder="Descripción del platillo..."></textarea>
                 </div>
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Backup y Sincronización</div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Ingredientes</label>
+                    <div id="dishIngredients" class="space-y-2 mb-3">
+                        <!-- Ingredientes dinámicos -->
                     </div>
-                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                        Los datos se sincronizan automáticamente con JSONBin. Puedes forzar una sincronización manual.
-                    </p>
-                    <button class="btn btn-secondary" onclick="sincronizarDatos()" style="margin-bottom: 0.5rem;">
-                        🔄 Sincronizar Ahora
-                    </button>
-                    <button class="btn btn-warning" onclick="exportarDatos()">
-                        📥 Exportar Backup JSON
+                    <button onclick="addIngredientField()" class="text-sm text-red-400 hover:text-red-300 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Agregar Ingrediente
                     </button>
                 </div>
+
+                <div class="bg-gray-800/50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-400">Stock calculado automáticamente:</p>
+                    <p class="text-2xl font-bold text-green-400" id="calculatedStock">0 unidades</p>
+                    <p class="text-xs text-gray-500">Basado en ingredientes disponibles</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6 pt-4 border-t border-gray-800">
+                <button onclick="closeNewDishModal()" class="flex-1 py-3 border border-gray-600 rounded-lg hover:bg-gray-800">Cancelar</button>
+                <button onclick="saveNewDish()" class="flex-1 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold">Guardar Platillo</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Notificaciones -->
-    <div id="modal-notificaciones" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-bell"></i> Historial de Alertas</h3>
-                <button class="close-btn" onclick="cerrarModal('modal-notificaciones')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="notification-list" id="notificationList">
-                    <!-- Se llena dinámicamente -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Editar Platillo -->
-    <div id="modal-platillo" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Editar Platillo</h3>
-                <button class="close-btn" onclick="cerrarModal('modal-platillo')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-id">
-                <div class="form-group">
-                    <label class="form-label">Nombre del Platillo</label>
-                    <input type="text" class="form-input" id="edit-nombre">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Categoría</label>
-                    <select class="form-select" id="edit-categoria">
-                        <option value="entradas">Entradas</option>
-                        <option value="rolls">Rolls</option>
-                        <option value="tragos">Tragos/Bebidas</option>
-                        <option value="especiales">Especiales</option>
-                        <option value="postres">Postres</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Precio en USD ($)</label>
-                    <div class="input-group">
-                        <span class="input-prefix">$</span>
-                        <input type="number" step="0.01" class="form-input" id="edit-precio-usd">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Descripción (incluye piezas de cada ingrediente)</label>
-                    <textarea class="form-input" id="edit-descripcion" rows="3" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Stock (unidades disponibles)</label>
-                    <input type="number" class="form-input" id="edit-stock">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Ingredientes (cantidad en piezas/unidades)</label>
-                    <div id="edit-ingredientes-list">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                    <button class="btn btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;">
-                        + Agregar Ingrediente
-                    </button>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Disponible</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="edit-disponible">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cerrarModal('modal-platillo')">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarPlatillo()">Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Tasa de Cambio -->
-    <div id="modal-tasa" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Actualizar Tasa de Cambio</h3>
-                <button class="close-btn" onclick="cerrarModal('modal-tasa')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning">
-                    ⚠️ <strong>Importante:</strong> Cambiar la tasa actualizará automáticamente todos los precios en Bs. del menú.
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Nueva Tasa (Bs. por $1 USD)</label>
-                    <input type="number" class="form-input" id="nueva-tasa" placeholder="400">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cerrarModal('modal-tasa')">Cancelar</button>
-                <button class="btn btn-primary" onclick="actualizarTasa()">Actualizar Tasa</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Ingrediente -->
-    <div id="modal-ingrediente" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="titulo-ingrediente">Nuevo Ingrediente</h3>
-                <button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="ingrediente-id">
-                <div class="form-group">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" class="form-input" id="ingrediente-nombre">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Stock Actual</label>
-                    <input type="number" class="form-input" id="ingrediente-stock">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Unidad</label>
-                    <div class="unidad-selector">
-                        <button type="button" class="unidad-btn active" onclick="selectUnidad('unidades')">Unidades/Piezas</button>
-                        <button type="button" class="unidad-btn" onclick="selectUnidad('gramos')">Gramos</button>
-                        <button type="button" class="unidad-btn" onclick="selectUnidad('ml')">Mililitros</button>
-                    </div>
-                    <input type="hidden" id="ingrediente-unidad" value="unidades">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Stock Mínimo (alerta)</label>
-                    <input type="number" class="form-input" id="ingrediente-minimo">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Precio Unitario (costo en $)</label>
-                    <div class="input-group">
-                        <span class="input-prefix">$</span>
-                        <input type="number" step="0.01" class="form-input" id="ingrediente-costo">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cerrarModal('modal-ingrediente')">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarIngrediente()">Guardar</button>
+    <!-- Modal Password -->
+    <div id="passwordModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl p-6 max-w-sm w-full">
+            <h3 class="text-lg font-bold mb-4">Desbloquear Edición</h3>
+            <p class="text-sm text-gray-400 mb-4">Ingresa la contraseña para editar el stock actual:</p>
+            <input type="password" id="adminPassword" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white mb-4" placeholder="Contraseña">
+            <div class="flex gap-3">
+                <button onclick="closePasswordModal()" class="flex-1 py-2 border border-gray-600 rounded-lg hover:bg-gray-800">Cancelar</button>
+                <button onclick="verifyPassword()" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-bold">Desbloquear</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Configuración JSONBin
-        const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69879d6e43b1c97be96d2b13';
+        // ==========================================
+        // CONFIGURACIÓN
+        // ==========================================
         const JSONBIN_API_KEY = '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K';
-        
-        // Estado global
-        let datos = {
-            config: { tasaCambio: 400 },
+        const JSONBIN_BIN_ID = '69879d6e43b1c97be96d2b13';
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+        const ADMIN_PASSWORD = '1234';
+
+        // ==========================================
+        // ESTADO
+        // ==========================================
+        let state = {
+            inventory: {},
             menu: [],
-            inventario: {},
             pedidos: [],
-            ventas: { diarias: [], semanales: [], mensuales: [] },
-            notificaciones: []
+            tasaCambio: 400,
+            notifications: [],
+            unreadCount: 0,
+            stockUnlocked: false,
+            dishIngredients: []
         };
 
-        // Historial de alertas de stock
-        let stockAlertHistory = [];
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        async function init() {
+            await loadData();
+            setupEventListeners();
+            startNotificationPolling();
+        }
 
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarDatos();
-            actualizarUI();
-            
-            // Auto-refresh cada 30 segundos
-            setInterval(async () => {
-                await cargarDatos();
-                actualizarUI();
-            }, 30000);
-        });
-
-        // Cargar datos desde JSONBin
-        async function cargarDatos() {
+        async function loadData() {
             try {
                 const response = await fetch(JSONBIN_URL, {
                     headers: { 'X-Master-Key': JSONBIN_API_KEY }
                 });
-                const result = await response.json();
-                datos = result.record;
+                const data = await response.json();
+                const record = data.record;
                 
-                // Asegurar estructura mínima
-                if (!datos.config) datos.config = { tasaCambio: 400 };
-                if (!datos.menu) datos.menu = [];
-                if (!datos.inventario) datos.inventario = {};
-                if (!datos.pedidos) datos.pedidos = [];
-                if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
-                if (!datos.notificaciones) datos.notificaciones = [];
+                state.inventory = record.inventario || {};
+                state.menu = record.menu || [];
+                state.pedidos = record.pedidos || [];
+                state.tasaCambio = record.config?.tasaCambio || 400;
                 
-                // Cargar historial de alertas
-                stockAlertHistory = datos.notificaciones || [];
-                
-                // Verificar alertas de stock
-                verificarAlertasStock();
+                updateDashboard();
+                renderInventory();
+                renderMenuAdmin();
+                updateIngredientSelect();
                 
             } catch (error) {
                 console.error('Error cargando datos:', error);
-                mostrarAlerta('Error al cargar datos. Verifica la conexión.', 'error');
             }
         }
 
-        // Verificar alertas de stock y guardar historial
-        function verificarAlertasStock() {
-            const alertas = [];
+        // ==========================================
+        // NAVEGACIÓN
+        // ==========================================
+        function showSection(section) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(section).classList.remove('hidden');
             
-            Object.entries(datos.inventario).forEach(([id, ing]) => {
-                if (ing.stock <= ing.minimo) {
-                    alertas.push({
-                        ingrediente: ing.nombre,
-                        stock: ing.stock,
-                        minimo: ing.minimo,
-                        timestamp: new Date().toISOString()
-                    });
-                }
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            const titles = {
+                dashboard: 'Dashboard',
+                inventario: 'Inventario',
+                menu: 'Menú & Precios',
+                reportes: 'Reportes'
+            };
+            document.getElementById('sectionTitle').textContent = titles[section];
+        }
+
+        function showInvTab(tab) {
+            document.querySelectorAll('.inv-tab').forEach(t => {
+                t.classList.remove('active', 'text-red-400', 'border-b-2', 'border-red-400');
+                t.classList.add('text-gray-400');
             });
+            event.target.classList.add('active', 'text-red-400', 'border-b-2', 'border-red-400');
+            event.target.classList.remove('text-gray-400');
             
-            // Si hay nuevas alertas, agregarlas al historial
-            if (alertas.length > 0) {
-                alertas.forEach(alerta => {
-                    // Verificar si ya existe una alerta similar reciente (últimas 2 horas)
-                    const existe = stockAlertHistory.some(h => 
-                        h.ingrediente === alerta.ingrediente && 
-                        new Date(h.timestamp) > new Date(Date.now() - 2 * 60 * 60 * 1000)
-                    );
-                    
-                    if (!existe) {
-                        stockAlertHistory.unshift(alerta);
-                    }
-                });
-                
-                // Guardar en datos
-                datos.notificaciones = stockAlertHistory;
-                
-                // Actualizar badge
-                document.getElementById('notifCount').textContent = alertas.length;
-                document.getElementById('notifCount').style.display = 'block';
-            } else {
-                document.getElementById('notifCount').style.display = 'none';
-            }
-            
-            return alertas.length;
+            document.getElementById('invCurrent').classList.toggle('hidden', tab !== 'current');
+            document.getElementById('invNew').classList.toggle('hidden', tab !== 'new');
         }
 
-        // Mostrar notificaciones
-        function showNotifications() {
-            const modal = document.getElementById('modal-notificaciones');
-            const list = document.getElementById('notificationList');
+        // ==========================================
+        // DASHBOARD
+        // ==========================================
+        function updateDashboard() {
+            const today = new Date().toDateString();
+            const todaySales = state.pedidos
+                .filter(p => new Date(p.timestamp).toDateString() === today && p.estado === 'cobrado')
+                .reduce((sum, p) => sum + p.total, 0);
             
-            if (stockAlertHistory.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No hay alertas recientes</p>';
-            } else {
-                list.innerHTML = stockAlertHistory.map(notif => `
-                    <div class="notification-item">
-                        <div>
-                            <strong style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> ${notif.ingrediente}</strong>
-                            <div style="color: var(--text-secondary); font-size: 0.875rem;">
-                                Stock: ${notif.stock} ${notif.unidad || 'unidades'} / Mínimo: ${notif.minimo}
-                            </div>
-                        </div>
-                        <div class="notification-time">
-                            ${new Date(notif.timestamp).toLocaleString()}
-                        </div>
+            const lowStock = Object.values(state.inventory).filter(inv => inv.stock <= (inv.minimo || 5)).length;
+            
+            document.getElementById('dashTodaySales').textContent = '$' + todaySales.toFixed(2);
+            document.getElementById('dashTodayCount').textContent = state.pedidos.filter(p => new Date(p.timestamp).toDateString() === today && p.estado === 'cobrado').length + ' pedidos';
+            document.getElementById('dashLowStock').textContent = lowStock;
+            document.getElementById('dashActiveItems').textContent = state.menu.filter(m => m.disponible).length;
+            document.getElementById('dashTasa').textContent = state.tasaCambio;
+            
+            // Actividad reciente
+            const recent = state.pedidos.slice(-5).reverse();
+            document.getElementById('recentActivity').innerHTML = recent.map(p => `
+                <div class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
+                    <div>
+                        <p class="font-semibold text-sm">${p.id}</p>
+                        <p class="text-xs text-gray-400">${p.estado} • ${new Date(p.timestamp).toLocaleTimeString()}</p>
                     </div>
-                `).join('');
-            }
-            
-            modal.classList.add('active');
+                    <span class="font-bold ${p.estado === 'cobrado' ? 'text-green-400' : p.estado === 'rechazado' ? 'text-red-400' : 'text-yellow-400'}">
+                        $${p.total.toFixed(2)}
+                    </span>
+                </div>
+            `).join('') || '<p class="text-gray-500">Sin actividad reciente</p>';
         }
 
-        // Guardar datos en JSONBin
-        async function guardarCambios() {
-            try {
-                const btn = document.querySelector('.btn-primary');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<span class="loading"></span> Guardando...';
-                btn.disabled = true;
+        // ==========================================
+        // INVENTARIO
+        // ==========================================
+        function renderInventory() {
+            const tbody = document.getElementById('inventoryTable');
+            const ingredients = Object.entries(state.inventory);
+            
+            if (ingredients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500">Inventario vacío. Agrega ingredientes en "Mercancía Nueva".</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = ingredients.map(([key, inv]) => {
+                const isLow = inv.stock <= (inv.minimo || 5);
+                return `
+                <tr class="ingredient-row">
+                    <td class="p-4 font-semibold">${inv.nombre || key}</td>
+                    <td class="p-4">
+                        <input type="number" step="0.01" value="${inv.stock}" 
+                            class="stock-field w-24 px-3 py-2 rounded text-center" 
+                            data-key="${key}" 
+                            ${state.stockUnlocked ? '' : 'disabled'}
+                            onchange="updateStock('${key}', this.value)">
+                    </td>
+                    <td class="p-4 text-gray-400">${inv.unidad || 'unidades'}</td>
+                    <td class="p-4">
+                        <input type="number" value="${inv.minimo || 5}" 
+                            class="stock-field w-24 px-3 py-2 rounded text-center" 
+                            ${state.stockUnlocked ? '' : 'disabled'}
+                            onchange="updateMinStock('${key}', this.value)">
+                    </td>
+                    <td class="p-4">
+                        <input type="number" step="0.01" value="${inv.precioUnitario || 0}" 
+                            class="stock-field w-24 px-3 py-2 rounded text-center" 
+                            ${state.stockUnlocked ? '' : 'disabled'}
+                            onchange="updatePrice('${key}', this.value)">
+                    </td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${isLow ? 'bg-red-600/20 text-red-400' : 'bg-green-600/20 text-green-400'}">
+                            ${isLow ? 'Bajo' : 'OK'}
+                        </span>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
 
+        function unlockStock() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function verifyPassword() {
+            if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
+                state.stockUnlocked = true;
+                closePasswordModal();
+                renderInventory();
+                showToast('Stock desbloqueado para edición');
+            } else {
+                alert('Contraseña incorrecta');
+            }
+        }
+
+        async function updateStock(key, value) {
+            state.inventory[key].stock = parseFloat(value) || 0;
+            await saveInventory();
+        }
+
+        async function updateMinStock(key, value) {
+            state.inventory[key].minimo = parseInt(value) || 5;
+            await saveInventory();
+        }
+
+        async function updatePrice(key, value) {
+            state.inventory[key].precioUnitario = parseFloat(value) || 0;
+            await saveInventory();
+        }
+
+        async function saveNewInventory() {
+            const nameSelect = document.getElementById('newInvName').value;
+            const nameText = document.getElementById('newInvNameText').value.trim();
+            const name = nameSelect || nameText.toLowerCase().replace(/\s+/g, '_');
+            
+            if (!name) {
+                alert('Ingresa un nombre para el ingrediente');
+                return;
+            }
+            
+            const qty = parseFloat(document.getElementById('newInvQty').value);
+            const unit = document.getElementById('newInvUnit').value;
+            const cost = parseFloat(document.getElementById('newInvCost').value);
+            
+            if (!qty || qty <= 0) {
+                alert('Ingresa una cantidad válida');
+                return;
+            }
+            
+            // Calcular precio unitario promedio
+            const unitPrice = cost && qty ? (cost / qty) : 0;
+            
+            // Normalizar nombre (sin acentos, minúsculas)
+            const normalizedName = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            
+            if (state.inventory[normalizedName]) {
+                // Sumar al existente
+                state.inventory[normalizedName].stock += qty;
+                if (cost) state.inventory[normalizedName].precioUnitario = unitPrice;
+            } else {
+                // Crear nuevo
+                state.inventory[normalizedName] = {
+                    nombre: nameText || nameSelect,
+                    stock: qty,
+                    unidad: unit,
+                    minimo: 5,
+                    precioUnitario: unitPrice,
+                    precioCosto: cost
+                };
+            }
+            
+            await saveInventory();
+            clearInvForm();
+            renderInventory();
+            updateIngredientSelect();
+            showToast('Mercancía agregada correctamente');
+        }
+
+        async function saveInventory() {
+            try {
                 const response = await fetch(JSONBIN_URL, {
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                });
+                const data = await response.json();
+                const record = data.record;
+                
+                record.inventario = state.inventory;
+                
+                await fetch(JSONBIN_URL, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Master-Key': JSONBIN_API_KEY
                     },
-                    body: JSON.stringify(datos)
+                    body: JSON.stringify(record)
                 });
-
-                if (response.ok) {
-                    mostrarAlerta('✅ Cambios guardados y sincronizados correctamente', 'success');
-                } else {
-                    throw new Error('Error al guardar');
-                }
+                
             } catch (error) {
-                console.error('Error guardando:', error);
-                mostrarAlerta('❌ Error al guardar cambios', 'error');
-            } finally {
-                const btn = document.querySelector('.btn-primary');
-                btn.innerHTML = '💾 Guardar Todo';
-                btn.disabled = false;
+                console.error('Error guardando inventario:', error);
             }
         }
 
-        // Actualizar toda la UI
-        function actualizarUI() {
-            actualizarDashboard();
-            renderizarMenu();
-            renderizarInventario();
-            renderizarReportes();
-            document.getElementById('tasa-display').textContent = datos.config.tasaCambio;
-            document.getElementById('tasa-config').textContent = datos.config.tasaCambio;
+        function clearInvForm() {
+            document.getElementById('newInvName').value = '';
+            document.getElementById('newInvNameText').value = '';
+            document.getElementById('newInvQty').value = '';
+            document.getElementById('newInvCost').value = '';
+            document.getElementById('priceCalcPreview').textContent = '$0.00 / unidad';
         }
 
-        // Dashboard
-        function actualizarDashboard() {
-            // Ventas hoy
-            const hoy = new Date().toISOString().split('T')[0];
-            const pedidosHoy = datos.pedidos.filter(p => 
-                p.timestamp.startsWith(hoy) && p.estado === 'cobrado'
-            );
-            const totalHoy = pedidosHoy.reduce((sum, p) => sum + (p.total || 0), 0);
-            
-            document.getElementById('ventas-hoy').textContent = `$${totalHoy.toFixed(2)}`;
-            document.getElementById('ordenes-hoy').textContent = `${pedidosHoy.length} órdenes`;
-            
-            // Productos activos
-            const activos = datos.menu.filter(p => p.disponible).length;
-            document.getElementById('productos-activos').textContent = activos;
-            
-            // Alertas stock
-            const alertas = verificarAlertasStock();
-            document.getElementById('alertas-stock').textContent = alertas;
-            
-            // Pedidos recientes
-            const recientes = datos.pedidos
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .slice(0, 5);
-            
-            const htmlPedidos = recientes.map(p => `
-                <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: 600;">${p.id}</div>
-                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                            ${new Date(p.timestamp).toLocaleString()}
+        // Calcular precio en tiempo real
+        document.getElementById('newInvCost')?.addEventListener('input', calculateUnitPrice);
+        document.getElementById('newInvQty')?.addEventListener('input', calculateUnitPrice);
+
+        function calculateUnitPrice() {
+            const cost = parseFloat(document.getElementById('newInvCost').value) || 0;
+            const qty = parseFloat(document.getElementById('newInvQty').value) || 1;
+            const unitPrice = cost / qty;
+            document.getElementById('priceCalcPreview').textContent = '$' + unitPrice.toFixed(2) + ' / ' + document.getElementById('newInvUnit').value;
+        }
+
+        // ==========================================
+        // MENÚ
+        // ==========================================
+        function renderMenuAdmin() {
+            const grid = document.getElementById('menuGridAdmin');
+            grid.innerHTML = state.menu.map(item => {
+                const stock = calculateDishStock(item);
+                return `
+                <div class="glass-panel p-6 rounded-xl border ${item.disponible ? 'border-gray-800' : 'border-red-900/50 opacity-60'}">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-lg">${item.nombre}</h4>
+                        <span class="text-green-400 font-bold">$${item.precio.toFixed(2)}</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-3">${item.descripcion}</p>
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-500 mb-1">Ingredientes:</p>
+                        <div class="flex flex-wrap gap-1">
+                            ${Object.keys(item.ingredientes || {}).map(ing => `
+                                <span class="text-xs bg-gray-800 px-2 py-1 rounded">${normalizeName(ing)}</span>
+                            `).join('')}
                         </div>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-weight: 600; color: var(--primary);">$${p.total?.toFixed(2)}</div>
-                        <span class="badge ${p.estado === 'cobrado' ? 'badge-success' : 'badge-warning'}">
-                            ${p.estado}
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-800">
+                        <span class="text-sm ${stock > 5 ? 'text-green-400' : stock > 0 ? 'text-yellow-400' : 'text-red-400'}">
+                            Stock: ${stock}
                         </span>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('pedidos-recientes').innerHTML = htmlPedidos || 
-                '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay pedidos recientes</p>';
-            
-            // Stock crítico
-            const criticos = Object.entries(datos.inventario)
-                .filter(([_, ing]) => ing.stock <= ing.minimo);
-            
-            const htmlStock = criticos.map(([id, ing]) => `
-                <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span style="font-weight: 600;">${ing.nombre}</span>
-                        <span style="color: var(--danger); font-weight: 600;">
-                            ${ing.stock} ${ing.unidad || 'unidades'}
-                        </span>
-                    </div>
-                    <div class="stock-bar">
-                        <div class="stock-fill danger" style="width: ${Math.min((ing.stock / ing.minimo) * 100, 100)}%"></div>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                        Mínimo: ${ing.minimo} ${ing.unidad || 'unidades'}
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('stock-critico').innerHTML = htmlStock || 
-                '<p style="color: var(--success); text-align: center; padding: 2rem;">✓ Todo el stock está en niveles óptimos</p>';
-        }
-
-        // Renderizar Menú - Nuevo formato con unidades
-        function renderizarMenu() {
-            const container = document.getElementById('platos-container');
-            
-            container.innerHTML = datos.menu.map(item => {
-                const precioBs = (item.precio * datos.config.tasaCambio).toFixed(2);
-                
-                // Procesar ingredientes para mostrar
-                let ingredientesHtml = '';
-                if (item.ingredientes) {
-                    ingredientesHtml = Object.entries(item.ingredientes).map(([key, val]) => {
-                        const ingInfo = datos.inventario[key];
-                        return `
-                            <span class="ingredient-tag">
-                                ${ingInfo ? ingInfo.nombre : key}: ${val.cantidad} ${ingInfo ? ingInfo.unidad : 'unidades'}
-                            </span>
-                        `;
-                    }).join('');
-                }
-                
-                return `
-                    <div class="plato-card">
-                        <div class="plato-header">
-                            <div>
-                                <div class="plato-title">${item.nombre}</div>
-                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
-                                    $${item.precio?.toFixed(2)} = ${precioBs} Bs. | Stock: ${item.stock || 0} unidades
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <label class="toggle" style="margin-right: 1rem;">
-                                    <input type="checkbox" ${item.disponible ? 'checked' : ''} 
-                                           onchange="toggleDisponible('${item.id}', this.checked)">
-                                    <span class="slider"></span>
-                                </label>
-                                <button class="btn btn-secondary btn-small" onclick="editarPlatillo('${item.id}')">
-                                    ✏️ Editar
-                                </button>
-                            </div>
-                        </div>
-                        <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
-                            ${item.descripcion || 'Sin descripción'}
-                        </div>
-                        <div class="plato-ingredients">
-                            <strong>Ingredientes:</strong><br>
-                            ${ingredientesHtml || 'No especificados'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Renderizar Inventario - Unidades/Piezas
-        function renderizarInventario() {
-            const container = document.getElementById('lista-inventario');
-            const items = Object.entries(datos.inventario);
-            
-            container.innerHTML = items.map(([id, ing]) => {
-                const percent = ing.minimo > 0 ? (ing.stock / (ing.minimo * 3)) * 100 : 100;
-                const isLow = ing.stock <= ing.minimo;
-                
-                return `
-                    <div class="ingredient-item">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600;">${ing.nombre}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                ${ing.stock} ${ing.unidad || 'unidades'} 
-                                ${isLow ? '<span style="color: var(--danger);">⚠️ BAJO</span>' : ''} | 
-                                Mín: ${ing.minimo} ${ing.unidad || 'unidades'} | 
-                                $${ing.precioUnitario?.toFixed(2)}/${ing.unidad || 'unidad'}
-                            </div>
-                            <div class="stock-bar">
-                                <div class="stock-fill ${isLow ? 'danger' : percent < 50 ? 'warning' : ''}" 
-                                     style="width: ${Math.min(percent, 100)}%"></div>
-                            </div>
-                        </div>
-                        <div class="ingredient-controls">
-                            <button class="btn btn-small btn-secondary" onclick="ajustarStock('${id}', -1)">-</button>
-                            <button class="btn btn-small btn-secondary" onclick="ajustarStock('${id}', 1)">+</button>
-                            <button class="btn btn-small btn-primary" onclick="editarIngrediente('${id}')">Editar</button>
-                        </div>
-                    </div>
-                `;
-            }).join('') || '<p style="color: var(--text-secondary); text-align: center;">No hay ingredientes registrados</p>';
-        }
-
-        // Renderizar Reportes
-        function renderizarReportes() {
-            // Calcular métricas
-            const ahora = new Date();
-            const inicioDia = new Date(ahora.setHours(0,0,0,0));
-            const inicioSemana = new Date(ahora.setDate(ahora.getDate() - 7));
-            
-            const pedidosCobrados = datos.pedidos.filter(p => p.estado === 'cobrado');
-            
-            const ventasDia = pedidosCobrados
-                .filter(p => new Date(p.timestamp) >= inicioDia)
-                .reduce((sum, p) => sum + (p.total || 0), 0);
-            
-            const ventasSemana = pedidosCobrados
-                .filter(p => new Date(p.timestamp) >= inicioSemana)
-                .reduce((sum, p) => sum + (p.total || 0), 0);
-            
-            const ordenesDia = pedidosCobrados.filter(p => new Date(p.timestamp) >= inicioDia).length;
-            const ticketPromedio = ordenesDia > 0 ? ventasDia / ordenesDia : 0;
-            
-            // Platillo más vendido
-            const conteoPlatillos = {};
-            pedidosCobrados.forEach(p => {
-                p.items?.forEach(item => {
-                    conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + item.cantidad;
-                });
-            });
-            const platilloTop = Object.entries(conteoPlatillos)
-                .sort((a, b) => b[1] - a[1])[0];
-            
-            document.getElementById('reporte-ventas-dia').textContent = `$${ventasDia.toFixed(2)}`;
-            document.getElementById('reporte-ordenes-dia').textContent = `${ordenesDia} órdenes`;
-            document.getElementById('reporte-ventas-semana').textContent = `$${ventasSemana.toFixed(2)}`;
-            document.getElementById('ticket-promedio').textContent = `$${ticketPromedio.toFixed(2)}`;
-            document.getElementById('platillo-top').textContent = platilloTop ? platilloTop[0] : '-';
-            
-            // Tabla de ventas
-            const tbody = document.getElementById('ventas-body');
-            tbody.innerHTML = pedidosCobrados
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .map(p => {
-                    const totalBs = (p.total * datos.config.tasaCambio).toFixed(2);
-                    return `
-                        <tr>
-                            <td>${new Date(p.timestamp).toLocaleDateString()}</td>
-                            <td>${p.id}</td>
-                            <td>${p.items?.length || 0} items</td>
-                            <td>$${p.total?.toFixed(2)}</td>
-                            <td>${totalBs} Bs.</td>
-                            <td>${p.metodoPago || 'N/A'}</td>
-                            <td><span class="badge badge-success">${p.estado}</span></td>
-                        </tr>
-                    `;
-                }).join('');
-        }
-
-        // Funciones de utilidad
-        function cambiarTab(tabId) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        function cerrarModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function mostrarAlerta(mensaje, tipo) {
-            // Crear notificación toast
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 2rem;
-                right: 2rem;
-                background: ${tipo === 'success' ? 'var(--success)' : 'var(--danger)'};
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 0.5rem;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                z-index: 9999;
-                animation: slideIn 0.3s ease;
-            `;
-            toast.textContent = mensaje;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-
-        // Gestión de Platillos
-        function editarPlatillo(id) {
-            const platillo = datos.menu.find(p => p.id === id);
-            if (!platillo) return;
-            
-            document.getElementById('edit-id').value = platillo.id;
-            document.getElementById('edit-nombre').value = platillo.nombre;
-            document.getElementById('edit-categoria').value = platillo.categoria;
-            document.getElementById('edit-descripcion').value = platillo.descripcion || '';
-            document.getElementById('edit-stock').value = platillo.stock || 0;
-            document.getElementById('edit-disponible').checked = platillo.disponible;
-            document.getElementById('edit-precio-usd').value = platillo.precio;
-            
-            // Renderizar lista de ingredientes
-            renderEditIngredientes(platillo.ingredientes || {});
-            
-            document.getElementById('modal-platillo').classList.add('active');
-        }
-
-        function renderEditIngredientes(ingredientes) {
-            const container = document.getElementById('edit-ingredientes-list');
-            
-            if (Object.keys(ingredientes).length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary);">Ningún ingrediente agregado</p>';
-                return;
-            }
-            
-            container.innerHTML = Object.entries(ingredientes).map(([key, val]) => {
-                const ing = datos.inventario[key];
-                return `
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
-                        <select class="form-select" style="flex: 2;" onchange="updateIngKey('${key}', this.value)">
-                            ${Object.entries(datos.inventario).map(([id, ing]) => 
-                                `<option value="${id}" ${id === key ? 'selected' : ''}>${ing.nombre}</option>`
-                            ).join('')}
-                        </select>
-                        <input type="number" class="form-input" style="flex: 1;" value="${val.cantidad}" 
-                               placeholder="Cantidad" onchange="updateIngVal('${key}', this.value)">
-                        <button class="btn btn-danger btn-small" onclick="removeIng('${key}')">
-                            <i class="fas fa-trash"></i>
+                        <button onclick="toggleDish('${item.id}')" class="text-sm px-3 py-1 rounded ${item.disponible ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}">
+                            ${item.disponible ? 'Activo' : 'Inactivo'}
                         </button>
                     </div>
+                </div>
                 `;
             }).join('');
         }
 
-        function agregarIngredienteAPlato() {
-            const id = 'ing_' + Date.now();
-            const platillo = datos.menu.find(p => p.id === document.getElementById('edit-id').value);
-            if (!platillo.ingredientes) platillo.ingredientes = {};
-            
-            // Agregar primer ingrediente disponible o vacío
-            const firstIng = Object.keys(datos.inventario)[0] || '';
-            platillo.ingredientes[id] = { cantidad: 1, obligatorio: false };
-            
-            renderEditIngredientes(platillo.ingredientes);
-        }
-
-        function guardarPlatillo() {
-            const id = document.getElementById('edit-id').value;
-            const platillo = datos.menu.find(p => p.id === id);
-            
-            if (!platillo) return;
-            
-            platillo.nombre = document.getElementById('edit-nombre').value;
-            platillo.categoria = document.getElementById('edit-categoria').value;
-            platillo.precio = parseFloat(document.getElementById('edit-precio-usd').value) || 0;
-            platillo.descripcion = document.getElementById('edit-descripcion').value;
-            platillo.stock = parseInt(document.getElementById('edit-stock').value) || 0;
-            platillo.disponible = document.getElementById('edit-disponible').checked;
-            
-            cerrarModal('modal-platillo');
-            renderizarMenu();
-            guardarCambios();
-        }
-
-        function toggleDisponible(id, disponible) {
-            const platillo = datos.menu.find(p => p.id === id);
-            if (platillo) {
-                platillo.disponible = disponible;
-                guardarCambios();
+        function calculateDishStock(item) {
+            if (!item.ingredientes) return 999;
+            let minStock = Infinity;
+            for (const [ing, config] of Object.entries(item.ingredientes)) {
+                const available = state.inventory[ing]?.stock || 0;
+                const needed = config.cantidad || 1;
+                const possible = Math.floor(available / needed);
+                minStock = Math.min(minStock, possible);
             }
+            return minStock === Infinity ? 0 : minStock;
         }
 
-        // Gestión de Tasa de Cambio
-        function abrirModalTasa() {
-            document.getElementById('nueva-tasa').value = datos.config.tasaCambio;
-            document.getElementById('modal-tasa').classList.add('active');
+        function normalizeName(name) {
+            return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
-        function actualizarTasa() {
-            const nuevaTasa = parseFloat(document.getElementById('nueva-tasa').value);
-            if (!nuevaTasa || nuevaTasa <= 0) {
-                alert('Introduce una tasa válida');
+        function updateIngredientSelect() {
+            const select = document.getElementById('newInvName');
+            if (!select) return;
+            
+            const options = Object.keys(state.inventory).map(key => {
+                const inv = state.inventory[key];
+                return `<option value="${key}">${inv.nombre || key}</option>`;
+            }).join('');
+            
+            select.innerHTML = '<option value="">Seleccionar existente...</option>' + options;
+        }
+
+        // ==========================================
+        // NUEVO PLATILLO
+        // ==========================================
+        function openNewDishModal() {
+            state.dishIngredients = [];
+            document.getElementById('dishName').value = '';
+            document.getElementById('dishPrice').value = '';
+            document.getElementById('dishDesc').value = '';
+            renderDishIngredients();
+            document.getElementById('newDishModal').classList.remove('hidden');
+        }
+
+        function closeNewDishModal() {
+            document.getElementById('newDishModal').classList.add('hidden');
+        }
+
+        function addIngredientField() {
+            state.dishIngredients.push({ name: '', amount: '', unit: 'kg' });
+            renderDishIngredients();
+        }
+
+        function removeIngredient(index) {
+            state.dishIngredients.splice(index, 1);
+            renderDishIngredients();
+            calculateDishStockPreview();
+        }
+
+        function renderDishIngredients() {
+            const container = document.getElementById('dishIngredients');
+            container.innerHTML = state.dishIngredients.map((ing, idx) => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" placeholder="Nombre ingrediente" 
+                        class="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
+                        value="${ing.name}"
+                        onchange="updateIngredient(${idx}, 'name', this.value)">
+                    <input type="number" step="0.01" placeholder="Cant" 
+                        class="w-20 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
+                        value="${ing.amount}"
+                        onchange="updateIngredient(${idx}, 'amount', this.value)">
+                    <select class="w-24 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
+                        onchange="updateIngredient(${idx}, 'unit', this.value)">
+                        <option value="kg" ${ing.unit === 'kg' ? 'selected' : ''}>kg</option>
+                        <option value="g" ${ing.unit === 'g' ? 'selected' : ''}>g</option>
+                        <option value="L" ${ing.unit === 'L' ? 'selected' : ''}>L</option>
+                        <option value="ml" ${ing.unit === 'ml' ? 'selected' : ''}>ml</option>
+                        <option value="unidades" ${ing.unit === 'unidades' ? 'selected' : ''}>uni</option>
+                    </select>
+                    <button onclick="removeIngredient(${idx})" class="text-red-400 hover:text-red-300 px-2">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function updateIngredient(idx, field, value) {
+            state.dishIngredients[idx][field] = value;
+            calculateDishStockPreview();
+        }
+
+        function calculateDishStockPreview() {
+            let minStock = Infinity;
+            state.dishIngredients.forEach(ing => {
+                if (!ing.name || !ing.amount) return;
+                const normalized = ing.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_');
+                const available = state.inventory[normalized]?.stock || 0;
+                const needed = parseFloat(ing.amount) || 1;
+                const possible = Math.floor(available / needed);
+                minStock = Math.min(minStock, possible);
+            });
+            document.getElementById('calculatedStock').textContent = (minStock === Infinity ? 0 : minStock) + ' unidades';
+        }
+
+        async function saveNewDish() {
+            const name = document.getElementById('dishName').value.trim();
+            const price = parseFloat(document.getElementById('dishPrice').value);
+            const category = document.getElementById('dishCategory').value;
+            const description = document.getElementById('dishDesc').value.trim();
+            
+            if (!name || !price) {
+                alert('Completa nombre y precio');
                 return;
             }
             
-            datos.config.tasaCambio = nuevaTasa;
-            datos.config.ultimaActualizacion = new Date().toISOString();
-            
-            cerrarModal('modal-tasa');
-            actualizarUI();
-            guardarCambios();
-            mostrarAlerta(`✅ Tasa actualizada a ${nuevaTasa} Bs/$`, 'success');
-        }
-
-        // Gestión de Inventario
-        function selectUnidad(unidad) {
-            document.querySelectorAll('.unidad-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('ingrediente-unidad').value = unidad;
-        }
-
-        function abrirModalIngrediente() {
-            document.getElementById('ingrediente-id').value = '';
-            document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente';
-            document.getElementById('ingrediente-nombre').value = '';
-            document.getElementById('ingrediente-stock').value = '';
-            document.getElementById('ingrediente-minimo').value = '';
-            document.getElementById('ingrediente-costo').value = '';
-            document.querySelectorAll('.unidad-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('.unidad-btn').classList.add('active');
-            document.getElementById('ingrediente-unidad').value = 'unidades';
-            document.getElementById('modal-ingrediente').classList.add('active');
-        }
-
-        function editarIngrediente(id) {
-            const ing = datos.inventario[id];
-            if (!ing) return;
-            
-            document.getElementById('ingrediente-id').value = id;
-            document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente';
-            document.getElementById('ingrediente-nombre').value = ing.nombre;
-            document.getElementById('ingrediente-stock').value = ing.stock;
-            document.getElementById('ingrediente-minimo').value = ing.minimo;
-            document.getElementById('ingrediente-costo').value = ing.precioUnitario || '';
-            
-            // Seleccionar unidad correcta
-            document.querySelectorAll('.unidad-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(ing.unidad || 'unidades'));
+            const ingredients = {};
+            state.dishIngredients.forEach(ing => {
+                if (ing.name && ing.amount) {
+                    const key = ing.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_');
+                    ingredients[key] = {
+                        cantidad: parseFloat(ing.amount),
+                        unidad: ing.unit,
+                        obligatorio: false
+                    };
+                }
             });
-            document.getElementById('ingrediente-unidad').value = ing.unidad || 'unidades';
             
-            document.getElementById('modal-ingrediente').classList.add('active');
-        }
-
-        function guardarIngrediente() {
-            const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
-            
-            datos.inventario[id] = {
-                nombre: document.getElementById('ingrediente-nombre').value,
-                stock: parseFloat(document.getElementById('ingrediente-stock').value) || 0,
-                unidad: document.getElementById('ingrediente-unidad').value,
-                minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
-                precioUnitario: parseFloat(document.getElementById('ingrediente-costo').value) || 0
+            const newDish = {
+                id: 'dish_' + Date.now(),
+                nombre: name,
+                precio: price,
+                categoria: category,
+                descripcion: description,
+                ingredientes: ingredients,
+                disponible: true,
+                stockMaximo: 999
             };
             
-            cerrarModal('modal-ingrediente');
-            renderizarInventario();
-            guardarCambios();
-        }
-
-        function ajustarStock(id, delta) {
-            if (datos.inventario[id]) {
-                datos.inventario[id].stock = Math.max(0, (datos.inventario[id].stock || 0) + delta);
-                renderizarInventario();
-                guardarCambios();
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                });
+                const data = await response.json();
+                const record = data.record;
+                
+                record.menu = record.menu || [];
+                record.menu.push(newDish);
+                
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(record)
+                });
+                
+                state.menu.push(newDish);
+                renderMenuAdmin();
+                closeNewDishModal();
+                showToast('Platillo creado correctamente');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar platillo');
             }
         }
 
-        // Configuración
-        function guardarConfig() {
-            datos.config.nombre = document.getElementById('config-nombre').value;
-            datos.config.tasaCambio = parseFloat(document.getElementById('config-tasa-default').value) || 400;
-            datos.config.email = document.getElementById('config-email').value;
+        async function toggleDish(id) {
+            const dish = state.menu.find(m => m.id === id);
+            if (!dish) return;
             
-            guardarCambios();
-            mostrarAlerta('✅ Configuración guardada', 'success');
+            dish.disponible = !dish.disponible;
+            
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                });
+                const data = await response.json();
+                const record = data.record;
+                
+                const idx = record.menu.findIndex(m => m.id === id);
+                if (idx >= 0) record.menu[idx].disponible = dish.disponible;
+                
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(record)
+                });
+                
+                renderMenuAdmin();
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
-        // Exportar/Backup
-        function exportarDatos() {
-            const dataStr = JSON.stringify(datos, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `saki-sushi-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+        // ==========================================
+        // NOTIFICACIONES
+        // ==========================================
+        function startNotificationPolling() {
+            loadNotifications();
+            setInterval(checkNewOrders, 10000);
         }
 
-        async function sincronizarDatos() {
-            await cargarDatos();
-            actualizarUI();
-            mostrarAlerta('✅ Datos sincronizados', 'success');
+        async function checkNewOrders() {
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                });
+                const data = await response.json();
+                const pedidos = data.record.pedidos || [];
+                
+                const pendingCount = pedidos.filter(p => p.estado === 'pendiente').length;
+                if (pendingCount > 0) {
+                    addNotification('Nuevos pedidos pendientes: ' + pendingCount);
+                }
+            } catch (error) {
+                console.error('Error checking orders:', error);
+            }
         }
 
-        function showStockAlerts() {
-            showNotifications();
+        function addNotification(message) {
+            const id = Date.now();
+            state.notifications.unshift({ id, message, read: false, time: new Date() });
+            state.unreadCount++;
+            updateNotificationBadge();
+            renderNotifications();
         }
+
+        function updateNotificationBadge() {
+            const btn = document.getElementById('notificationBtn');
+            btn.setAttribute('data-count', state.unreadCount);
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notificationList');
+            if (state.notifications.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-4">No hay notificaciones</p>';
+                return;
+            }
+            
+            list.innerHTML = state.notifications.map(n => `
+                <div class="p-3 rounded-lg ${n.read ? 'bg-gray-800/30' : 'bg-red-600/10 border-l-2 border-red-600'} cursor-pointer" onclick="markRead(${n.id})">
+                    <p class="text-sm ${n.read ? 'text-gray-400' : 'text-white font-semibold'}">${n.message}</p>
+                    <p class="text-xs text-gray-500 mt-1">${n.time.toLocaleTimeString()}</p>
+                </div>
+            `).join('');
+        }
+
+        function markRead(id) {
+            const n = state.notifications.find(x => x.id === id);
+            if (n && !n.read) {
+                n.read = true;
+                state.unreadCount = Math.max(0, state.unreadCount - 1);
+                updateNotificationBadge();
+                renderNotifications();
+            }
+        }
+
+        function markAllRead() {
+            state.notifications.forEach(n => n.read = true);
+            state.unreadCount = 0;
+            updateNotificationBadge();
+            renderNotifications();
+        }
+
+        // ==========================================
+        // UTILIDADES
+        // ==========================================
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function setupEventListeners() {
+            // Toggle notificaciones
+            document.getElementById('notificationBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('notificationDropdown').classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('notificationDropdown');
+                const btn = document.getElementById('notificationBtn');
+                if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        // Iniciar
+        init();
     </script>
 </body>
 </html>
