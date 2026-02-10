@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Panel del Cajero - Saki Sushi</title>
+    <title>💰 Panel del Cajero - Saki Sushi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -34,6 +34,73 @@
             min-height: 100vh;
             padding: 20px;
             color: var(--secondary);
+        }
+
+        /* Tasa Bar - SIEMPRE VISIBLE */
+        .tasa-bar {
+            background: linear-gradient(135deg, #b91c1c, var(--primary));
+            padding: 1rem 2rem;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .tasa-display {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .tasa-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .tasa-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tasa-input {
+            width: 120px;
+            padding: 0.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .tasa-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .btn-tasa {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-tasa:hover {
+            background: white;
+            color: var(--primary);
         }
 
         .container {
@@ -595,171 +662,39 @@
             cursor: not-allowed;
         }
 
-        /* Rechazo Modal */
-        .rejection-reasons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 20px 0;
+        /* Alert Modal */
+        .alert-modal .modal-content {
+            max-width: 500px;
+            text-align: center;
         }
 
-        .rejection-reason {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: var(--transition);
+        .alert-icon {
+            font-size: 4rem;
+            color: var(--warning);
+            margin-bottom: 1rem;
         }
 
-        .rejection-reason:hover {
-            border-color: var(--primary);
-            background: #FFEBEE;
-        }
-
-        .rejection-reason input {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* Historial Modal */
-        .history-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Menu Editor */
-        .menu-editor {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px var(--shadow);
-        }
-
-        .menu-editor-header {
-            background: linear-gradient(135deg, var(--info), #1565C0);
+        /* Timer Badge */
+        .timer-badge {
+            background: var(--warning);
             color: white;
-            padding: 20px 25px;
-            display: flex;
-            justify-content: space-between;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
             align-items: center;
-        }
-
-        .platillo-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 100px;
-            gap: 20px;
-            padding: 20px 25px;
-            border-bottom: 1px solid #f0f0f0;
-            align-items: center;
-        }
-
-        @media (max-width: 768px) {
-            .platillo-row {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-        }
-
-        .platillo-info h4 {
-            font-family: 'Montserrat', sans-serif;
-            color: var(--secondary);
-            margin-bottom: 5px;
-        }
-
-        .platillo-info p {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .platillo-precio {
-            display: flex;
-            flex-direction: column;
             gap: 5px;
         }
 
-        .platillo-precio label {
-            font-size: 0.85em;
-            color: #666;
-            font-weight: 500;
+        .timer-badge.urgent {
+            background: var(--danger);
+            animation: pulse 1s infinite;
         }
 
-        .platillo-precio input {
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: var(--transition);
-        }
-
-        .platillo-precio input:focus {
-            outline: none;
-            border-color: var(--info);
-        }
-
-        .platillo-disponible {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: #ccc;
-            border-radius: 13px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .toggle-switch.active {
-            background: var(--success);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 22px;
-            height: 22px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: var(--transition);
-        }
-
-        .toggle-switch.active::after {
-            left: 26px;
-        }
-
-        .btn-guardar {
-            background: linear-gradient(135deg, var(--success), #2E7D32);
-            color: white;
-            padding: 8px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .btn-guardar:hover {
-            transform: scale(1.05);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         /* Loading */
@@ -808,7 +743,7 @@
         /* Notification */
         .notification {
             position: fixed;
-            top: 20px;
+            top: 80px;
             right: 20px;
             background: white;
             padding: 20px 25px;
@@ -831,124 +766,72 @@
             display: flex;
         }
 
-        .notification-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #E8F5E9;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-
-        .notification-content h4 {
-            font-family: 'Montserrat', sans-serif;
-            color: var(--secondary);
-            margin-bottom: 3px;
-        }
-
-        .notification-content p {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        /* Delivery Info Display */
-        .delivery-info {
-            background: #E3F2FD;
-            border: 2px solid var(--info);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-        }
-
-        .delivery-info i {
-            color: var(--info);
-            margin-right: 5px;
-        }
-
-        .comprobante-img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 10px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .comprobante-img:hover {
-            transform: scale(1.05);
-        }
-
-        .comprobante-preview {
-            background: #f0f0f0;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 10px;
-        }
-
-        .comprobante-preview:hover {
-            border-color: var(--primary);
-            background: #FFEBEE;
-        }
-
-        .comprobante-preview i {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        /* Timer Badge */
-        .timer-badge {
-            background: var(--warning);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .timer-badge.urgent {
-            background: var(--danger);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Item con personalizaci�n */
-        .item-personalizacion {
-            font-size: 0.8rem;
-            color: #666;
-            font-style: italic;
-            margin-left: 10px;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tasa-bar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Alert Modal para Tasa del Día -->
+    <div class="modal-overlay alert-modal" id="alertTasaModal">
+        <div class="modal-content">
+            <div class="modal-body" style="padding: 2rem;">
+                <div class="alert-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 style="margin-bottom: 1rem; color: var(--secondary);">¡Buenos días!</h2>
+                <p style="color: #666; margin-bottom: 1.5rem;">
+                    Antes de iniciar actividades, por favor actualiza la <strong>tasa del dólar del día</strong>.
+                </p>
+                <div style="background: #f8f8f8; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--secondary);">Tasa del Día (Bs. por $1)</label>
+                    <input type="number" step="0.01" id="tasaInicialInput" placeholder="0.00" 
+                           style="width: 100%; padding: 1rem; font-size: 1.5rem; text-align: center; font-weight: 700; border: 2px solid var(--primary); border-radius: 0.5rem;">
+                </div>
+                <button class="btn-cobrar" onclick="guardarTasaInicial()" style="width: 100%; justify-content: center;">
+                    Guardar y Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
         <h2>Cargando panel...</h2>
     </div>
 
+    <!-- Notification -->
     <div class="notification" id="notification">
-        <div class="notification-icon">
-            <i class="fas fa-check"></i>
+        <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></i>
+        <div>
+            <h4 style="margin: 0; color: var(--secondary);">Éxito</h4>
+            <p id="notificationText" style="margin: 0; color: #666;">Operación completada</p>
         </div>
-        <div class="notification-content">
-            <h4>�xito</h4>
-            <p id="notificationText">Operaci�n completada</p>
+    </div>
+
+    <!-- Tasa del Día Bar -->
+    <div class="tasa-bar">
+        <div class="tasa-display">
+            <span>Tasa del Día:</span>
+            <input type="number" step="0.01" class="tasa-input" id="tasaDiaInput" placeholder="0.00">
+            <span>Bs/$</span>
+        </div>
+        <button class="btn-tasa" onclick="actualizarTasaManual()">
+            <i class="fas fa-sync-alt"></i> Actualizar
+        </button>
+        <div style="color: white; font-size: 0.9rem; opacity: 0.9;">
+            Tasa Efectiva: <strong id="tasaEfectivaDisplay">0.00</strong> Bs/$
         </div>
     </div>
 
@@ -960,11 +843,9 @@
                 <button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <div class="payment-summary" id="cobroSummary">
-                    <!-- Resumen del pedido -->
-                </div>
+                <div class="payment-summary" id="cobroSummary"></div>
 
-                <h3 style="font-family: 'Montserrat', sans-serif; margin-bottom: 15px;">M�todo de Pago</h3>
+                <h3 style="font-family: 'Montserrat', sans-serif; margin-bottom: 15px;">Método de Pago</h3>
                 <div class="payment-method-grid">
                     <button class="payment-method-btn" onclick="selectPaymentMethod('efectivo_bs')">
                         <i class="fas fa-money-bill-wave"></i><br>Efectivo Bs
@@ -973,14 +854,14 @@
                         <i class="fas fa-dollar-sign"></i><br>Efectivo $
                     </button>
                     <button class="payment-method-btn" onclick="selectPaymentMethod('pago_movil')">
-                        <i class="fas fa-mobile-alt"></i><br>Pago M�vil
+                        <i class="fas fa-mobile-alt"></i><br>Pago Móvil
                     </button>
                     <button class="payment-method-btn" onclick="selectPaymentMethod('punto_venta')">
                         <i class="fas fa-credit-card"></i><br>Punto de Venta
                     </button>
                 </div>
 
-                <!-- Formulario Efectivo Bs -->
+                <!-- Formularios de pago... (mantener igual que antes) -->
                 <div class="payment-form" id="form-efectivo_bs">
                     <div class="form-group">
                         <label>Monto recibido (Bs)</label>
@@ -988,7 +869,6 @@
                     </div>
                 </div>
 
-                <!-- Formulario Efectivo USD -->
                 <div class="payment-form" id="form-efectivo_usd">
                     <div class="form-group">
                         <label>Monto recibido ($)</label>
@@ -996,18 +876,14 @@
                     </div>
                     <div class="form-group">
                         <label>Tasa de cambio (Bs/$)</label>
-                        <input type="number" id="tasaCambioCobro" value="400" oninput="calcularCambio()">
+                        <input type="number" id="tasaCambioCobro" readonly>
                     </div>
                 </div>
 
-                <!-- Formulario Pago M�vil -->
                 <div class="payment-form" id="form-pago_movil">
                     <div class="form-group">
-                        <label>�ltimos 6 d�gitos de referencia</label>
+                        <label>Últimos 6 dígitos de referencia</label>
                         <input type="text" id="referenciaPago" placeholder="000000" maxlength="6">
-                        <small style="color: #666; display: block; margin-top: 5px;">
-                            Use "000000" si no tom� la referencia
-                        </small>
                     </div>
                     <div class="form-group">
                         <label>Monto pagado (Bs)</label>
@@ -1015,7 +891,6 @@
                     </div>
                 </div>
 
-                <!-- Formulario Punto de Venta -->
                 <div class="payment-form" id="form-punto_venta">
                     <div class="form-group">
                         <label>Monto pagado (Bs)</label>
@@ -1023,44 +898,34 @@
                     </div>
                 </div>
 
-                <div class="change-display" id="changeDisplay">
-                    <!-- Mostrar cambio/vuelto -->
-                </div>
+                <div class="change-display" id="changeDisplay"></div>
 
-                <!-- Opciones especiales -->
                 <div class="special-options" id="specialOptions" style="display: none;">
                     <h3><i class="fas fa-exclamation-circle"></i> Opciones de Diferencia</h3>
-                    
                     <div class="special-option">
                         <input type="radio" name="specialOption" id="optNormal" value="normal" checked onchange="toggleSpecialInput()">
                         <label for="optNormal">Cobro exacto</label>
                     </div>
-                    
                     <div class="special-option">
                         <input type="radio" name="specialOption" id="optAfavor" value="afavor" onchange="toggleSpecialInput()">
                         <label for="optAfavor">A favor (cliente debe)</label>
                     </div>
-                    
                     <div class="special-input" id="inputAfavor">
                         <label>Monto a favor:</label>
                         <input type="number" id="montoAfavor" placeholder="0.00" readonly>
                     </div>
-                    
                     <div class="special-option">
                         <input type="radio" name="specialOption" id="optCondonacion" value="condonacion" onchange="toggleSpecialInput()">
-                        <label for="optCondonacion">Condonaci�n (no cobrar diferencia)</label>
+                        <label for="optCondonacion">Condonación (no cobrar diferencia)</label>
                     </div>
-                    
                     <div class="special-input" id="inputCondonacion">
                         <label>Monto condonado:</label>
                         <input type="number" id="montoCondonacion" placeholder="0.00" readonly>
                     </div>
-                    
                     <div class="special-option">
                         <input type="radio" name="specialOption" id="optCasa" value="casa" onchange="toggleSpecialInput()">
-                        <label for="optCasa">Por parte de la casa (invitaci�n)</label>
+                        <label for="optCasa">Por parte de la casa (invitación)</label>
                     </div>
-                    
                     <div class="special-input" id="inputCasa">
                         <label>Nombre de quien invita:</label>
                         <input type="text" id="nombreInvita" placeholder="Nombre del empleado/admin">
@@ -1084,33 +949,28 @@
                 <button class="modal-close" onclick="closeModal('rechazoModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 20px; color: #666;">Selecciona la raz�n del rechazo:</p>
-                
-                <div class="rejection-reasons">
-                    <label class="rejection-reason">
-                        <input type="radio" name="rejectionReason" value="referencia_invalida">
-                        <span>Referencia de pago inv�lida o falsa</span>
+                <p style="margin-bottom: 20px; color: #666;">Selecciona la razón del rechazo:</p>
+                <div class="rejection-reasons" style="display: flex; flex-direction: column; gap: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="rejectionReason" value="referencia_invalida" style="width: 20px; height: 20px;">
+                        <span>Referencia de pago inválida o falsa</span>
                     </label>
-                    <label class="rejection-reason">
-                        <input type="radio" name="rejectionReason" value="monto_insuficiente">
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="rejectionReason" value="monto_insuficiente" style="width: 20px; height: 20px;">
                         <span>Monto insuficiente</span>
                     </label>
-                    <label class="rejection-reason">
-                        <input type="radio" name="rejectionReason" value="datos_incorrectos">
-                        <span>Datos de contacto/direcci�n incorrectos</span>
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="rejectionReason" value="datos_incorrectos" style="width: 20px; height: 20px;">
+                        <span>Datos de contacto/dirección incorrectos</span>
                     </label>
-                    <label class="rejection-reason">
-                        <input type="radio" name="rejectionReason" value="no_disponible">
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="rejectionReason" value="no_disponible" style="width: 20px; height: 20px;">
                         <span>Producto no disponible</span>
                     </label>
-                    <label class="rejection-reason">
-                        <input type="radio" name="rejectionReason" value="fuera_horario">
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="rejectionReason" value="fuera_horario" style="width: 20px; height: 20px;">
                         <span>Fuera de horario de delivery</span>
                     </label>
-                </div>
-
-                <div class="payment-timer" style="background: var(--info); margin-top: 20px;">
-                    <p>El cliente tiene <strong>25 minutos</strong> para realizar un nuevo pago</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1122,46 +982,11 @@
         </div>
     </div>
 
-    <!-- Modal de Historial -->
-    <div class="modal-overlay" id="historialModal">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, var(--info), #1565C0);">
-                <h2><i class="fas fa-history"></i> Historial</h2>
-                <button class="modal-close" onclick="closeModal('historialModal')"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="history-list" id="historyList">
-                    <!-- Se llena din�micamente -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal secondary" onclick="closeModal('historialModal')">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Comprobante -->
-    <div class="modal-overlay" id="comprobanteModal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header" style="background: linear-gradient(135deg, var(--info), #1565C0);">
-                <h2><i class="fas fa-image"></i> Comprobante de Pago</h2>
-                <button class="modal-close" onclick="closeModal('comprobanteModal')"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body" style="text-align: center;">
-                <img id="comprobanteImg" src="" alt="Comprobante" style="max-width: 100%; border-radius: 8px;">
-                <p id="comprobanteInfo" style="margin-top: 15px; color: #666;"></p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal secondary" onclick="closeModal('comprobanteModal')">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
     <div class="container">
         <div class="header">
             <div class="header-left">
                 <h1><i class="fas fa-cash-register"></i> Panel del Cajero</h1>
-                <p>Saki Sushi - Gesti�n de pedidos y precios</p>
+                <p>Saki Sushi - Gestión de pedidos y cobros</p>
             </div>
             <div class="header-right">
                 <div class="sync-status offline" id="syncStatus">
@@ -1176,19 +1001,16 @@
                 <i class="fas fa-clipboard-list"></i> Pedidos
             </button>
             <button class="nav-tab" onclick="showSection('menu')">
-                <i class="fas fa-utensils"></i> Editar Men�
-            </button>
-            <button class="nav-tab" onclick="showSection('ventas')">
-                <i class="fas fa-chart-line"></i> Ventas
+                <i class="fas fa-utensils"></i> Ver Menú
             </button>
         </div>
 
         <div class="content">
-            <!-- Secci�n Pedidos -->
+            <!-- Sección Pedidos -->
             <div class="section active" id="section-pedidos">
                 <h2 class="section-title">
                     <i class="fas fa-clipboard-list"></i>
-                    Pedidos del D�a
+                    Pedidos del Día
                 </h2>
                 
                 <div class="stats-grid">
@@ -1222,7 +1044,6 @@
                     </div>
                 </div>
 
-                <!-- Pedidos por tipo -->
                 <div class="orders-container" id="ordersContainer">
                     <div class="order-column">
                         <div class="order-column-header mesa">
@@ -1262,72 +1083,21 @@
                 </div>
             </div>
 
-            <!-- Secci�n Editar Men� -->
+            <!-- Sección Ver Menú -->
             <div class="section" id="section-menu">
                 <h2 class="section-title">
-                    <i class="fas fa-edit"></i>
-                    Editar Precios del Men�
+                    <i class="fas fa-utensils"></i>
+                    Menú Actual
                 </h2>
-                
-                <div class="menu-editor" id="menuEditor">
-                    <div class="menu-editor-header">
-                        <h3>Platillos</h3>
-                        <span>Modifica precios y disponibilidad</span>
-                    </div>
-                    <div id="menuEditorContent">
-                        <div class="empty-state">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Cargando men�...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Secci�n Ventas -->
-            <div class="section" id="section-ventas">
-                <h2 class="section-title">
-                    <i class="fas fa-chart-bar"></i>
-                    Resumen de Ventas
-                </h2>
-                
-                <div class="stats-grid">
-                    <div class="stat-card" onclick="showHistorial('ventas-hoy')" style="cursor: pointer;">
-                        <div class="stat-icon ventas">
-                            <i class="fas fa-calendar-day"></i>
-                        </div>
-                        <div class="stat-value" id="ventasHoy">Bs. 0</div>
-                        <div class="stat-label">Hoy (Clic para ver)</div>
-                    </div>
-                    <div class="stat-card" onclick="showHistorial('ventas-semana')" style="cursor: pointer;">
-                        <div class="stat-icon platillos">
-                            <i class="fas fa-calendar-week"></i>
-                        </div>
-                        <div class="stat-value" id="ventasSemana">Bs. 0</div>
-                        <div class="stat-label">Esta Semana</div>
-                    </div>
-                    <div class="stat-card" onclick="showHistorial('ventas-mes')" style="cursor: pointer;">
-                        <div class="stat-icon cobrados">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="stat-value" id="ventasMes">Bs. 0</div>
-                        <div class="stat-label">Este Mes</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon pendientes">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="stat-value" id="ticketPromedio">Bs. 0</div>
-                        <div class="stat-label">Ticket Promedio</div>
-                    </div>
+                <div id="menuViewContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Se llena dinámicamente -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURACI�N JSONBIN.IO
-        // ==========================================
+        // Configuración JSONBin
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
             API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
@@ -1340,11 +1110,10 @@
         let currentPaymentMethod = null;
         let pedidoRechazo = null;
 
-        // ==========================================
-        // INICIALIZACI�N
-        // ==========================================
+        // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
+            verificarTasaDelDia();
             syncInterval = setInterval(cargarDatos, 10000);
         });
 
@@ -1365,9 +1134,7 @@
                 const data = await response.json();
                 sistemaData = data.record || data;
                 
-                // Limpiar pedidos del d�a anterior
                 limpiarPedidosDiaAnterior();
-                
                 actualizarEstadoSync('online');
                 document.getElementById('loadingOverlay').style.display = 'none';
                 
@@ -1394,10 +1161,8 @@
                 }
             });
             
-            // Mover pedidos cobrados a ventas
             if (pedidosArchivar.length > 0) {
                 if (!sistemaData.ventas) sistemaData.ventas = { diarias: [], semanales: [], mensuales: [] };
-                
                 pedidosArchivar.forEach(p => {
                     sistemaData.ventas.diarias.push({
                         fecha: p.timestamp,
@@ -1413,9 +1178,90 @@
             sistemaData.pedidos = pedidosHoy;
         }
 
-        // ==========================================
-        // VISTAS
-        // ==========================================
+        // Verificar Tasa del Día
+        function verificarTasaDelDia() {
+            if (!sistemaData || !sistemaData.config) return;
+            
+            const hoy = new Date().toISOString().split('T')[0];
+            const ultimaFecha = sistemaData.config.ultimaActualizacion ? 
+                sistemaData.config.ultimaActualizacion.split('T')[0] : null;
+            
+            if (ultimaFecha !== hoy || sistemaData.config.tasaCambio === 0) {
+                document.getElementById('alertTasaModal').classList.add('show');
+            } else {
+                actualizarDisplayTasa();
+            }
+        }
+
+        function guardarTasaInicial() {
+            const tasa = parseFloat(document.getElementById('tasaInicialInput').value);
+            if (!tasa || tasa <= 0) {
+                alert('Introduce una tasa válida');
+                return;
+            }
+            
+            sistemaData.config.tasaCambio = tasa;
+            sistemaData.config.ultimaActualizacion = new Date().toISOString();
+            
+            calcularTasaEfectiva();
+            guardarCambios();
+            document.getElementById('alertTasaModal').classList.remove('show');
+            actualizarDisplayTasa();
+            actualizarVista();
+            mostrarNotificacion('Tasa del día guardada correctamente');
+        }
+
+        function actualizarTasaManual() {
+            const tasa = parseFloat(document.getElementById('tasaDiaInput').value);
+            if (!tasa || tasa <= 0) {
+                alert('Introduce una tasa válida');
+                return;
+            }
+            
+            sistemaData.config.tasaCambio = tasa;
+            sistemaData.config.ultimaActualizacion = new Date().toISOString();
+            
+            calcularTasaEfectiva();
+            guardarCambios();
+            actualizarDisplayTasa();
+            actualizarVista();
+            mostrarNotificacion('Tasa actualizada correctamente');
+        }
+
+        function calcularTasaEfectiva() {
+            if (!sistemaData.config) return;
+            
+            let tasaBase = sistemaData.config.tasaCambio || 0;
+            let aumentoTotal = 0;
+            
+            if (sistemaData.config.aumentoActivo && !sistemaData.config.aumentoDetenido && 
+                sistemaData.config.aumentoDiario > 0) {
+                
+                const hoy = new Date();
+                const ultimoAumento = sistemaData.config.fechaUltimoAumento ? 
+                    new Date(sistemaData.config.fechaUltimoAumento) : new Date();
+                const diasDiff = Math.floor((hoy - ultimoAumento) / (1000 * 60 * 60 * 24));
+                
+                const aumentoPorcentaje = sistemaData.config.aumentoDiario * (diasDiff + 1);
+                sistemaData.config.aumentoAcumulado = aumentoPorcentaje;
+                aumentoTotal = (tasaBase * aumentoPorcentaje) / 100;
+            }
+            
+            sistemaData.config.tasaEfectiva = tasaBase + aumentoTotal;
+        }
+
+        function actualizarDisplayTasa() {
+            calcularTasaEfectiva();
+            
+            const tasaBase = sistemaData.config.tasaCambio || 0;
+            const tasaEfectiva = sistemaData.config.tasaEfectiva || 0;
+            
+            document.getElementById('tasaDiaInput').value = tasaBase || '';
+            document.getElementById('tasaEfectivaDisplay').textContent = tasaEfectiva.toFixed(2);
+            document.getElementById('tasaCambioCobro').value = tasaEfectiva.toFixed(2);
+        }
+
+        // Vistas
         function showSection(sectionName) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -1424,19 +1270,14 @@
             event.target.classList.add('active');
             
             if (sectionName === 'pedidos') renderPedidos();
-            if (sectionName === 'menu') renderMenuEditor();
-            if (sectionName === 'ventas') renderVentas();
+            if (sectionName === 'menu') renderMenuView();
         }
 
         function actualizarVista() {
             renderPedidos();
-            renderMenuEditor();
-            renderVentas();
+            renderMenuView();
         }
 
-        // ==========================================
-        // PEDIDOS
-        // ==========================================
         function renderPedidos() {
             if (!sistemaData) return;
             
@@ -1450,13 +1291,13 @@
             document.getElementById('statPendientes').textContent = pendientes.length;
             document.getElementById('statCobrados').textContent = cobrados.length;
             
+            const tasa = sistemaData.config.tasaEfectiva || 400;
             const totalVentas = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
-            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * (sistemaData.config?.tasaCambio || 400)).toFixed(0)}`;
+            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasa).toFixed(0)}`;
             
             const totalPlatillos = cobrados.reduce((sum, p) => sum + (p.items?.length || 0), 0);
             document.getElementById('statPlatillos').textContent = totalPlatillos;
             
-            // Separar por tipo
             const pedidosMesa = pendientes.filter(p => p.tipo === 'mesa' || !p.tipo);
             const pedidosDelivery = pendientes.filter(p => p.tipo === 'delivery');
             const pedidosReserva = pendientes.filter(p => p.tipo === 'reserva');
@@ -1487,89 +1328,58 @@
         function crearCardPedido(pedido, tipo) {
             const fecha = new Date(pedido.timestamp);
             const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const tasa = sistemaData.config.tasaEfectiva || 400;
             
-            // Calcular tiempo transcurrido
             const ahora = new Date();
             const minutosTranscurridos = Math.floor((ahora - fecha) / 60000);
             
-            let timerClass = '';
             let timerText = '';
-            
             if (pedido.tipo === 'delivery') {
                 const minutosRestantes = 25 - minutosTranscurridos;
-                if (minutosRestantes <= 5) timerClass = 'urgent';
-                timerText = minutosRestantes > 0 ? `${minutosRestantes}min restantes` : 'Tiempo agotado';
+                timerText = minutosRestantes > 0 ? 
+                    `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : 
+                    '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
             const items = pedido.items || [];
             const itemsHtml = items.map(item => {
-                // Mostrar personalizaci�n entre par�ntesis
-                let personalizacionText = '';
-                if (item.personalizacion && item.personalizacion.length > 0) {
-                    const ingredientesSin = item.personalizacion.map(ing => {
-                        // Buscar nombre del ingrediente en inventario
-                        const ingData = sistemaData.inventario[ing];
-                        return ingData ? ingData.nombre : ing.replace(/_/g, ' ');
-                    }).join(', ');
-                    personalizacionText = ` <span class="item-personalizacion">(Sin ${ingredientesSin})</span>`;
-                }
-                
+                const personalizacion = item.personalizacion?.length > 0 ? 
+                    ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
                 return `
                     <div class="order-detail-row">
-                        <span>${item.cantidad}x ${item.nombre}${personalizacionText}</span>
-                        <span>Bs. ${((item.subtotal || 0) * (sistemaData.config?.tasaCambio || 400)).toFixed(2)}</span>
+                        <span>${item.cantidad}x ${item.nombre}${personalizacion}</span>
+                        <span>Bs. ${((item.subtotal || 0) * tasa).toFixed(2)}</span>
                     </div>
                 `;
             }).join('');
             
-            const total = (pedido.total || 0) * (sistemaData.config?.tasaCambio || 400);
+            const total = (pedido.total || 0) * tasa;
             
             let extraInfo = '';
             if (pedido.tipo === 'delivery') {
-                // Bot�n para ver comprobante
-                const comprobanteHtml = pedido.comprobante ? `
-                    <div class="comprobante-preview" onclick="verComprobante('${pedido.id}')">
-                        <i class="fas fa-image"></i>
-                        <div>Ver comprobante de pago</div>
-                    </div>
-                ` : '';
-                
                 extraInfo = `
-                    <div class="delivery-info">
+                    <div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;">
                         <div><i class="fas fa-map-marker-alt"></i> ${pedido.direccion}</div>
                         <div><i class="fas fa-phone"></i> ${pedido.telefono}</div>
                         ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
                     </div>
-                    ${comprobanteHtml}
-                    ${timerText ? `<div class="timer-badge ${timerClass}"><i class="fas fa-clock"></i> ${timerText}</div>` : ''}
+                    ${timerText}
                 `;
             } else if (pedido.tipo === 'reserva') {
                 const fechaReserva = pedido.fechaReserva ? new Date(pedido.fechaReserva).toLocaleDateString() : 'No especificada';
-                
-                // Bot�n para ver comprobante
-                const comprobanteHtml = pedido.comprobante ? `
-                    <div class="comprobante-preview" onclick="verComprobante('${pedido.id}')">
-                        <i class="fas fa-image"></i>
-                        <div>Ver comprobante de pago</div>
-                    </div>
-                ` : '';
-                
                 extraInfo = `
-                    <div class="delivery-info">
+                    <div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;">
                         <div><i class="fas fa-user"></i> ${pedido.clienteNombre || 'No especificado'}</div>
                         <div><i class="fas fa-calendar"></i> ${fechaReserva}</div>
                         ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
                     </div>
-                    ${comprobanteHtml}
                 `;
             } else {
                 extraInfo = `<div style="margin-bottom: 10px; font-weight: 700; color: var(--info);"><i class="fas fa-chair"></i> Mesa #${pedido.mesa || '--'}</div>`;
             }
             
             const botonesRechazo = pedido.tipo === 'delivery' || pedido.tipo === 'reserva' ? 
-                `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')">
-                    <i class="fas fa-times"></i> Rechazar
-                </button>` : '';
+                `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')"><i class="fas fa-times"></i> Rechazar</button>` : '';
             
             return `
                 <div class="order-card">
@@ -1578,68 +1388,60 @@
                         <span class="order-time"><i class="fas fa-clock"></i> ${hora}</span>
                     </div>
                     ${extraInfo}
-                    <div class="order-details">
-                        ${itemsHtml}
-                    </div>
-                    <div class="order-total">
-                        Total: Bs. ${total.toFixed(2)}
-                    </div>
+                    <div class="order-details">${itemsHtml}</div>
+                    <div class="order-total">Total: Bs. ${total.toFixed(2)}</div>
                     <div class="order-actions">
-                        <button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')">
-                            <i class="fas fa-check"></i> Cobrar
-                        </button>
+                        <button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>
                         ${botonesRechazo}
                     </div>
                 </div>
             `;
         }
 
-        // ==========================================
-        // VER COMPROBANTE
-        // ==========================================
-        function verComprobante(pedidoId) {
-            const pedido = sistemaData.pedidos.find(p => p.id === pedidoId);
-            if (!pedido || !pedido.comprobante) return;
+        function renderMenuView() {
+            const container = document.getElementById('menuViewContainer');
+            if (!sistemaData || !sistemaData.menu) return;
             
-            // En producci�n, aqu� se mostrar�a la imagen real
-            // Por ahora mostramos un placeholder
-            document.getElementById('comprobanteImg').src = 'https://via.placeholder.com/400x600/FF6B6B/FFFFFF?text=Comprobante+de+Pago';
-            document.getElementById('comprobanteInfo').innerHTML = `
-                <strong>Pedido:</strong> ${pedido.id}<br>
-                <strong>Cliente:</strong> ${pedido.clienteNombre || 'No especificado'}<br>
-                <strong>Monto:</strong> Bs. ${(pedido.total * (sistemaData.config?.tasaCambio || 400)).toFixed(2)}<br>
-                <strong>Referencia:</strong> ${pedido.referencia || 'No proporcionada'}
-            `;
+            const tasa = sistemaData.config.tasaEfectiva || 400;
             
-            document.getElementById('comprobanteModal').classList.add('show');
+            container.innerHTML = sistemaData.menu.map(item => {
+                const precioBs = ((item.precio || 0) * tasa).toFixed(2);
+                return `
+                    <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px var(--shadow);">
+                        <h3 style="font-family: 'Montserrat', sans-serif; margin-bottom: 10px;">${item.nombre}</h3>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">${item.descripcion || 'Sin descripción'}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">Bs. ${precioBs}</span>
+                            <span style="font-size: 0.875rem; color: #666;">$${(item.precio || 0).toFixed(2)}</span>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge ${item.disponible ? 'badge-success' : 'badge-warning'}">
+                                ${item.disponible ? 'Disponible' : 'No disponible'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // ==========================================
-        // COBRO
-        // ==========================================
+        // Cobro
         function mostrarCobro(pedidoId) {
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
             const modal = document.getElementById('cobroModal');
             const summary = document.getElementById('cobroSummary');
+            const tasa = sistemaData.config.tasaEfectiva || 400;
             
-            const total = (currentPedido.total || 0) * (sistemaData.config?.tasaCambio || 400);
+            const total = (currentPedido.total || 0) * tasa;
             
             let itemsHtml = currentPedido.items?.map(item => {
-                let personalizacionText = '';
-                if (item.personalizacion && item.personalizacion.length > 0) {
-                    const ingredientesSin = item.personalizacion.map(ing => {
-                        const ingData = sistemaData.inventario[ing];
-                        return ingData ? ingData.nombre : ing.replace(/_/g, ' ');
-                    }).join(', ');
-                    personalizacionText = ` <small style="color: #666;">(Sin ${ingredientesSin})</small>`;
-                }
-                
+                const personalizacion = item.personalizacion?.length > 0 ? 
+                    ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
                 return `
                     <div class="summary-row">
-                        <span>${item.cantidad}x ${item.nombre}${personalizacionText}</span>
-                        <span>Bs. ${((item.subtotal || 0) * (sistemaData.config?.tasaCambio || 400)).toFixed(2)}</span>
+                        <span>${item.cantidad}x ${item.nombre}${personalizacion}</span>
+                        <span>Bs. ${((item.subtotal || 0) * tasa).toFixed(2)}</span>
                     </div>
                 `;
             }).join('') || '';
@@ -1652,7 +1454,6 @@
                 </div>
             `;
             
-            // Reset form
             document.querySelectorAll('.payment-method-btn').forEach(btn => btn.classList.remove('selected'));
             document.querySelectorAll('.payment-form').forEach(form => form.classList.remove('show'));
             document.getElementById('specialOptions').style.display = 'none';
@@ -1677,14 +1478,14 @@
         function calcularCambio() {
             if (!currentPedido) return;
             
-            const total = (currentPedido.total || 0) * (sistemaData.config?.tasaCambio || 400);
+            const tasa = sistemaData.config.tasaEfectiva || 400;
+            const total = (currentPedido.total || 0) * tasa;
             let recibido = 0;
             
             if (currentPaymentMethod === 'efectivo_bs') {
                 recibido = parseFloat(document.getElementById('montoRecibidoBs').value) || 0;
             } else if (currentPaymentMethod === 'efectivo_usd') {
                 const usd = parseFloat(document.getElementById('montoRecibidoUsd').value) || 0;
-                const tasa = parseFloat(document.getElementById('tasaCambioCobro').value) || 400;
                 recibido = usd * tasa;
             } else if (currentPaymentMethod === 'pago_movil') {
                 recibido = parseFloat(document.getElementById('montoPagoMovil').value) || 0;
@@ -1697,21 +1498,13 @@
             const specialOptions = document.getElementById('specialOptions');
             
             if (diferencia > 0) {
-                changeDisplay.innerHTML = `
-                    <i class="fas fa-hand-holding-usd"></i> 
-                    CAMBIO A ENTREGAR: Bs. ${diferencia.toFixed(2)}
-                `;
+                changeDisplay.innerHTML = `<i class="fas fa-hand-holding-usd"></i> CAMBIO A ENTREGAR: Bs. ${diferencia.toFixed(2)}`;
                 changeDisplay.classList.add('show');
                 specialOptions.style.display = 'none';
             } else if (diferencia < 0) {
-                changeDisplay.innerHTML = `
-                    <i class="fas fa-exclamation-circle"></i> 
-                    FALTAN: Bs. ${Math.abs(diferencia).toFixed(2)}
-                `;
+                changeDisplay.innerHTML = `<i class="fas fa-exclamation-circle"></i> FALTAN: Bs. ${Math.abs(diferencia).toFixed(2)}`;
                 changeDisplay.classList.add('show');
                 specialOptions.style.display = 'block';
-                
-                // Actualizar montos en opciones especiales
                 document.getElementById('montoAfavor').value = Math.abs(diferencia).toFixed(2);
                 document.getElementById('montoCondonacion').value = Math.abs(diferencia).toFixed(2);
             } else {
@@ -1722,7 +1515,6 @@
 
         function toggleSpecialInput() {
             const selected = document.querySelector('input[name="specialOption"]:checked').value;
-            
             document.getElementById('inputAfavor').classList.toggle('show', selected === 'afavor');
             document.getElementById('inputCondonacion').classList.toggle('show', selected === 'condonacion');
             document.getElementById('inputCasa').classList.toggle('show', selected === 'casa');
@@ -1731,17 +1523,16 @@
         async function confirmarCobro() {
             if (!currentPedido) return;
             
-            const total = (currentPedido.total || 0) * (sistemaData.config?.tasaCambio || 400);
+            const tasa = sistemaData.config.tasaEfectiva || 400;
+            const total = (currentPedido.total || 0) * tasa;
             let recibido = 0;
             let metodoPago = currentPaymentMethod;
             let referencia = '';
             
-            // Obtener datos seg�n m�todo
             if (currentPaymentMethod === 'efectivo_bs') {
                 recibido = parseFloat(document.getElementById('montoRecibidoBs').value) || 0;
             } else if (currentPaymentMethod === 'efectivo_usd') {
                 recibido = parseFloat(document.getElementById('montoRecibidoUsd').value) || 0;
-                metodoPago = 'efectivo_usd';
             } else if (currentPaymentMethod === 'pago_movil') {
                 recibido = parseFloat(document.getElementById('montoPagoMovil').value) || 0;
                 referencia = document.getElementById('referenciaPago').value || '000000';
@@ -1752,7 +1543,6 @@
             const diferencia = recibido - total;
             const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             
-            // Preparar datos de cobro
             currentPedido.estado = 'cobrado';
             currentPedido.cajero = 'Cajero Principal';
             currentPedido.fechaCobro = new Date().toISOString();
@@ -1760,11 +1550,9 @@
             currentPedido.montoRecibido = recibido;
             currentPedido.referencia = referencia;
             
-            // Opciones especiales
             if (diferencia < 0) {
                 currentPedido.diferencia = Math.abs(diferencia);
                 currentPedido.tipoDiferencia = specialOption;
-                
                 if (specialOption === 'casa') {
                     currentPedido.invitadoPor = document.getElementById('nombreInvita').value;
                 }
@@ -1774,13 +1562,11 @@
             
             await guardarCambios();
             closeModal('cobroModal');
-            mostrarNotificacion('Cobro procesado correctamente. El cliente ha sido notificado.');
+            mostrarNotificacion('Cobro procesado correctamente');
             renderPedidos();
         }
 
-        // ==========================================
-        // RECHAZO
-        // ==========================================
+        // Rechazo
         function mostrarRechazo(pedidoId) {
             pedidoRechazo = sistemaData.pedidos.find(p => p.id === pedidoId);
             document.getElementById('rechazoModal').classList.add('show');
@@ -1789,18 +1575,17 @@
         async function confirmarRechazo() {
             const razon = document.querySelector('input[name="rejectionReason"]:checked')?.value;
             if (!razon) {
-                alert('Selecciona una raz�n de rechazo');
+                alert('Selecciona una razón de rechazo');
                 return;
             }
             
             if (!pedidoRechazo) return;
             
-            // Marcar como rechazado y restaurar stock
             pedidoRechazo.estado = 'rechazado';
             pedidoRechazo.razonRechazo = razon;
             pedidoRechazo.fechaRechazo = new Date().toISOString();
             
-            // Restaurar stock de ingredientes
+            // Restaurar stock
             if (pedidoRechazo.items) {
                 pedidoRechazo.items.forEach(item => {
                     const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
@@ -1818,234 +1603,20 @@
             
             await guardarCambios();
             closeModal('rechazoModal');
-            mostrarNotificacion('Pedido rechazado. El cliente ha sido notificado del motivo.');
+            mostrarNotificacion('Pedido rechazado. Cliente notificado.');
             renderPedidos();
         }
 
-        // ==========================================
-        // HISTORIAL
-        // ==========================================
-        function showHistorial(tipo) {
-            const modal = document.getElementById('historialModal');
-            const list = document.getElementById('historyList');
-            
-            let items = [];
-            let titulo = '';
-            
-            const hoy = new Date().toISOString().split('T')[0];
-            
-            switch(tipo) {
-                case 'pendientes':
-                    titulo = 'Pedidos Pendientes';
-                    items = sistemaData.pedidos?.filter(p => p.estado === 'pendiente') || [];
-                    break;
-                case 'cobrados':
-                    titulo = 'Pedidos Cobrados Hoy';
-                    items = sistemaData.pedidos?.filter(p => p.estado === 'cobrado' && p.timestamp.startsWith(hoy)) || [];
-                    break;
-                case 'ventas':
-                    titulo = 'Ventas del D�a';
-                    items = sistemaData.pedidos?.filter(p => p.estado === 'cobrado' && p.timestamp.startsWith(hoy)) || [];
-                    break;
-                case 'platillos':
-                    titulo = 'Platillos Vendidos Hoy';
-                    // Agrupar por platillo
-                    const platillos = {};
-                    (sistemaData.pedidos || [])
-                        .filter(p => p.estado === 'cobrado' && p.timestamp.startsWith(hoy))
-                        .forEach(p => {
-                            p.items?.forEach(item => {
-                                if (!platillos[item.nombre]) {
-                                    platillos[item.nombre] = { cantidad: 0, total: 0 };
-                                }
-                                platillos[item.nombre].cantidad += item.cantidad;
-                                platillos[item.nombre].total += item.subtotal;
-                            });
-                        });
-                    
-                    list.innerHTML = Object.entries(platillos)
-                        .sort((a, b) => b[1].cantidad - a[1].cantidad)
-                        .map(([nombre, data]) => `
-                            <div class="history-item">
-                                <div>
-                                    <strong>${nombre}</strong>
-                                    <div style="color: #666; font-size: 0.9rem;">${data.cantidad} unidades</div>
-                                </div>
-                                <strong>Bs. ${(data.total * (sistemaData.config?.tasaCambio || 400)).toFixed(2)}</strong>
-                            </div>
-                        `).join('');
-                    
-                    modal.querySelector('.modal-header h2').innerHTML = `<i class="fas fa-history"></i> ${titulo}`;
-                    modal.classList.add('show');
-                    return;
-                    
-                case 'ventas-hoy':
-                    titulo = 'Detalle Ventas Hoy';
-                    items = sistemaData.ventas?.diarias?.filter(v => v.fecha.startsWith(hoy)) || [];
-                    break;
-                case 'ventas-semana':
-                    titulo = 'Ventas Esta Semana';
-                    const hace7Dias = new Date();
-                    hace7Dias.setDate(hace7Dias.getDate() - 7);
-                    items = (sistemaData.ventas?.diarias || []).filter(v => new Date(v.fecha) >= hace7Dias);
-                    break;
-                case 'ventas-mes':
-                    titulo = 'Ventas Este Mes';
-                    const inicioMes = new Date().toISOString().slice(0, 7);
-                    items = (sistemaData.ventas?.diarias || []).filter(v => v.fecha.startsWith(inicioMes));
-                    break;
-            }
-            
-            list.innerHTML = items.map(item => `
-                <div class="history-item">
-                    <div>
-                        <strong>${item.id || item.pedidoId}</strong>
-                        <div style="color: #666; font-size: 0.9rem;">
-                            ${new Date(item.timestamp || item.fecha).toLocaleString()}
-                        </div>
-                    </div>
-                    <strong>Bs. ${((item.total || 0) * (sistemaData.config?.tasaCambio || 400)).toFixed(2)}</strong>
-                </div>
-            `).join('') || '<div class="empty-state">No hay registros</div>';
-            
-            modal.querySelector('.modal-header h2').innerHTML = `<i class="fas fa-history"></i> ${titulo}`;
-            modal.classList.add('show');
-        }
-
-        // ==========================================
-        // EDITOR DE MEN�
-        // ==========================================
-        function renderMenuEditor() {
-            if (!sistemaData || !sistemaData.menu) return;
-            
-            const container = document.getElementById('menuEditorContent');
-            
-            container.innerHTML = sistemaData.menu.map(platillo => `
-                <div class="platillo-row">
-                    <div class="platillo-info">
-                        <h4>${platillo.nombre}</h4>
-                        <p>${platillo.descripcion}</p>
-                    </div>
-                    <div class="platillo-precio">
-                        <label>Precio ($)</label>
-                        <input type="number" step="0.01" value="${platillo.precio}" 
-                               onchange="actualizarPrecio('${platillo.id}', this.value)">
-                    </div>
-                    <div class="platillo-disponible">
-                        <label>Disponible</label>
-                        <div class="toggle-switch ${platillo.disponible ? 'active' : ''}" 
-                             onclick="toggleDisponible('${platillo.id}')"></div>
-                    </div>
-                    <button class="btn-guardar" onclick="guardarCambios()">
-                        <i class="fas fa-save"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function actualizarPrecio(platilloId, nuevoPrecio) {
-            const platillo = sistemaData.menu.find(p => p.id === platilloId);
-            if (platillo) {
-                platillo.precio = parseFloat(nuevoPrecio);
-            }
-        }
-
-        function toggleDisponible(platilloId) {
-            const platillo = sistemaData.menu.find(p => p.id === platilloId);
-            if (platillo) {
-                platillo.disponible = !platillo.disponible;
-                renderMenuEditor();
-            }
-        }
-
-        // ==========================================
-        // VENTAS
-        // ==========================================
-        function renderVentas() {
-            if (!sistemaData || !sistemaData.ventas) return;
-            
-            const ventas = sistemaData.ventas.diarias || [];
-            const hoy = new Date().toISOString().split('T')[0];
-            
-            const ventasHoy = ventas.filter(v => v.fecha.startsWith(hoy));
-            const totalHoy = ventasHoy.reduce((sum, v) => sum + (v.total || 0), 0);
-            document.getElementById('ventasHoy').textContent = `Bs. ${(totalHoy * (sistemaData.config?.tasaCambio || 400)).toFixed(0)}`;
-            
-            // Calcular semana
-            const hace7Dias = new Date();
-            hace7Dias.setDate(hace7Dias.getDate() - 7);
-            const ventasSemana = ventas.filter(v => new Date(v.fecha) >= hace7Dias);
-            const totalSemana = ventasSemana.reduce((sum, v) => sum + (v.total || 0), 0);
-            document.getElementById('ventasSemana').textContent = `Bs. ${(totalSemana * (sistemaData.config?.tasaCambio || 400)).toFixed(0)}`;
-            
-            // Calcular mes
-            const inicioMes = new Date().toISOString().slice(0, 7);
-            const ventasMes = ventas.filter(v => v.fecha.startsWith(inicioMes));
-            const totalMes = ventasMes.reduce((sum, v) => sum + (v.total || 0), 0);
-            document.getElementById('ventasMes').textContent = `Bs. ${(totalMes * (sistemaData.config?.tasaCambio || 400)).toFixed(0)}`;
-            
-            const ticketPromedio = ventasHoy.length > 0 ? totalHoy / ventasHoy.length : 0;
-            document.getElementById('ticketPromedio').textContent = `Bs. ${(ticketPromedio * (sistemaData.config?.tasaCambio || 400)).toFixed(0)}`;
-        }
-
-        // ==========================================
-        // UTILIDADES
-        // ==========================================
-        async function guardarCambios() {
-            actualizarEstadoSync('syncing');
-            
-            try {
-                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
-                    },
-                    body: JSON.stringify(sistemaData)
-                });
-                
-                if (!response.ok) throw new Error('Error al guardar');
-                
-                actualizarEstadoSync('online');
-                mostrarNotificacion('Cambios guardados correctamente');
-                return true;
-                
-            } catch (error) {
-                console.error('Error guardando:', error);
-                actualizarEstadoSync('offline');
-                mostrarNotificacion('Error al guardar cambios', true);
-                return false;
-            }
-        }
-
+        // Utilidades
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
         }
 
-        function mostrarNotificacion(mensaje, esError = false) {
+        function mostrarNotificacion(mensaje) {
             const notif = document.getElementById('notification');
-            const text = document.getElementById('notificationText');
-            const icon = notif.querySelector('.notification-icon');
-            
-            text.textContent = mensaje;
-            
-            if (esError) {
-                notif.style.borderLeftColor = 'var(--primary)';
-                icon.style.background = '#FFEBEE';
-                icon.style.color = 'var(--primary)';
-                icon.innerHTML = '<i class="fas fa-exclamation"></i>';
-            } else {
-                notif.style.borderLeftColor = 'var(--success)';
-                icon.style.background = '#E8F5E9';
-                icon.style.color = 'var(--success)';
-                icon.innerHTML = '<i class="fas fa-check"></i>';
-            }
-            
+            document.getElementById('notificationText').textContent = mensaje;
             notif.classList.add('show');
-            
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 3000);
+            setTimeout(() => notif.classList.remove('show'), 3000);
         }
 
         function actualizarEstadoSync(estado) {
@@ -2066,8 +1637,23 @@
                     break;
                 case 'offline':
                     iconEl.className = 'fas fa-exclamation-triangle';
-                    textEl.textContent = 'Sin conexi�n';
+                    textEl.textContent = 'Sin conexión';
                     break;
+            }
+        }
+
+        async function guardarCambios() {
+            try {
+                await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(sistemaData)
+                });
+            } catch (error) {
+                console.error('Error guardando:', error);
             }
         }
 
