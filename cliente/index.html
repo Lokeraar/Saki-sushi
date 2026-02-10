@@ -505,6 +505,42 @@
             font-weight: 500;
         }
 
+        /* Buscador */
+        .search-container {
+            position: relative;
+            z-index: 1;
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+
+        .search-box:focus {
+            outline: none;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
         .sync-status {
             position: fixed;
             top: 80px;
@@ -1742,6 +1778,7 @@
             .order-summary-section { width: 95%; padding: 20px; }
             .order-option-btn { min-width: 100%; }
             .modal-content { margin: 10px; }
+            .search-container { margin: 20px 15px; }
         }
     </style>
 </head>
@@ -1830,6 +1867,12 @@
                 <div class="tagline-item">🐟 Fresco del día</div>
                 <div class="tagline-item">🎌 Tradicional</div>
                 <div class="tagline-item">👨‍🍳 Chef experto</div>
+            </div>
+            
+            <!-- Buscador -->
+            <div class="search-container">
+                <input type="text" class="search-box" id="searchInput" placeholder="Buscar platillo por nombre..." oninput="buscarPlatillos()">
+                <i class="fas fa-search search-icon"></i>
             </div>
         </div>
 
@@ -2104,6 +2147,7 @@
         let sessionId = null;
         let pedidosCliente = [];
         let notificacionesInterval = null;
+        let searchTerm = '';
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2552,6 +2596,14 @@
         }
 
         // ==========================================
+        // BÚSQUEDA DE PLATILLOS
+        // ==========================================
+        function buscarPlatillos() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderMenu();
+        }
+
+        // ==========================================
         // RENDERIZADO DEL MENÚ
         // ==========================================
         function renderMenu() {
@@ -2559,6 +2611,7 @@
             
             let filteredItems = [...menuItems];
             
+            // Filtrar por categoría
             if (currentCategory !== 'todos') {
                 if (currentSubcategory) {
                     filteredItems = menuItems.filter(item => item.subcategory === currentSubcategory);
@@ -2572,11 +2625,23 @@
                 }
             }
             
+            // Filtrar por búsqueda (por palabra completa, no por letra)
+            if (searchTerm) {
+                filteredItems = filteredItems.filter(item => {
+                    const nombre = item.name.toLowerCase();
+                    // Buscar coincidencia de palabra completa
+                    const palabras = nombre.split(/\s+/);
+                    return palabras.some(palabra => palabra.includes(searchTerm)) || 
+                           nombre.includes(searchTerm);
+                });
+            }
+            
             if (filteredItems.length === 0) {
                 menuGrid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #888;">
                         <i class="fas fa-utensils" style="font-size: 4em; margin-bottom: 20px; color: var(--primary);"></i>
                         <p style="font-size: 1.4em;">No hay platillos disponibles</p>
+                        ${searchTerm ? '<p style="margin-top: 10px;">Intenta con otra búsqueda</p>' : ''}
                     </div>
                 `;
                 return;
@@ -2889,9 +2954,10 @@
                 if (jokeDiv) jokeDiv.classList.remove('show');
                 
                 if (item.currentSelections.size > 0) {
-                    const newPrice = convertirABs(item.basePrice) * 0.9;
+                    // Calcular precio ajustado basado en ingredientes removidos
+                    const precioAjustado = calcularPrecioAjustado(item);
                     if (priceAdjDiv) {
-                        priceAdjDiv.innerHTML = `<i class="fas fa-tag"></i> Precio ajustado: <strong>Bs. ${newPrice.toFixed(2).replace('.', ',')}</strong>`;
+                        priceAdjDiv.innerHTML = `<i class="fas fa-tag"></i> Precio ajustado: <strong>Bs. ${precioAjustado.toFixed(2).replace('.', ',')}</strong>`;
                         priceAdjDiv.classList.add('show');
                     }
                 } else {
@@ -2901,6 +2967,36 @@
                     }
                 }
             }
+        }
+
+        // Calcular precio ajustado basado en ingredientes removidos y tasa actual
+        function calcularPrecioAjustado(item) {
+            const tasaActual = sistemaData?.config?.tasaCambio || 400;
+            const aumentoDiario = sistemaData?.config?.aumentoDiario || 0;
+            const aumentoActivo = sistemaData?.config?.aumentoActivo || false;
+            
+            // Calcular tasa efectiva
+            let tasaEfectiva = tasaActual;
+            if (aumentoActivo && aumentoDiario > 0) {
+                const diasTranscurridos = calcularDiasTranscurridos();
+                const porcentajeTotal = aumentoDiario * diasTranscurridos;
+                tasaEfectiva = tasaActual * (1 + (porcentajeTotal / 100));
+            }
+            
+            const precioBase = item.basePrice * tasaEfectiva;
+            
+            // Calcular descuento por ingredientes removidos
+            let descuentoTotal = 0;
+            item.currentSelections.forEach(ingKey => {
+                const ingData = sistemaData.inventario[ingKey];
+                if (ingData && ingData.precioUnitario) {
+                    // El precio unitario está en USD, convertir a Bs
+                    const precioIngredienteBs = ingData.precioUnitario * tasaEfectiva;
+                    descuentoTotal += precioIngredienteBs * item.ingredients[ingKey].cantidad;
+                }
+            });
+            
+            return Math.max(0, precioBase - descuentoTotal);
         }
 
         function confirmCustomization(itemId) {
@@ -2921,13 +3017,16 @@
                 return;
             }
             
+            // Calcular precio final
+            const precioFinal = calcularPrecioAjustado(item);
+            
             // Crear nueva instancia confirmada
             const nuevaInstancia = {
                 id: item.instances.length + 1,
                 removedIngredients: Array.from(item.currentSelections),
                 isComplete: item.currentSelections.size === 0,
                 selectionType: item.selectionType,
-                price: item.currentSelections.size > 0 ? convertirABs(item.basePrice) * 0.9 : convertirABs(item.basePrice),
+                price: precioFinal,
                 confirmada: true
             };
             
@@ -2949,6 +3048,17 @@
             updateOrderSummary();
             renderMenu(); // Re-renderizar para actualizar stock mostrado
             showToast('Platillo añadido al pedido', 'success');
+        }
+
+        function calcularDiasTranscurridos() {
+            if (!sistemaData?.config?.fechaInicioAumento) return 0;
+            
+            const inicio = new Date(sistemaData.config.fechaInicioAumento);
+            const hoy = new Date();
+            const diffTime = Math.abs(hoy - inicio);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays;
         }
 
         function reducirStockIngredientes(item, removedIngredients) {
@@ -3422,13 +3532,27 @@
                         cantidad: 1,
                         personalizacion: instance.removedIngredients,
                         precioUnitario: item.basePrice,
-                        subtotal: instance.price / (sistemaData?.config?.tasaCambio || 400)
+                        subtotal: instance.price / obtenerTasaEfectiva()
                     });
-                    pedido.total += instance.price / (sistemaData?.config?.tasaCambio || 400);
+                    pedido.total += instance.price / obtenerTasaEfectiva();
                 });
             });
             
             return pedido;
+        }
+
+        function obtenerTasaEfectiva() {
+            const tasaBase = sistemaData?.config?.tasaCambio || 400;
+            const aumentoDiario = sistemaData?.config?.aumentoDiario || 0;
+            const aumentoActivo = sistemaData?.config?.aumentoActivo || false;
+            
+            if (aumentoActivo && aumentoDiario > 0) {
+                const diasTranscurridos = calcularDiasTranscurridos();
+                const porcentajeTotal = aumentoDiario * diasTranscurridos;
+                return tasaBase * (1 + (porcentajeTotal / 100));
+            }
+            
+            return tasaBase;
         }
 
         async function guardarPedido(pedido) {
@@ -3472,7 +3596,7 @@
         }
 
         function convertirABs(dolares) {
-            return dolares * (sistemaData?.config?.tasaCambio || 400);
+            return dolares * obtenerTasaEfectiva();
         }
 
         function formatearPrecioBs(dolares) {
