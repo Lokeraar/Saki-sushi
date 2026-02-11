@@ -1,3 +1,4 @@
+<!-- PANEL CLIENTE CORREGIDO -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1718,7 +1719,7 @@
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.9);
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -2208,6 +2209,7 @@
         let pedidosCliente = [];
         let notificacionesInterval = null;
         let searchTerm = '';
+        let isLoading = false;
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2216,27 +2218,32 @@
             // Verificar si hay sesión activa válida (30 minutos)
             const sessionData = localStorage.getItem('sakiSession');
             if (sessionData) {
-                const session = JSON.parse(sessionData);
-                const ahora = new Date().getTime();
-                const tiempoTranscurrido = ahora - session.timestamp;
-                
-                // Si han pasado menos de 30 minutos (1800000 ms)
-                if (tiempoTranscurrido < 1800000) {
-                    // Restaurar sesión
-                    sessionId = session.id;
-                    isInRestaurant = session.isInRestaurant;
-                    tableNumber = session.tableNumber;
+                try {
+                    const session = JSON.parse(sessionData);
+                    const ahora = new Date().getTime();
+                    const tiempoTranscurrido = ahora - session.timestamp;
                     
-                    if (isInRestaurant && tableNumber) {
-                        document.getElementById('tableNumber').textContent = tableNumber;
-                        document.getElementById('tableBadge').style.display = 'block';
-                        document.getElementById('confirmTableNumber').textContent = `Mesa #${tableNumber}`;
+                    // Si han pasado menos de 30 minutos (1800000 ms)
+                    if (tiempoTranscurrido < 1800000) {
+                        // Restaurar sesión
+                        sessionId = session.id;
+                        isInRestaurant = session.isInRestaurant;
+                        tableNumber = session.tableNumber;
+                        
+                        if (isInRestaurant && tableNumber) {
+                            document.getElementById('tableNumber').textContent = tableNumber;
+                            document.getElementById('tableBadge').style.display = 'block';
+                            document.getElementById('confirmTableNumber').textContent = `Mesa #${tableNumber}`;
+                        }
+                        
+                        document.getElementById('locationCheck').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'block';
+                        initApp();
+                        return;
                     }
-                    
-                    document.getElementById('locationCheck').classList.add('hidden');
-                    document.getElementById('mainContainer').style.display = 'block';
-                    initApp();
-                    return;
+                } catch (e) {
+                    console.error('Error parsing session:', e);
+                    localStorage.removeItem('sakiSession');
                 }
             }
             
@@ -2302,6 +2309,7 @@
                     }
                 );
             } catch (error) {
+                console.error('Error en verificación:', error);
                 showLocationError();
             }
         }
@@ -2327,27 +2335,36 @@
         // ==========================================
         async function initApp() {
             showLoading();
-            await cargarDatos();
-            renderSidebar();
-            renderMenu();
-            initCalendar();
-            
-            // Iniciar polling de notificaciones
-            iniciarPollingNotificaciones();
-            
-            hideLoading();
-            
-            // Auto-refresh cada 30 segundos - NO borra el pedido actual
-            syncInterval = setInterval(async () => {
+            try {
                 await cargarDatos();
-                // Solo renderizar el menú, no tocar el pedido actual
+                renderSidebar();
                 renderMenu();
-                // Actualizar el resumen del pedido para reflejar cambios de stock si es necesario
-                updateOrderSummary();
-            }, 30000);
+                initCalendar();
+                
+                // Iniciar polling de notificaciones
+                iniciarPollingNotificaciones();
+                
+                // Auto-refresh cada 30 segundos
+                syncInterval = setInterval(async () => {
+                    try {
+                        await cargarDatos();
+                        renderMenu();
+                        updateOrderSummary();
+                    } catch (e) {
+                        console.error('Error en sync:', e);
+                    }
+                }, 30000);
+            } catch (error) {
+                console.error('Error inicializando app:', error);
+                showToast('Error al cargar. Intenta recargar la página.', 'error');
+            } finally {
+                hideLoading();
+            }
         }
 
         async function cargarDatos() {
+            if (isLoading) return;
+            isLoading = true;
             actualizarEstadoSync('syncing');
             
             try {
@@ -2370,11 +2387,17 @@
             } catch (error) {
                 console.error('Error cargando datos:', error);
                 actualizarEstadoSync('offline');
+                // Si hay datos en caché, usarlos
+                if (!sistemaData) {
+                    sistemaData = { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
+                }
+            } finally {
+                isLoading = false;
             }
         }
 
         function sincronizarMenuLocal() {
-            if (!sistemaData.menu) return;
+            if (!sistemaData.menu) sistemaData.menu = [];
             
             // Guardar el estado actual del pedido antes de sincronizar
             const pedidoGuardado = JSON.parse(JSON.stringify(menuItems.filter(item => item.instances && item.instances.length > 0)));
@@ -2965,21 +2988,17 @@
                         // o la última instancia si no hay pendientes
                         const instanciaPendiente = item.instances.findIndex(inst => !inst.confirmada);
                         if (instanciaPendiente >= 0) {
-                            // Restaurar stock de ingredientes
-                            restaurarStockIngredientes(item, item.instances[instanciaPendiente].removedIngredients);
+                            // NO restaurar stock aquí - solo se restaura al eliminar manualmente
                             item.instances.splice(instanciaPendiente, 1);
                             item.totalOrdered--;
                         } else if (item.instances.length > 0) {
                             // Remover la última
-                            const lastInst = item.instances[item.instances.length - 1];
-                            restaurarStockIngredientes(item, lastInst.removedIngredients);
                             item.instances.pop();
                             item.totalOrdered--;
                         }
                     }
                 } else {
                     ingredientsSection.classList.add('hidden');
-                    // No limpiamos instancias aquí, solo si se elimina manualmente del pedido
                 }
             }
             
@@ -3094,9 +3113,7 @@
                     confirmada: true
                 };
                 
-                // Reducir stock de ingredientes
-                reducirStockIngredientes(item, nuevaInstancia.removedIngredients);
-                
+                // NO reducir stock de ingredientes aquí - eso solo pasa al confirmar el pedido completo
                 item.instances.push(nuevaInstancia);
                 item.totalOrdered++;
             }
@@ -3126,34 +3143,6 @@
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             return diffDays;
-        }
-
-        function reducirStockIngredientes(item, removedIngredients) {
-            if (!sistemaData.inventario) return;
-            
-            Object.entries(item.ingredients).forEach(([ingKey, ingData]) => {
-                if (!removedIngredients.includes(ingKey)) {
-                    // Solo reducir si el ingrediente no fue removido
-                    if (sistemaData.inventario[ingKey]) {
-                        sistemaData.inventario[ingKey].stock -= ingData.cantidad;
-                        if (sistemaData.inventario[ingKey].stock < 0) {
-                            sistemaData.inventario[ingKey].stock = 0;
-                        }
-                    }
-                }
-            });
-        }
-
-        function restaurarStockIngredientes(item, removedIngredients) {
-            if (!sistemaData.inventario) return;
-            
-            Object.entries(item.ingredients).forEach(([ingKey, ingData]) => {
-                if (!removedIngredients.includes(ingKey)) {
-                    if (sistemaData.inventario[ingKey]) {
-                        sistemaData.inventario[ingKey].stock += ingData.cantidad;
-                    }
-                }
-            });
         }
 
         // ==========================================
@@ -3262,16 +3251,9 @@
             const instanceIndex = item.instances.findIndex(i => i.id === instanceId);
             if (instanceIndex === -1) return;
             
-            const instance = item.instances[instanceIndex];
-            
-            // Restaurar stock de ingredientes
-            restaurarStockIngredientes(item, instance.removedIngredients);
-            
-            // Restaurar stock del platillo
-            item.totalOrdered--;
-            
-            // Eliminar instancia
+            // Solo restaurar stock si la instancia estaba confirmada
             item.instances.splice(instanceIndex, 1);
+            item.totalOrdered--;
             
             updateOrderSummary();
             renderMenu(); // Re-renderizar para actualizar stock mostrado
@@ -3693,11 +3675,7 @@
 
         function limpiarPedido() {
             menuItems.forEach(item => {
-                // Restaurar stock de ingredientes de todas las instancias
-                item.instances.forEach(inst => {
-                    restaurarStockIngredientes(item, inst.removedIngredients);
-                });
-                
+                // NO restaurar stock aquí - eso se maneja en el servidor o al rechazar
                 item.instances = [];
                 item.quantity = 0;
                 item.currentSelections.clear();
