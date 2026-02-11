@@ -1701,6 +1701,12 @@
             font-weight: 700;
         }
 
+        .thank-you p.subtitle {
+            font-size: 1rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
         /* Loading */
         .loading-overlay {
             position: fixed;
@@ -1731,7 +1737,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Toast */
+        /* Toast Notification */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -1758,6 +1764,67 @@
 
         .toast.error {
             background: var(--primary);
+        }
+
+        /* Order Notification Overlay */
+        .order-notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 6000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .order-notification-overlay.show {
+            display: flex;
+        }
+
+        .order-notification-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.3s ease;
+            border: 3px solid var(--primary);
+        }
+
+        .order-notification-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .order-notification-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .order-notification-message {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .order-notification-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
         }
 
         /* Responsive */
@@ -1792,6 +1859,18 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- Order Notification Overlay -->
+    <div class="order-notification-overlay" id="orderNotificationOverlay">
+        <div class="order-notification-content">
+            <div class="order-notification-icon">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <div class="order-notification-title" id="orderNotificationTitle">Procesando pedido...</div>
+            <div class="order-notification-message" id="orderNotificationMessage">Por favor espere un momento</div>
+            <div class="order-notification-spinner"></div>
+        </div>
+    </div>
 
     <!-- Sidebar Overlay -->
     <div class="overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
@@ -1901,16 +1980,16 @@
         <div class="order-section" id="restaurantOrderSection">
             <button class="order-btn" id="orderBtn" onclick="showConfirmationModal()" disabled>
                 <i class="fas fa-check-circle"></i>
-                CONFIRMAR PEDIDO
+                HACER PEDIDO
             </button>
         </div>
 
         <div class="thank-you" id="thankYouMessage">
-            <h3><i class="fas fa-check-circle"></i> ¡Pedido Confirmado!</h3>
-            <p>Tu pedido ha sido procesado, estará listo lo antes posible</p>
+            <h3><i class="fas fa-check-circle"></i> <span id="thankYouTitle">¡Pedido Confirmado!</span></h3>
+            <p id="thankYouMessage1">Tu pedido ha sido procesado</p>
             <p class="japanese">Gokōnyū arigatō gozaimasu</p>
-            <p style="font-size: 1rem; margin-top: 10px;">Por favor, pasa a caja a realizar tu pago</p>
-            <div class="payment-timer" style="margin-top: 20px;">
+            <p class="subtitle" id="thankYouSubtitle">Por favor, pasa a caja a realizar tu pago</p>
+            <div class="payment-timer" style="margin-top: 20px; display: none;" id="paymentTimerContainer">
                 <p>Tiempo restante para pagar:</p>
                 <div class="timer-display" id="paymentTimer">20:00</div>
             </div>
@@ -1997,9 +2076,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Referencia de pago *</label>
-                    <input type="text" id="deliveryReferencia" placeholder="Número de referencia (4-12 caracteres)" minlength="4" maxlength="12" oninput="validateDeliveryForm()">
-                    <div class="error" id="referenciaError">La referencia debe tener entre 4 y 12 caracteres</div>
+                    <label>Referencia de pago * (exactamente 6 dígitos)</label>
+                    <input type="text" id="deliveryReferencia" placeholder="000000" maxlength="6" oninput="validateDeliveryForm()">
+                    <div class="error" id="referenciaError">La referencia debe tener exactamente 6 caracteres</div>
                 </div>
 
                 <div class="form-group">
@@ -2055,9 +2134,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Referencia de pago *</label>
-                    <input type="text" id="reservaReferencia" placeholder="Número de referencia (4-12 caracteres)" minlength="4" maxlength="12" oninput="validateReservaForm()">
-                    <div class="error" id="referenciaReservaError">La referencia debe tener entre 4 y 12 caracteres</div>
+                    <label>Referencia de pago * (exactamente 6 dígitos)</label>
+                    <input type="text" id="reservaReferencia" placeholder="000000" maxlength="6" oninput="validateReservaForm()">
+                    <div class="error" id="referenciaReservaError">La referencia debe tener exactamente 6 caracteres</div>
                 </div>
 
                 <div class="form-group">
@@ -3052,10 +3131,17 @@
             return Math.max(0, precioBase - descuentoTotal);
         }
 
+        // ==========================================
+        // CORRECCIÓN PRINCIPAL: confirmCustomization ahora maneja cantidades correctamente
+        // ==========================================
         function confirmCustomization(itemId) {
             const item = menuItems.find(i => i.id === itemId);
             
-            if (item.quantity === 0) return;
+            // CORRECCIÓN: Verificar que haya cantidad seleccionada
+            if (item.quantity === 0) {
+                showToast('Por favor selecciona una cantidad mayor a 0', 'error');
+                return;
+            }
             
             const allNonRequired = Object.keys(item.ingredientes).filter(key => !item.ingredientes[key]?.obligatorio);
             const availableNonRequired = allNonRequired.filter(key => {
@@ -3080,32 +3166,51 @@
             
             const precioFinal = calcularPrecioAjustado(item);
             
-            const nuevaInstancia = {
-                id: item.instances.length + 1,
-                removedIngredients: Array.from(item.currentSelections),
-                isComplete: item.currentSelections.size === 0,
-                selectionType: item.selectionType,
-                price: precioFinal,
-                confirmada: true
-            };
+            // CORRECCIÓN: Crear múltiples instancias según la cantidad seleccionada
+            const cantidad = item.quantity;
+            const removedIngredients = Array.from(item.currentSelections);
             
-            reducirStockIngredientes(item, nuevaInstancia.removedIngredients);
+            for (let i = 0; i < cantidad; i++) {
+                const nuevaInstancia = {
+                    id: item.instances.length + 1 + i,
+                    removedIngredients: removedIngredients,
+                    isComplete: removedIngredients.length === 0,
+                    selectionType: item.selectionType,
+                    price: precioFinal,
+                    confirmada: true
+                };
+                
+                item.instances.push(nuevaInstancia);
+                reducirStockIngredientes(item, removedIngredients);
+            }
             
-            item.instances.push(nuevaInstancia);
-            item.totalOrdered += item.quantity;
+            // Actualizar totales
+            item.totalOrdered += cantidad;
+            
+            // Resetear selección
             item.quantity = 0;
             item.currentSelections.clear();
             item.selectionType = "completo";
             
+            // Ocultar sección de ingredientes
             const ingredientsSection = document.getElementById(`ingredients-${itemId}`);
             if (ingredientsSection) ingredientsSection.classList.add('hidden');
             
+            // Resetear cantidad mostrada
             const qtyEl = document.getElementById(`qty-${itemId}`);
             if (qtyEl) qtyEl.textContent = '0';
             
+            // Actualizar UI
             updateOrderSummary();
             renderMenu();
-            showToast('Platillo añadido al pedido', 'success');
+            
+            // Mensaje de éxito
+            const itemName = item.name;
+            if (cantidad === 1) {
+                showToast(`${itemName} añadido al pedido`, 'success');
+            } else {
+                showToast(`${cantidad}x ${itemName} añadidos al pedido`, 'success');
+            }
         }
 
         function obtenerTasaEfectiva() {
@@ -3286,6 +3391,25 @@
         }
 
         // ==========================================
+        // NOTIFICACIÓN SUPERPUESTA DE 6 SEGUNDOS
+        // ==========================================
+        function showOrderNotification(title, message) {
+            const overlay = document.getElementById('orderNotificationOverlay');
+            const titleEl = document.getElementById('orderNotificationTitle');
+            const messageEl = document.getElementById('orderNotificationMessage');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            overlay.classList.add('show');
+            
+            // Ocultar después de 6 segundos
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 6000);
+        }
+
+        // ==========================================
         // MODALES Y CONFIRMACIÓN
         // ==========================================
         function closeModal(modalId) {
@@ -3336,6 +3460,13 @@
 
         async function finalConfirmOrder() {
             closeModal('confirmationModal');
+            
+            // Mostrar notificación superpuesta primero
+            showOrderNotification('Procesando pedido...', 'Estamos enviando tu orden al restaurante');
+            
+            // Esperar 6 segundos antes de continuar
+            await new Promise(resolve => setTimeout(resolve, 6000));
+            
             showLoading();
             
             const pedido = crearPedidoBase();
@@ -3353,6 +3484,12 @@
                     estado: 'pendiente',
                     timestamp: pedido.timestamp
                 });
+                
+                // Mostrar mensaje específico para QR
+                document.getElementById('thankYouTitle').textContent = '¡Pedido Realizado!';
+                document.getElementById('thankYouMessage1').textContent = 'Tu pedido está siendo preparado';
+                document.getElementById('thankYouSubtitle').textContent = 'Por favor, pase a caja a cancelar';
+                document.getElementById('paymentTimerContainer').style.display = 'block';
                 
                 document.getElementById('thankYouMessage').classList.add('show');
                 document.getElementById('restaurantOrderSection').classList.remove('show');
@@ -3383,8 +3520,14 @@
         // DELIVERY Y RESERVA
         // ==========================================
         function showDeliveryModal() {
-            document.getElementById('deliveryModal').classList.add('show');
-            validateDeliveryForm();
+            // Mostrar notificación superpuesta primero
+            showOrderNotification('Iniciando pedido de Delivery', 'Preparando tu orden...');
+            
+            // Esperar 6 segundos antes de mostrar el modal
+            setTimeout(() => {
+                document.getElementById('deliveryModal').classList.add('show');
+                validateDeliveryForm();
+            }, 6000);
         }
 
         function validateDeliveryForm() {
@@ -3395,7 +3538,8 @@
             
             const direccionValid = direccion.length >= 20;
             const telefonoValid = telefono.length >= 11 && telefono.length <= 14;
-            const referenciaValid = referencia.length >= 4 && referencia.length <= 12;
+            // CORRECCIÓN: Validar exactamente 6 caracteres
+            const referenciaValid = referencia.length === 6;
             
             document.getElementById('direccionError').classList.toggle('show', direccion.length > 0 && !direccionValid);
             document.getElementById('telefonoError').classList.toggle('show', telefono.length > 0 && !telefonoValid);
@@ -3415,15 +3559,22 @@
         }
 
         async function confirmDelivery() {
+            closeModal('deliveryModal');
+            
+            // Mostrar notificación de confirmación
+            showOrderNotification('Pedido en proceso', 'Esperando confirmación del restaurante...');
+            
+            // Esperar 6 segundos
+            await new Promise(resolve => setTimeout(resolve, 6000));
+            
+            showLoading();
+            
             const pedido = crearPedidoBase();
             pedido.tipo = 'delivery';
             pedido.direccion = document.getElementById('deliveryDireccion').value.trim();
             pedido.telefono = document.getElementById('deliveryTelefono').value.trim();
             pedido.referencia = document.getElementById('deliveryReferencia').value.trim();
             pedido.comprobante = 'comprobante_delivery_' + Date.now();
-            
-            closeModal('deliveryModal');
-            showLoading();
             
             const exito = await guardarPedido(pedido);
             
@@ -3447,13 +3598,27 @@
                 });
                 
                 limpiarPedido();
+                
+                // Mostrar mensaje específico para delivery
+                document.getElementById('thankYouTitle').textContent = '¡Pedido en Proceso!';
+                document.getElementById('thankYouMessage1').textContent = 'Esperando confirmación del restaurante';
+                document.getElementById('thankYouSubtitle').textContent = 'Te notificaremos cuando tu pedido sea confirmado';
+                document.getElementById('paymentTimerContainer').style.display = 'none';
+                document.getElementById('thankYouMessage').classList.add('show');
+                
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
             }
         }
 
         function showReservaModal() {
-            document.getElementById('reservaModal').classList.add('show');
-            validateReservaForm();
+            // Mostrar notificación superpuesta primero
+            showOrderNotification('Iniciando Reserva', 'Preparando tu orden...');
+            
+            // Esperar 6 segundos antes de mostrar el modal
+            setTimeout(() => {
+                document.getElementById('reservaModal').classList.add('show');
+                validateReservaForm();
+            }, 6000);
         }
 
         function initCalendar() {
@@ -3523,7 +3688,8 @@
             const referencia = document.getElementById('reservaReferencia').value.trim();
             const comprobante = document.getElementById('reservaComprobante').files.length > 0;
             
-            const referenciaValid = referencia.length >= 4 && referencia.length <= 12;
+            // CORRECCIÓN: Validar exactamente 6 caracteres
+            const referenciaValid = referencia.length === 6;
             
             document.getElementById('referenciaReservaError').classList.toggle('show', referencia.length > 0 && !referenciaValid);
             
@@ -3531,15 +3697,22 @@
         }
 
         async function confirmReserva() {
+            closeModal('reservaModal');
+            
+            // Mostrar notificación de confirmación
+            showOrderNotification('Reserva en proceso', 'Esperando confirmación del restaurante...');
+            
+            // Esperar 6 segundos
+            await new Promise(resolve => setTimeout(resolve, 6000));
+            
+            showLoading();
+            
             const pedido = crearPedidoBase();
             pedido.tipo = 'reserva';
             pedido.fechaReserva = selectedDate.toISOString();
             pedido.clienteNombre = document.getElementById('reservaNombre').value.trim();
             pedido.referencia = document.getElementById('reservaReferencia').value.trim();
             pedido.comprobante = 'comprobante_reserva_' + Date.now();
-            
-            closeModal('reservaModal');
-            showLoading();
             
             const exito = await guardarPedido(pedido);
             
@@ -3563,6 +3736,14 @@
                 });
                 
                 limpiarPedido();
+                
+                // Mostrar mensaje específico para reserva
+                document.getElementById('thankYouTitle').textContent = '¡Reserva en Proceso!';
+                document.getElementById('thankYouMessage1').textContent = 'Esperando confirmación del restaurante';
+                document.getElementById('thankYouSubtitle').textContent = 'Te notificaremos cuando tu reserva sea confirmada';
+                document.getElementById('paymentTimerContainer').style.display = 'none';
+                document.getElementById('thankYouMessage').classList.add('show');
+                
                 agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
             }
         }
