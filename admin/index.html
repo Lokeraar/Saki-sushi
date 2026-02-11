@@ -17,6 +17,56 @@
             --warning: #f59e0b; --danger: #ef4444; --info: #1976D2;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); min-height: 100vh; }
+        
+        /* Login Overlay */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .login-box {
+            background: var(--bg-card); border: 2px solid var(--primary);
+            border-radius: 1rem; padding: 3rem; max-width: 450px; width: 100%;
+            box-shadow: 0 25px 50px rgba(220, 38, 38, 0.3);
+        }
+        .login-logo { text-align: center; margin-bottom: 2rem; font-size: 4rem; color: var(--primary); }
+        .login-title { text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .login-subtitle { text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.875rem; }
+        .login-input {
+            width: 100%; padding: 1rem; background: var(--bg-dark);
+            border: 2px solid var(--border); border-radius: 0.5rem;
+            color: var(--text-primary); font-size: 1.1rem; text-align: center;
+            letter-spacing: 0.5rem; margin-bottom: 1rem;
+        }
+        .login-input:focus { outline: none; border-color: var(--primary); }
+        .login-btn {
+            width: 100%; padding: 1rem; background: var(--primary);
+            color: white; border: none; border-radius: 0.5rem;
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .login-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .login-links {
+            display: flex; justify-content: space-between; margin-top: 1.5rem;
+            font-size: 0.875rem;
+        }
+        .login-links a { color: var(--primary); text-decoration: none; cursor: pointer; }
+        .login-links a:hover { text-decoration: underline; }
+        .login-error {
+            color: var(--danger); text-align: center; margin-bottom: 1rem;
+            font-size: 0.875rem; display: none;
+        }
+        
+        /* Recovery Modal */
+        .recovery-steps { display: none; }
+        .recovery-steps.active { display: block; }
+        .recovery-email {
+            width: 100%; padding: 1rem; background: var(--bg-dark);
+            border: 2px solid var(--border); border-radius: 0.5rem;
+            color: var(--text-primary); margin-bottom: 1rem;
+        }
+        
         .header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
         .header-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
@@ -80,11 +130,46 @@
         th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
         th { background: var(--bg-hover); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; }
         
-        .plato-card { background: var(--bg-dark); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); }
+        .plato-card { background: var(--bg-dark); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); position: relative; }
         .plato-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
         .plato-title { font-weight: 600; font-size: 1.1rem; }
         .plato-img { width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem; margin-right: 1rem; }
         .ingredient-tag { display: inline-flex; align-items: center; gap: 0.25rem; background: var(--bg-hover); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-right: 0.5rem; margin-bottom: 0.25rem; font-size: 0.75rem; }
+        .ingredient-tag i { font-size: 0.7rem; }
+        .ingredient-tag.available { color: var(--success); }
+        .ingredient-tag.unavailable { color: var(--danger); }
+        
+        /* Tooltip de ingredientes */
+        .ingredients-tooltip {
+            position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-hover); padding: 0.5rem 1rem; border-radius: 0.5rem;
+            cursor: help; font-size: 0.875rem; border: 1px solid var(--border);
+        }
+        .ingredients-tooltip:hover .ingredients-popup {
+            display: block; animation: fadeIn 0.2s ease;
+        }
+        .ingredients-popup {
+            display: none; position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%); background: var(--bg-card);
+            border: 2px solid var(--primary); border-radius: 0.75rem;
+            padding: 1rem; min-width: 250px; max-width: 350px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 100;
+            margin-bottom: 10px;
+        }
+        .ingredients-popup::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%); border: 10px solid transparent;
+            border-top-color: var(--primary);
+        }
+        .ingredient-check-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem; border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+        .ingredient-check-item:last-child { border-bottom: none; }
+        .ingredient-check-item i { font-size: 0.875rem; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         
         .ingrediente-plato-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; background: var(--bg-dark); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); }
         @media (max-width: 768px) { .ingrediente-plato-row { grid-template-columns: 1fr; } }
@@ -150,6 +235,19 @@
         .chart-container { background: var(--bg-dark); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
         .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
         
+        /* Configuración */
+        .config-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .config-section:last-child { border-bottom: none; }
+        .config-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--primary); }
+        .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; color: var(--warning); font-size: 0.875rem; }
+        .danger-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; color: var(--danger); font-size: 0.875rem; }
+        
+        /* Usuarios Cajeros */
+        .user-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 600; }
+        .user-email { font-size: 0.875rem; color: var(--text-secondary); }
+        
         @media (max-width: 768px) {
             .container { padding: 1rem; }
             .tasa-bar { flex-direction: column; gap: 1rem; }
@@ -157,6 +255,7 @@
             .grid-2 { grid-template-columns: 1fr; }
             .header { flex-direction: column; align-items: flex-start; }
             .chart-grid { grid-template-columns: 1fr; }
+            .login-box { padding: 2rem; }
         }
         
         .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
@@ -168,6 +267,80 @@
     </style>
 </head>
 <body>
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <!-- Paso 1: Login -->
+            <div class="recovery-steps active" id="loginStep">
+                <div class="login-logo">🍣</div>
+                <h2 class="login-title">Panel de Administración</h2>
+                <p class="login-subtitle">Saki Sushi - Acceso Restringido</p>
+                
+                <div class="login-error" id="loginError">Contraseña incorrecta</div>
+                
+                <input type="password" class="login-input" id="loginPassword" placeholder="••••••" maxlength="6">
+                
+                <button class="login-btn" onclick="verificarLogin()">
+                    <i class="fas fa-lock"></i> Acceder
+                </button>
+                
+                <div class="login-links">
+                    <a onclick="mostrarRecuperacion()">Recuperar Contraseña</a>
+                    <span style="color: var(--text-secondary);">v2.0</span>
+                </div>
+            </div>
+            
+            <!-- Paso 2: Recuperación -->
+            <div class="recovery-steps" id="recoveryStep">
+                <div class="login-logo" style="font-size: 3rem; color: var(--info);"><i class="fas fa-envelope"></i></div>
+                <h2 class="login-title">Recuperar Contraseña</h2>
+                <p class="login-subtitle">Introduce tu correo electrónico registrado</p>
+                
+                <div class="login-error" id="recoveryError">Correo no encontrado</div>
+                <div class="login-error" id="recoverySuccess" style="color: var(--success); display: none;">
+                    Correo enviado. Revisa tu bandeja de entrada.
+                </div>
+                
+                <input type="email" class="recovery-email" id="recoveryEmail" placeholder="admin@sakisushi.com">
+                
+                <button class="login-btn" onclick="enviarRecuperacion()">
+                    <i class="fas fa-paper-plane"></i> Enviar Instrucciones
+                </button>
+                
+                <div class="login-links">
+                    <a onclick="volverLogin()">Volver al Login</a>
+                </div>
+            </div>
+            
+            <!-- Paso 3: Email Enviado (Simulación) -->
+            <div class="recovery-steps" id="emailSentStep">
+                <div class="login-logo" style="font-size: 3rem; color: var(--success);"><i class="fas fa-check-circle"></i></div>
+                <h2 class="login-title">¡Correo Enviado!</h2>
+                <div style="background: var(--bg-dark); border-radius: 0.5rem; padding: 1.5rem; margin: 1.5rem 0; text-align: left; font-size: 0.875rem; line-height: 1.6;">
+                    <p style="margin-bottom: 1rem;"><strong>De:</strong> Sistema Saki Sushi &lt;no-reply@sakisushi.com&gt;</p>
+                    <p style="margin-bottom: 1rem;"><strong>Para:</strong> <span id="sentEmail"></span></p>
+                    <p style="margin-bottom: 1rem;"><strong>Asunto:</strong> Recuperación de Contraseña - Panel Admin</p>
+                    <hr style="border-color: var(--border); margin: 1rem 0;">
+                    <p>Estimado Administrador,</p>
+                    <p style="margin: 1rem 0;">Hemos recibido una solicitud de recuperación de contraseña para su cuenta del Panel de Administración de Saki Sushi.</p>
+                    <p style="background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; border-left: 3px solid var(--primary); margin: 1rem 0;">
+                        <strong>Su contraseña actual es:</strong><br>
+                        <span style="font-size: 1.5rem; letter-spacing: 0.5rem; color: var(--primary);" id="shownPassword"></span>
+                    </p>
+                    <p style="margin: 1rem 0;">Por seguridad, le recomendamos cambiar esta contraseña una vez que acceda al sistema. Diríjase a <em>Configuración &gt; Cambiar Contraseña de Admin</em>.</p>
+                    <p style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 1rem;">
+                        Si usted no solicitó esta recuperación, por favor contacte al soporte técnico inmediatamente.<br>
+                        Este es un correo automático, por favor no responda a esta dirección.
+                    </p>
+                    <p style="margin-top: 1rem;">Atentamente,<br><strong>Equipo Saki Sushi</strong></p>
+                </div>
+                <button class="login-btn" onclick="volverLogin()">
+                    <i class="fas fa-arrow-left"></i> Volver al Login
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Alert Modal para Tasa del Día -->
     <div class="modal alert-modal" id="alertTasaModal">
         <div class="modal-content">
@@ -184,8 +357,109 @@
         </div>
     </div>
 
+    <!-- Modal Cambiar Contraseña -->
+    <div class="modal" id="modalCambiarPassword">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Cambiar Contraseña de Admin</h3>
+                <button class="close-btn" onclick="cerrarModal('modalCambiarPassword')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="danger-box">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Advertencia de Seguridad:</strong><br>
+                    Esta contraseña es <strong>irrecuperable</strong> si la olvida. Asegúrese de guardarla en un lugar seguro. 
+                    Solo podrá recuperarla mediante el correo electrónico configurado.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contraseña Actual</label>
+                    <input type="password" class="form-input" id="passwordActual" placeholder="••••••">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nueva Contraseña (6 dígitos)</label>
+                    <input type="password" class="form-input" id="passwordNueva" placeholder="••••••" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmar Nueva Contraseña</label>
+                    <input type="password" class="form-input" id="passwordConfirmar" placeholder="••••••" maxlength="6">
+                </div>
+                <div class="login-error" id="passwordChangeError" style="display: none; text-align: center; margin-top: 1rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalCambiarPassword')">Cancelar</button>
+                <button class="btn btn-primary" onclick="cambiarPassword()">Cambiar Contraseña</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Configurar Email -->
+    <div class="modal" id="modalConfigurarEmail">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-envelope"></i> Configurar Email de Recuperación</h3>
+                <button class="close-btn" onclick="cerrarModal('modalConfigurarEmail')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-box">
+                    <i class="fas fa-info-circle"></i> Este correo se utilizará para enviarle su contraseña en caso de olvido.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="configEmail" placeholder="admin@sakisushi.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalConfigurarEmail')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarEmail()">Guardar Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gestión de Usuarios Cajeros -->
+    <div class="modal" id="modalUsuariosCajero">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-users"></i> Usuarios del Panel Cajero</h3>
+                <button class="close-btn" onclick="cerrarModal('modalUsuariosCajero')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="config-section">
+                    <h4 style="margin-bottom: 1rem;">Crear Nuevo Usuario Cajero</h4>
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-input" id="cajeroNombre" placeholder="Juan Pérez">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email (opcional)</label>
+                        <input type="email" class="form-input" id="cajeroEmail" placeholder="cajero@sakisushi.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nombre de Usuario</label>
+                        <input type="text" class="form-input" id="cajeroUsername" placeholder="cajero1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" id="cajeroPassword" placeholder="••••••">
+                    </div>
+                    <button class="btn btn-success" onclick="crearUsuarioCajero()" style="width: 100%;">
+                        <i class="fas fa-plus"></i> Crear Usuario
+                    </button>
+                </div>
+                
+                <div class="config-section">
+                    <h4 style="margin-bottom: 1rem;">Usuarios Existentes</h4>
+                    <div id="listaUsuariosCajero">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay usuarios creados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalUsuariosCajero')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
-    <header class="header">
+    <header class="header" id="mainHeader" style="display: none;">
         <div class="logo">🍣 Saki Sushi Admin</div>
         <div class="header-actions">
             <div class="sync-status"><div class="sync-dot"></div><span>Sincronizado</span></div>
@@ -196,7 +470,7 @@
     </header>
 
     <!-- Tasa del Día - SIEMPRE VISIBLE -->
-    <div class="tasa-bar">
+    <div class="tasa-bar" id="tasaBar" style="display: none;">
         <div class="tasa-display">
             <span>Tasa del Día:</span>
             <div class="tasa-input-group">
@@ -224,7 +498,7 @@
         <div class="aumento-total" id="aumentoTotalDisplay" style="display: none;">Aumento total acumulado: <strong id="aumentoTotalValor">0.00%</strong></div>
     </div>
 
-    <div class="container">
+    <div class="container" id="mainContainer" style="display: none;">
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
@@ -232,6 +506,7 @@
             <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
             <button class="tab" onclick="cambiarTab('qr')">📱 Códigos QR</button>
             <button class="tab" onclick="cambiarTab('reportes')">📈 Reportes</button>
+            <button class="tab" onclick="cambiarTab('configuracion')">⚙️ Configuración</button>
         </div>
 
         <!-- Dashboard Tab -->
@@ -303,7 +578,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div><div class="card-title">Inventario de Ingredientes</div><div class="card-subtitle">Gestiona stock y costos</div></div>
-                        <button class="btn btn-success" onclick="abrirModalIngrediente()"><i class="fas fa-plus"></i> Nuevo Ingrediente</button>
+                        <button class="btn btn-success" onclick="abrirModalIngrediente()"><i class="fas fa-plus"></i> Nuevo Ingrediente o Producto</button>
                     </div>
                     <div id="lista-inventario"></div>
                 </div>
@@ -361,9 +636,60 @@
                 <div class="card-header"><div><div class="card-title">Detalle de Ventas</div><div class="card-subtitle">Historial completo de transacciones</div></div></div>
                 <div class="table-container">
                     <table id="tabla-ventas">
-                        <thead><tr><th>Fecha</th><th>ID Pedido</th><th>Items</th><th>Total USD</th><th>Total Bs.</th><th>Método Pago</th><th>Estado</th></tr></thead>
+                        <thead><tr><th>Fecha</th><th>ID Pedido</th><th>Cajero</th><th>Items</th><th>Total USD</th><th>Total Bs.</th><th>Método Pago</th><th>Estado</th></tr></thead>
                         <tbody id="ventas-body"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración Tab -->
+        <div id="configuracion" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="config-section">
+                        <div class="config-title"><i class="fas fa-lock"></i> Seguridad</div>
+                        <button class="btn btn-primary" onclick="abrirModal('modalCambiarPassword')" style="width: 100%; margin-bottom: 1rem;">
+                            <i class="fas fa-key"></i> Cambiar Contraseña de Admin
+                        </button>
+                        <button class="btn btn-secondary" onclick="abrirModal('modalConfigurarEmail')" style="width: 100%;">
+                            <i class="fas fa-envelope"></i> Configurar Email de Recuperación
+                        </button>
+                    </div>
+                    
+                    <div class="config-section">
+                        <div class="config-title"><i class="fas fa-users"></i> Gestión de Cajeros</div>
+                        <button class="btn btn-success" onclick="abrirModal('modalUsuariosCajero')" style="width: 100%;">
+                            <i class="fas fa-user-plus"></i> Crear/Editar Usuarios Cajero
+                        </button>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem;">
+                            Los usuarios cajeros pueden acceder al panel de cajero con sus credenciales. 
+                            El primer cajero que cobre o rechace un pedido se lo asignará automáticamente.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="config-section">
+                        <div class="config-title"><i class="fas fa-info-circle"></i> Información del Sistema</div>
+                        <div style="background: var(--bg-dark); padding: 1rem; border-radius: 0.5rem;">
+                            <p style="margin-bottom: 0.5rem;"><strong>Versión:</strong> 2.0</p>
+                            <p style="margin-bottom: 0.5rem;"><strong>Última sincronización:</strong> <span id="lastSync">Ahora</span></p>
+                            <p style="margin-bottom: 0.5rem;"><strong>Email configurado:</strong> <span id="emailConfigurado">No configurado</span></p>
+                            <p><strong>Usuarios cajeros:</strong> <span id="totalCajeros">0</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section" style="border-bottom: none;">
+                        <div class="config-title"><i class="fas fa-shield-alt"></i> Respaldo de Datos</div>
+                        <button class="btn btn-primary" onclick="exportarBackup()" style="width: 100%; margin-bottom: 0.5rem;">
+                            <i class="fas fa-download"></i> Exportar Backup JSON
+                        </button>
+                        <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importarBackup(this)">
+                        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="width: 100%;">
+                            <i class="fas fa-upload"></i> Importar Backup JSON
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -391,12 +717,25 @@
                     </div>
                 </div>
                 <div class="form-group"><label class="form-label">Nombre del Platillo</label><input type="text" class="form-input" id="edit-nombre"></div>
-                <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="edit-categoria">
-                    <option value="entradas">Entradas</option><option value="sushi">Sushi</option><option value="rolls">Rolls</option>
-                    <option value="tragos">Tragos/Bebidas</option><option value="pokes">Pokes</option><option value="ensaladas">Ensaladas</option>
-                    <option value="china">Comida China</option><option value="japonesa">Comida Japonesa</option>
-                    <option value="ninos">Para Niños</option><option value="ejecutivo">Combo Ejecutivo</option>
-                </select></div>
+                <div class="form-group">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" id="edit-categoria" onchange="actualizarSubcategorias()">
+                        <option value="entradas">Entradas</option>
+                        <option value="sushi">Sushi</option>
+                        <option value="rolls">Rolls</option>
+                        <option value="tragos">Tragos/Bebidas</option>
+                        <option value="pokes">Pokes</option>
+                        <option value="ensaladas">Ensaladas</option>
+                        <option value="china">Comida China</option>
+                        <option value="japonesa">Comida Japonesa</option>
+                        <option value="ninos">Para Niños</option>
+                        <option value="ejecutivo">Combo Ejecutivo</option>
+                    </select>
+                </div>
+                <div class="form-group" id="grupo-subcategoria" style="display: none;">
+                    <label class="form-label">Subcategoría</label>
+                    <select class="form-select" id="edit-subcategoria"></select>
+                </div>
                 <div class="form-group"><label class="form-label">Precio en USD ($)</label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="edit-precio-usd"></div></div>
                 <div class="form-group"><label class="form-label">Descripción (incluye piezas de cada ingrediente)</label><textarea class="form-textarea" id="edit-descripcion" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..."></textarea></div>
                 <div class="form-group"><label class="form-label">Ingredientes del Platillo</label><div id="edit-ingredientes-container"><p style="color: var(--text-secondary);">Ningún ingrediente agregado</p></div><button class="btn btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;"><i class="fas fa-plus"></i> Agregar Ingrediente</button></div>
@@ -410,14 +749,14 @@
     <!-- Modal Ingrediente -->
     <div id="modal-ingrediente" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="titulo-ingrediente">Nuevo Ingrediente</h3><button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button></div>
+            <div class="modal-header"><h3 id="titulo-ingrediente">Nuevo Ingrediente o Producto</h3><button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button></div>
             <div class="modal-body">
                 <input type="hidden" id="ingrediente-id">
                 <div class="form-group"><label class="form-label">Nombre del Ingrediente</label><input type="text" class="form-input" id="ingrediente-nombre" placeholder="Ej: Salmón fresco"></div>
                 
                 <div class="form-group password-field">
                     <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
-                    <input type="number" class="form-input" id="ingrediente-stock" value="0" disabled>
+                    <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
                     <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()"><span><i class="fas fa-lock"></i> Click para desbloquear</span></div>
                 </div>
 
@@ -516,10 +855,25 @@
         // ==========================================
         const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69879d6e43b1c97be96d2b13';
         const JSONBIN_API_KEY = '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K';
-        const ADMIN_PASSWORD = '1234';
-
+        
+        // Configuración por defecto
+        const DEFAULT_PASSWORD = '654321';
+        
         let datos = {
-            config: { tasaCambio: 0, tasaEfectiva: 0, aumentoDiario: 0, aumentoAcumulado: 0, aumentoActivo: true, aumentoDetenido: false, ultimaActualizacion: null, fechaUltimoAumento: null, fechaInicioAumento: null },
+            config: { 
+                tasaCambio: 0, 
+                tasaEfectiva: 0, 
+                aumentoDiario: 0, 
+                aumentoAcumulado: 0, 
+                aumentoActivo: true, 
+                aumentoDetenido: false, 
+                ultimaActualizacion: null, 
+                fechaUltimoAumento: null, 
+                fechaInicioAumento: null,
+                adminPassword: DEFAULT_PASSWORD,
+                adminEmail: '',
+                usuariosCajero: []
+            },
             menu: [],
             inventario: {},
             pedidos: [],
@@ -533,6 +887,33 @@
         let qrActualAmpliado = null;
         let charts = {};
 
+        // Subcategorías sincronizadas con panel cliente
+        const SUBCATEGORIAS = {
+            'rolls': [
+                { id: 'rolls-frios', nombre: 'Rolls Fríos (10 pzas)' },
+                { id: 'rolls-tempura', nombre: 'Rolls Tempura (12 pzas)' }
+            ],
+            'china': [
+                { id: 'arroz-chino', nombre: 'Arroz Chino' },
+                { id: 'arroz-cantones', nombre: 'Arroz Cantones' },
+                { id: 'chopsuey', nombre: 'Chopsuey' },
+                { id: 'lomey', nombre: 'Lomey' },
+                { id: 'chow-mein', nombre: 'Chow Mein' },
+                { id: 'fideos-arroz', nombre: 'Fideos de Arroz' },
+                { id: 'tallarines-cantones', nombre: 'Tallarines Cantones' },
+                { id: 'mariscos', nombre: 'Mariscos' },
+                { id: 'foo-yung', nombre: 'Foo Yong' },
+                { id: 'sopas', nombre: 'Sopas' },
+                { id: 'entremeses', nombre: 'Entremeses' }
+            ],
+            'japonesa': [
+                { id: 'yakimeshi', nombre: 'Yakimeshi' },
+                { id: 'yakisoba', nombre: 'Yakisoba' },
+                { id: 'pasta-udon', nombre: 'Pasta Udon' },
+                { id: 'churrasco', nombre: 'Churrasco' }
+            ]
+        };
+
         // Unidades y conversiones
         const UNIDADES = {
             unidades: { factor: 1, base: 'unidades' },
@@ -543,15 +924,126 @@
         };
 
         // ==========================================
+        // SISTEMA DE LOGIN
+        // ==========================================
+        function verificarLogin() {
+            const password = document.getElementById('loginPassword').value;
+            const passwordCorrecta = datos.config.adminPassword || DEFAULT_PASSWORD;
+            
+            if (password === passwordCorrecta) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainHeader').style.display = 'flex';
+                document.getElementById('tasaBar').style.display = 'flex';
+                document.getElementById('mainContainer').style.display = 'block';
+                inicializarApp();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('loginPassword').value = '';
+            }
+        }
+
+        function mostrarRecuperacion() {
+            document.getElementById('loginStep').classList.remove('active');
+            document.getElementById('recoveryStep').classList.add('active');
+            document.getElementById('recoveryEmail').value = datos.config.adminEmail || '';
+        }
+
+        function volverLogin() {
+            document.getElementById('recoveryStep').classList.remove('active');
+            document.getElementById('emailSentStep').classList.remove('active');
+            document.getElementById('loginStep').classList.add('active');
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        function enviarRecuperacion() {
+            const email = document.getElementById('recoveryEmail').value;
+            if (!email || !email.includes('@')) {
+                document.getElementById('recoveryError').textContent = 'Introduce un correo válido';
+                document.getElementById('recoveryError').style.display = 'block';
+                return;
+            }
+            
+            // Guardar email si es nuevo
+            if (!datos.config.adminEmail) {
+                datos.config.adminEmail = email;
+                guardarDatos();
+            }
+            
+            // Mostrar simulación de email
+            document.getElementById('sentEmail').textContent = email;
+            document.getElementById('shownPassword').textContent = datos.config.adminPassword || DEFAULT_PASSWORD;
+            document.getElementById('recoveryStep').classList.remove('active');
+            document.getElementById('emailSentStep').classList.add('active');
+        }
+
+        function cambiarPassword() {
+            const actual = document.getElementById('passwordActual').value;
+            const nueva = document.getElementById('passwordNueva').value;
+            const confirmar = document.getElementById('passwordConfirmar').value;
+            const errorDiv = document.getElementById('passwordChangeError');
+            
+            const passwordActual = datos.config.adminPassword || DEFAULT_PASSWORD;
+            
+            if (actual !== passwordActual) {
+                errorDiv.textContent = 'Contraseña actual incorrecta';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (nueva.length !== 6 || !/^\d{6}$/.test(nueva)) {
+                errorDiv.textContent = 'La nueva contraseña debe tener exactamente 6 dígitos numéricos';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (nueva !== confirmar) {
+                errorDiv.textContent = 'Las contraseñas no coinciden';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            datos.config.adminPassword = nueva;
+            guardarDatos();
+            cerrarModal('modalCambiarPassword');
+            mostrarNotificacion('Contraseña cambiada exitosamente');
+            
+            // Limpiar campos
+            document.getElementById('passwordActual').value = '';
+            document.getElementById('passwordNueva').value = '';
+            document.getElementById('passwordConfirmar').value = '';
+            errorDiv.style.display = 'none';
+        }
+
+        function guardarEmail() {
+            const email = document.getElementById('configEmail').value;
+            if (email && email.includes('@')) {
+                datos.config.adminEmail = email;
+                guardarDatos();
+                actualizarInfoSistema();
+                cerrarModal('modalConfigurarEmail');
+                mostrarNotificacion('Email configurado correctamente');
+            }
+        }
+
+        // ==========================================
         // INICIALIZACIÓN
         // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
+        async function inicializarApp() {
             await cargarDatos();
             verificarTasaDelDia();
             actualizarUI();
             
-            setInterval(async () => { await cargarDatos(); actualizarUI(); }, 30000);
+            setInterval(async () => { 
+                await cargarDatos(); 
+                actualizarUI(); 
+            }, 30000);
             setInterval(verificarAumentoDiario, 60000);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarDatos();
+            // Mostrar login primero
+            document.getElementById('loginOverlay').style.display = 'flex';
         });
 
         async function cargarDatos() {
@@ -561,11 +1053,13 @@
                 if (result.record) {
                     datos = { ...datos, ...result.record };
                     if (!datos.config) datos.config = {};
+                    if (!datos.config.adminPassword) datos.config.adminPassword = DEFAULT_PASSWORD;
                     if (!datos.menu) datos.menu = [];
                     if (!datos.inventario) datos.inventario = {};
                     if (!datos.pedidos) datos.pedidos = [];
                     if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
                     if (!datos.codigosQR) datos.codigosQR = [];
+                    if (!datos.config.usuariosCajero) datos.config.usuariosCajero = [];
                 }
             } catch (error) { console.error('Error cargando datos:', error); }
         }
@@ -624,7 +1118,6 @@
             document.getElementById('toggleAumento').checked = datos.config.aumentoActivo;
             document.getElementById('toggleAumentoLabel').textContent = datos.config.aumentoActivo ? 'Activado' : 'Desactivado';
             
-            // Mostrar/ocultar botones según estado
             if (datos.config.aumentoDetenido) {
                 document.getElementById('btnDetenerCompleto').style.display = 'none';
                 document.getElementById('btnActivarCompleto').style.display = 'inline-flex';
@@ -633,7 +1126,6 @@
                 document.getElementById('btnActivarCompleto').style.display = 'none';
             }
             
-            // Mostrar aumento total acumulado
             if (datos.config.aumentoAcumulado > 0) {
                 document.getElementById('aumentoTotalDisplay').style.display = 'block';
                 document.getElementById('aumentoTotalValor').textContent = datos.config.aumentoAcumulado.toFixed(2) + '%';
@@ -690,7 +1182,6 @@
         }
 
         function detenerAumentoCompleto() { document.getElementById('modal-confirmar-detener').classList.add('active'); }
-        
         function activarAumentoCompleto() { document.getElementById('modal-reactivar').classList.add('active'); }
 
         async function confirmarDetenerAumento() {
@@ -708,7 +1199,7 @@
             datos.config.aumentoActivo = true;
             datos.config.aumentoDetenido = false;
             datos.config.fechaUltimoAumento = new Date().toISOString();
-            datos.config.fechaInicioAumento = new Date().toISOString(); // Resetear fecha de inicio
+            datos.config.fechaInicioAumento = new Date().toISOString();
             datos.config.aumentoAcumulado = datos.config.aumentoDiario;
             cerrarModal('modal-reactivar');
             calcularTasaEfectiva();
@@ -737,7 +1228,6 @@
         function convertirUnidad(valor, desde, hacia) {
             if (desde === hacia) return valor;
             
-            // Normalizar a base
             let enBase = valor;
             const infoDesde = UNIDADES[desde];
             
@@ -747,7 +1237,6 @@
                 if (desde === 'litros') enBase = valor * 1000;
             }
             
-            // Convertir de base a destino
             const infoHacia = UNIDADES[hacia];
             if (infoHacia.base === 'gramos') {
                 if (hacia === 'kilogramos') return enBase / 1000;
@@ -770,15 +1259,13 @@
             const nuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
             const unidad = document.getElementById('ingrediente-unidad').value;
             
-            // Actualizar display de conversión
             let conversionText = '';
-            if (unidad === 'gramos' && nuevo >= 1000) conversionText = `= ${(nuevo/1000).toFixed(2)} kilogramos`;
+            if (unidad === 'gramos' && nuevo >= 1000) conversionText = `= ${(nuevo/1000).toFixed(3)} kilogramos`;
             else if (unidad === 'kilogramos') conversionText = `= ${(nuevo*1000).toFixed(0)} gramos`;
-            else if (unidad === 'ml' && nuevo >= 1000) conversionText = `= ${(nuevo/1000).toFixed(2)} litros`;
+            else if (unidad === 'ml' && nuevo >= 1000) conversionText = `= ${(nuevo/1000).toFixed(3)} litros`;
             else if (unidad === 'litros') conversionText = `= ${(nuevo*1000).toFixed(0)} mililitros`;
             document.getElementById('conversion-display').textContent = conversionText;
             
-            // Sincronizar con calculadora
             document.getElementById('calc-cantidad').value = nuevo;
             document.getElementById('calc-unidad-display').textContent = unidad;
             calcularCostoUnitario();
@@ -790,6 +1277,25 @@
             document.getElementById('calc-unidad-display').textContent = unidad;
             document.getElementById('calc-unidad-result').textContent = unidad;
             syncUnidades('nuevo');
+        }
+
+        // ==========================================
+        // GESTIÓN DE SUBCATEGORÍAS
+        // ==========================================
+        function actualizarSubcategorias() {
+            const categoria = document.getElementById('edit-categoria').value;
+            const grupoSub = document.getElementById('grupo-subcategoria');
+            const selectSub = document.getElementById('edit-subcategoria');
+            
+            if (SUBCATEGORIAS[categoria]) {
+                grupoSub.style.display = 'block';
+                selectSub.innerHTML = SUBCATEGORIAS[categoria].map(sub => 
+                    `<option value="${sub.id}">${sub.nombre}</option>`
+                ).join('');
+            } else {
+                grupoSub.style.display = 'none';
+                selectSub.innerHTML = '';
+            }
         }
 
         // ==========================================
@@ -835,6 +1341,7 @@
             
             ingredientesPlato = [];
             renderIngredientesPlato();
+            actualizarSubcategorias(); // Resetear subcategorías
             document.getElementById('modal-platillo').classList.add('active');
         }
 
@@ -850,7 +1357,12 @@
             document.getElementById('edit-precio-usd').value = platillo.precio;
             document.getElementById('edit-disponible').checked = platillo.disponible;
             
-            // Imagen
+            // Actualizar subcategorías y seleccionar la correcta
+            actualizarSubcategorias();
+            if (platillo.subcategoria) {
+                document.getElementById('edit-subcategoria').value = platillo.subcategoria;
+            }
+            
             if (platillo.imagen) {
                 document.getElementById('edit-imagen-url').value = platillo.imagen;
                 document.getElementById('edit-imagen-link').value = platillo.imagen;
@@ -895,7 +1407,7 @@
                 <div class="ingrediente-plato-row">
                     <input type="text" class="form-input" value="${ing.nombre || ing.id}" placeholder="Nombre del ingrediente" onchange="cambiarNombreIngrediente(${index}, this.value)">
                     <input type="number" step="0.001" class="form-input" value="${ing.cantidad}" placeholder="Cantidad" onchange="cambiarCantidadPlato(${index}, this.value)">
-                    <select class="unidad-select" onchange="cambiarUnidadPlato(${index}, this.value)">
+                    <select class="form-select" onchange="cambiarUnidadPlato(${index}, this.value)">
                         <option value="unidades" ${ing.unidad === 'unidades' ? 'selected' : ''}>Unidades</option>
                         <option value="gramos" ${ing.unidad === 'gramos' ? 'selected' : ''}>Gramos</option>
                         <option value="kilogramos" ${ing.unidad === 'kilogramos' ? 'selected' : ''}>Kg</option>
@@ -940,7 +1452,6 @@
                 const ingEnInv = Object.entries(datos.inventario).find(([_, i]) => i.nombre.toLowerCase() === (ing.nombre || ing.id).toLowerCase());
                 if (ingEnInv) {
                     const [_, ingInfo] = ingEnInv;
-                    // Convertir cantidad necesaria a la unidad del inventario
                     const cantidadNecesaria = convertirUnidad(ing.cantidad, ing.unidad, ingInfo.unidad);
                     const disponible = Math.floor(ingInfo.stock / cantidadNecesaria);
                     maxPlatillos = Math.min(maxPlatillos, disponible);
@@ -980,10 +1491,15 @@
             });
             if (stockCalculado === Infinity || stockCalculado < 0) stockCalculado = 0;
             
+            const categoria = document.getElementById('edit-categoria').value;
+            const subcategoriaSelect = document.getElementById('edit-subcategoria');
+            const subcategoria = subcategoriaSelect.value && SUBCATEGORIAS[categoria] ? subcategoriaSelect.value : null;
+            
             const platillo = {
                 id: id,
                 nombre: document.getElementById('edit-nombre').value,
-                categoria: document.getElementById('edit-categoria').value,
+                categoria: categoria,
+                subcategoria: subcategoria,
                 precio: parseFloat(document.getElementById('edit-precio-usd').value) || 0,
                 descripcion: document.getElementById('edit-descripcion').value,
                 imagen: document.getElementById('edit-imagen-url').value,
@@ -1024,7 +1540,7 @@
         // ==========================================
         function abrirModalIngrediente() {
             document.getElementById('ingrediente-id').value = '';
-            document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente';
+            document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente o Producto';
             document.getElementById('ingrediente-nombre').value = '';
             document.getElementById('ingrediente-stock').value = '0';
             document.getElementById('ingrediente-stock').disabled = true;
@@ -1050,7 +1566,7 @@
             if (!ing) return;
             
             document.getElementById('ingrediente-id').value = id;
-            document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente';
+            document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente o Producto';
             document.getElementById('ingrediente-nombre').value = ing.nombre;
             document.getElementById('ingrediente-stock').value = ing.stock;
             document.getElementById('ingrediente-stock').disabled = true;
@@ -1094,7 +1610,6 @@
             
             cerrarModal('modal-ingrediente');
             
-            // Si se agregó stock nuevo, verificar platillos agotados
             if (stockNuevo > 0 && stockAnterior === 0) {
                 await reactivarPlatillosPorIngrediente(id);
             }
@@ -1110,9 +1625,7 @@
             
             datos.menu.forEach(platillo => {
                 if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
-                    // Recalcular stock del platillo
                     let maxPlatillos = Infinity;
-                    let tieneAgotados = false;
                     
                     Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
                         const ing = datos.inventario[ingId];
@@ -1120,16 +1633,13 @@
                             const cantidadNecesaria = convertirUnidad(data.cantidad, data.unidad || 'unidades', ing.unidad);
                             const disponible = Math.floor(ing.stock / cantidadNecesaria);
                             maxPlatillos = Math.min(maxPlatillos, disponible);
-                            if (ing.stock <= 0 && data.obligatorio) tieneAgotados = true;
                         } else if (data.obligatorio) {
                             maxPlatillos = 0;
-                            tieneAgotados = true;
                         }
                     });
                     
                     if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
                     
-                    // Si antes estaba agotado y ahora tiene stock, reactivar
                     if (platillo.stock === 0 && maxPlatillos > 0) {
                         platillo.disponible = true;
                         platillosReactivados++;
@@ -1147,7 +1657,6 @@
             const id = document.getElementById('ingrediente-id').value;
             if (!id || !datos.inventario[id]) return;
             
-            // Verificar si está en uso
             const enUso = datos.menu.some(p => p.ingredientes && p.ingredientes[id]);
             if (enUso) {
                 alert('No se puede eliminar: este ingrediente está siendo usado en platillos. Elimínalo de los platillos primero.');
@@ -1170,7 +1679,10 @@
         }
 
         function verificarPassword() {
-            if (document.getElementById('admin-password').value === ADMIN_PASSWORD) {
+            const password = document.getElementById('admin-password').value;
+            const passwordCorrecta = datos.config.adminPassword || DEFAULT_PASSWORD;
+            
+            if (password === passwordCorrecta) {
                 stockDesbloqueado = true;
                 document.getElementById('ingrediente-stock').disabled = false;
                 document.getElementById('stock-overlay').style.display = 'none';
@@ -1201,6 +1713,74 @@
             } else {
                 document.getElementById('calc-resultado').style.display = 'none';
             }
+        }
+
+        // ==========================================
+        // GESTIÓN DE USUARIOS CAJERO
+        // ==========================================
+        function crearUsuarioCajero() {
+            const nombre = document.getElementById('cajeroNombre').value.trim();
+            const email = document.getElementById('cajeroEmail').value.trim();
+            const username = document.getElementById('cajeroUsername').value.trim();
+            const password = document.getElementById('cajeroPassword').value;
+            
+            if (!nombre || !username || !password) {
+                alert('Nombre, usuario y contraseña son obligatorios');
+                return;
+            }
+            
+            const nuevoUsuario = {
+                id: 'cajero_' + Date.now(),
+                nombre: nombre,
+                email: email,
+                username: username,
+                password: password,
+                activo: true,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            datos.config.usuariosCajero.push(nuevoUsuario);
+            guardarDatos();
+            renderizarUsuariosCajero();
+            
+            // Limpiar campos
+            document.getElementById('cajeroNombre').value = '';
+            document.getElementById('cajeroEmail').value = '';
+            document.getElementById('cajeroUsername').value = '';
+            document.getElementById('cajeroPassword').value = '';
+            
+            mostrarNotificacion('Usuario cajero creado exitosamente');
+            actualizarInfoSistema();
+        }
+
+        function eliminarUsuarioCajero(id) {
+            if (!confirm('¿Eliminar este usuario cajero?')) return;
+            datos.config.usuariosCajero = datos.config.usuariosCajero.filter(u => u.id !== id);
+            guardarDatos();
+            renderizarUsuariosCajero();
+            actualizarInfoSistema();
+            mostrarNotificacion('Usuario eliminado');
+        }
+
+        function renderizarUsuariosCajero() {
+            const container = document.getElementById('listaUsuariosCajero');
+            
+            if (datos.config.usuariosCajero.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay usuarios creados</p>';
+                return;
+            }
+            
+            container.innerHTML = datos.config.usuariosCajero.map(user => `
+                <div class="user-card">
+                    <div class="user-info">
+                        <span class="user-name">${user.nombre}</span>
+                        <span class="user-email">@${user.username} ${user.email ? '| ' + user.email : ''}</span>
+                    </div>
+                    <button class="btn btn-danger btn-small" onclick="eliminarUsuarioCajero('${user.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
         }
 
         // ==========================================
@@ -1307,22 +1887,18 @@
             document.getElementById('ticket-promedio').textContent = '$' + ticketPromedio.toFixed(2);
             document.getElementById('platillo-top').textContent = platilloTop ? platilloTop[0] : '-';
             
-            // Tabla de ventas
             const tbody = document.getElementById('ventas-body');
             tbody.innerHTML = pedidosCobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => {
                 const totalBs = ((p.total || 0) * (datos.config.tasaEfectiva || 0)).toFixed(2);
-                return `<tr><td>${new Date(p.timestamp).toLocaleDateString()}</td><td>${p.id}</td><td>${p.items?.length || 0} items</td><td>$${p.total?.toFixed(2)}</td><td>${totalBs} Bs.</td><td>${p.metodoPago || 'N/A'}</td><td><span class="badge badge-success">${p.estado}</span></td></tr>`;
+                return `<tr><td>${new Date(p.timestamp).toLocaleDateString()}</td><td>${p.id}</td><td>${p.cajero || 'N/A'}</td><td>${p.items?.length || 0} items</td><td>$${p.total?.toFixed(2)}</td><td>${totalBs} Bs.</td><td>${p.metodoPago || 'N/A'}</td><td><span class="badge badge-success">${p.estado}</span></td></tr>`;
             }).join('');
             
-            // Generar gráficas
             generarGraficas(pedidosCobrados);
         }
 
         function generarGraficas(pedidos) {
-            // Destruir gráficas anteriores
             Object.values(charts).forEach(c => c.destroy());
             
-            // Ventas por día (últimos 7 días)
             const ventasPorDia = {};
             for (let i = 6; i >= 0; i--) {
                 const fecha = new Date(); fecha.setDate(fecha.getDate() - i);
@@ -1339,7 +1915,6 @@
                 options: { responsive: true, plugins: { title: { display: true, text: 'Ventas Últimos 7 Días', color: '#fff' }, legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#a1a1aa' } }, x: { ticks: { color: '#a1a1aa' } } } }
             });
             
-            // Ventas por categoría
             const ventasPorCategoria = {};
             pedidos.forEach(p => {
                 p.items?.forEach(item => {
@@ -1355,7 +1930,6 @@
                 options: { responsive: true, plugins: { title: { display: true, text: 'Ventas por Categoría', color: '#fff' }, legend: { position: 'right', labels: { color: '#fff' } } } }
             });
             
-            // Métodos de pago
             const metodosPago = {};
             pedidos.forEach(p => { metodosPago[p.metodoPago || 'Desconocido'] = (metodosPago[p.metodoPago || 'Desconocido'] || 0) + 1; });
             
@@ -1365,7 +1939,6 @@
                 options: { responsive: true, plugins: { title: { display: true, text: 'Métodos de Pago', color: '#fff' }, legend: { display: false } }, scales: { y: { ticks: { color: '#a1a1aa' } }, x: { ticks: { color: '#a1a1aa' } } } }
             });
             
-            // Ventas por hora
             const ventasPorHora = Array(24).fill(0);
             pedidos.forEach(p => { ventasPorHora[new Date(p.timestamp).getHours()] += p.total || 0; });
             
@@ -1385,6 +1958,22 @@
             
             container.innerHTML = datos.menu.map(item => {
                 const precioBs = ((item.precio || 0) * tasa).toFixed(2);
+                
+                // Generar tooltip de ingredientes con checks/X
+                let ingredientesTooltip = '';
+                if (item.ingredientes && Object.keys(item.ingredientes).length > 0) {
+                    ingredientesTooltip = Object.entries(item.ingredientes).map(([key, val]) => {
+                        const ingInfo = datos.inventario[key];
+                        const hayStock = ingInfo && ingInfo.stock > 0;
+                        return `
+                            <div class="ingredient-check-item">
+                                <i class="fas fa-${hayStock ? 'check-circle' : 'times-circle'}" style="color: ${hayStock ? 'var(--success)' : 'var(--danger)'}"></i>
+                                <span>${ingInfo ? ingInfo.nombre : key}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
                 let ingredientesHtml = '';
                 if (item.ingredientes) {
                     ingredientesHtml = Object.entries(item.ingredientes).map(([key, val]) => {
@@ -1400,7 +1989,14 @@
                                 ${item.imagen ? `<img src="${item.imagen}" class="plato-img" onerror="this.style.display='none'">` : '<div class="plato-img" style="background: var(--bg-hover); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);"><i class="fas fa-image"></i></div>'}
                                 <div>
                                     <div class="plato-title">${item.nombre}</div>
-                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">$${(item.precio || 0).toFixed(2)} = ${precioBs} Bs. | Stock: ${item.stock || 0} unidades</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">$${(item.precio || 0).toFixed(2)} = ${precioBs} Bs.</div>
+                                    <div class="ingredients-tooltip" style="margin-top: 0.5rem;">
+                                        <i class="fas fa-utensils"></i> Stock: ${item.stock || 0} unidades
+                                        <div class="ingredients-popup">
+                                            <h4 style="margin-bottom: 0.75rem; color: var(--primary);">Ingredientes</h4>
+                                            ${ingredientesTooltip || '<p style="color: var(--text-secondary);">Sin ingredientes configurados</p>'}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -1459,7 +2055,6 @@
             Object.values(datos.inventario).forEach(ing => { if (ing.stock <= ing.minimo) alertas++; });
             document.getElementById('alertas-stock').textContent = alertas;
             
-            // Pedidos recientes
             const recientes = datos.pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
             document.getElementById('pedidos-recientes').innerHTML = recientes.map(p => `
                 <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
@@ -1468,7 +2063,6 @@
                 </div>
             `).join('') || '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay pedidos recientes</p>';
             
-            // Stock crítico
             const criticos = Object.entries(datos.inventario).filter(([_, ing]) => ing.stock <= ing.minimo);
             document.getElementById('stock-critico').innerHTML = criticos.map(([id, ing]) => {
                 const percent = ing.minimo > 0 ? (ing.stock / ing.minimo) * 100 : 0;
@@ -1482,6 +2076,12 @@
             }).join('') || '<p style="color: var(--success); text-align: center; padding: 2rem;">✓ Todo el stock está en niveles óptimos</p>';
         }
 
+        function actualizarInfoSistema() {
+            document.getElementById('emailConfigurado').textContent = datos.config.adminEmail || 'No configurado';
+            document.getElementById('totalCajeros').textContent = datos.config.usuariosCajero ? datos.config.usuariosCajero.length : 0;
+            document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+        }
+
         // ==========================================
         // UTILIDADES
         // ==========================================
@@ -1491,7 +2091,9 @@
             renderizarInventario();
             renderizarReportes();
             renderizarQRs();
+            renderizarUsuariosCajero();
             actualizarDisplayTasa();
+            actualizarInfoSistema();
         }
 
         function recalcularCostos() {
@@ -1541,6 +2143,37 @@
             mostrarNotificacion('Todos los cambios guardados');
         }
 
+        function exportarBackup() {
+            const dataStr = JSON.stringify(datos, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `saki_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            mostrarNotificacion('Backup exportado');
+        }
+
+        async function importarBackup(input) {
+            if (!input.files || !input.files[0]) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    if (confirm('¿Restaurar este backup? Se sobrescribirán todos los datos actuales.')) {
+                        datos = { ...datos, ...backup };
+                        await guardarDatos();
+                        actualizarUI();
+                        mostrarNotificacion('Backup restaurado correctamente');
+                    }
+                } catch (err) {
+                    alert('Error al leer el archivo');
+                }
+            };
+            reader.readAsText(input.files[0]);
+        }
+
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1548,6 +2181,7 @@
             document.getElementById(tabId).classList.add('active');
         }
 
+        function abrirModal(modalId) { document.getElementById(modalId).classList.add('active'); }
         function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
 
         function mostrarNotificacion(mensaje, tipo = 'success') {
