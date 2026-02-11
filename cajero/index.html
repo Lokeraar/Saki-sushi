@@ -1,9 +1,11 @@
+Panel Cajero:
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Cajero - Saki Sushi</title>
+    <title>💰 Panel del Cajero - Saki Sushi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -302,7 +304,6 @@
         let currentPedido = null;
         let currentPaymentMethod = null;
         let pedidoRechazo = null;
-        let cajeroActual = 'Cajero Principal'; // En producción vendría del login
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
@@ -345,15 +346,7 @@
             if (pedidosArchivar.length > 0) {
                 if (!sistemaData.ventas) sistemaData.ventas = { diarias: [], semanales: [], mensuales: [] };
                 pedidosArchivar.forEach(p => {
-                    sistemaData.ventas.diarias.push({ 
-                        fecha: p.timestamp, 
-                        pedidoId: p.id, 
-                        total: p.total, 
-                        items: p.items?.length || 0, 
-                        metodoPago: p.metodoPago, 
-                        tipo: p.tipo || 'mesa',
-                        cajero: p.cajero || 'Desconocido'
-                    });
+                    sistemaData.ventas.diarias.push({ fecha: p.timestamp, pedidoId: p.id, total: p.total, items: p.items?.length || 0, metodoPago: p.metodoPago, tipo: p.tipo || 'mesa' });
                 });
             }
             sistemaData.pedidos = pedidosHoy;
@@ -435,7 +428,8 @@
             
             const tasa = sistemaData.config.tasaCambio || 400;
             const totalVentas = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
-            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasa).toFixed(0)}`;
+            // CORRECCIÓN: Usar toFixed(2) para mantener decimales
+            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasa).toFixed(2)}`;
             
             const totalPlatillos = cobrados.reduce((sum, p) => sum + (p.items?.reduce((itemSum, item) => itemSum + (item.cantidad || 1), 0) || 0), 0);
             document.getElementById('statPlatillos').textContent = totalPlatillos;
@@ -466,12 +460,15 @@
                 timerText = minutosRestantes > 0 ? `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
+            // CORRECCIÓN: Calcular precio total correctamente con decimales
             const itemsHtml = (pedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                const cantidad = item.cantidad || 1;
-                return `<div class="order-detail-row"><span>${cantidad}x ${item.nombre}${personalizacion}</span><span>Bs. ${((item.subtotal || 0) * tasa).toFixed(2)}</span></div>`;
+                // CORRECCIÓN: Multiplicar precio unitario por cantidad
+                const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
+                return `<div class="order-detail-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
             }).join('');
             
+            // CORRECCIÓN: Calcular total con precisión decimal
             const total = (pedido.total || 0) * tasa;
             
             let extraInfo = '';
@@ -485,10 +482,7 @@
             
             const botonesRechazo = (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') ? `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')"><i class="fas fa-times"></i> Rechazar</button>` : '';
             
-            // Mostrar si ya está asignado a otro cajero
-            const asignacionInfo = pedido.cajero && pedido.cajero !== cajeroActual ? `<div style="background: #FFF3E0; border: 1px solid var(--warning); border-radius: 5px; padding: 5px; margin-bottom: 10px; font-size: 0.75rem; color: var(--warning);"><i class="fas fa-user-clock"></i> Asignado a: ${pedido.cajero}</div>` : '';
-            
-            return `<div class="order-card">${asignacionInfo}<div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${total.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
+            return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${total.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
         }
 
         // Renderizar Menú (sincronizado con Admin)
@@ -511,8 +505,7 @@
                     Object.entries(item.ingredientes).forEach(([ingId, data]) => {
                         const ing = sistemaData.inventario[ingId];
                         if (ing) {
-                            const cantidadNecesaria = convertirUnidad(data.cantidad, data.unidad || 'unidades', ing.unidad || 'unidades');
-                            const disponibleIng = Math.floor(ing.stock / cantidadNecesaria);
+                            const disponibleIng = Math.floor(ing.stock / data.cantidad);
                             maxPlatillos = Math.min(maxPlatillos, disponibleIng);
                         } else {
                             maxPlatillos = 0;
@@ -542,11 +535,6 @@
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
-            // Asignar pedido a este cajero si no está asignado
-            if (!currentPedido.cajero) {
-                currentPedido.cajero = cajeroActual;
-            }
-            
             const modal = document.getElementById('cobroModal');
             const summary = document.getElementById('cobroSummary');
             const tasa = sistemaData.config.tasaCambio || 400;
@@ -554,8 +542,9 @@
             
             let itemsHtml = (currentPedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                const cantidad = item.cantidad || 1;
-                return `<div class="summary-row"><span>${cantidad}x ${item.nombre}${personalizacion}</span><span>Bs. ${((item.subtotal || 0) * tasa).toFixed(2)}</span></div>`;
+                // CORRECCIÓN: Multiplicar por cantidad
+                const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
+                return `<div class="summary-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
             }).join('');
             
             summary.innerHTML = `${itemsHtml}<div class="summary-row total"><span>TOTAL A PAGAR</span><span>Bs. ${total.toFixed(2)}</span></div>`;
@@ -634,9 +623,9 @@
             const diferencia = recibido - total;
             const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             
-            // Actualizar pedido
+            // CORRECCIÓN CRÍTICA: Cambiar estado a 'cobrado'
             currentPedido.estado = 'cobrado';
-            currentPedido.cajero = cajeroActual;
+            currentPedido.cajero = 'Cajero Principal';
             currentPedido.fechaCobro = new Date().toISOString();
             currentPedido.metodoPago = metodoPago;
             currentPedido.montoRecibido = recibido;
@@ -648,27 +637,17 @@
                 if (specialOption === 'casa') currentPedido.invitadoPor = document.getElementById('nombreInvita').value;
             } else if (diferencia > 0) currentPedido.cambio = diferencia;
             
-            // Guardar cambios en el servidor
             await guardarCambios();
-            
-            // Cerrar modal y actualizar vista inmediatamente
             closeModal('cobroModal');
-            
-            // IMPORTANTE: Actualizar la vista para reflejar el cambio
-            actualizarVista();
-            
             mostrarNotificacion('Cobro procesado correctamente');
+            
+            // CORRECCIÓN CRÍTICA: Llamar a renderPedidos() para actualizar la vista
+            renderPedidos();
         }
 
         // Rechazo
         function mostrarRechazo(pedidoId) {
             pedidoRechazo = sistemaData.pedidos.find(p => p.id === pedidoId);
-            
-            // Asignar pedido a este cajero si no está asignado
-            if (pedidoRechazo && !pedidoRechazo.cajero) {
-                pedidoRechazo.cajero = cajeroActual;
-            }
-            
             document.getElementById('rechazoModal').classList.add('show');
         }
 
@@ -688,10 +667,7 @@
                     if (platillo && platillo.ingredientes) {
                         Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
                             if (!item.personalizacion?.includes(ingKey)) {
-                                if (sistemaData.inventario[ingKey]) {
-                                    const cantidadARestaurar = (ingData.cantidad || 1) * (item.cantidad || 1);
-                                    sistemaData.inventario[ingKey].stock += cantidadARestaurar;
-                                }
+                                if (sistemaData.inventario[ingKey]) sistemaData.inventario[ingKey].stock += ingData.cantidad * (item.cantidad || 1);
                             }
                         });
                     }
@@ -700,11 +676,8 @@
             
             await guardarCambios();
             closeModal('rechazoModal');
-            
-            // IMPORTANTE: Actualizar la vista para reflejar el cambio
-            actualizarVista();
-            
             mostrarNotificacion('Pedido rechazado. Cliente notificado.');
+            renderPedidos();
         }
 
         // Utilidades
@@ -735,24 +708,6 @@
                 });
             } catch (error) { console.error('Error guardando:', error); }
         }
-        
-        // Función de conversión de unidades
-        function convertirUnidad(valor, desde, hacia) {
-            if (desde === hacia) return valor;
-            
-            const factores = {
-                'unidades': 1,
-                'gramos': 1, 'kilogramos': 1000,
-                'ml': 1, 'litros': 1000
-            };
-            
-            // Convertir a base
-            let enBase = valor * (factores[desde] || 1);
-            
-            // Convertir de base a destino
-            return enBase / (factores[hacia] || 1);
-        }
-        
         window.addEventListener('beforeunload', () => { if (syncInterval) clearInterval(syncInterval); });
     </script>
 </body>
