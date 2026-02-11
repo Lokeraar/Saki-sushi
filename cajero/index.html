@@ -1,5 +1,3 @@
-Panel Cajero:
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -50,7 +48,7 @@ Panel Cajero:
         @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 576px) { .stats-grid { grid-template-columns: 1fr; } }
         
-        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px var(--shadow); text-align: center; transition: var(--transition); cursor: pointer; border: 2px solid transparent; }
+        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px var(--shadow); text-align: center; transition: var(--transition); border: 2px solid transparent; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-color: var(--accent); }
         .stat-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5em; color: white; }
         .stat-icon.pendientes { background: var(--warning); }
@@ -60,7 +58,28 @@ Panel Cajero:
         .stat-value { font-size: 2.5em; font-weight: 800; color: var(--secondary); font-family: 'Montserrat', sans-serif; }
         .stat-label { color: #666; margin-top: 5px; font-size: 0.95em; }
         
-        .orders-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
+        .section-subtitle { 
+            font-size: 1.3em; 
+            color: var(--secondary); 
+            margin: 30px 0 20px 0; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid var(--accent);
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        .section-subtitle .count-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .orders-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
         @media (max-width: 1200px) { .orders-container { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) { .orders-container { grid-template-columns: 1fr; } }
         
@@ -73,13 +92,18 @@ Panel Cajero:
         
         .order-card { background: #f8f8f8; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); transition: var(--transition); }
         .order-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .order-card.en-cocina { border-left-color: var(--warning); }
+        .order-card.en-camino { border-left-color: var(--info); }
+        .order-card.reserva-pendiente { border-left-color: #9c27b0; }
+        .order-card.reserva-atendida { border-left-color: #ff5722; }
+        
         .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .order-id { font-weight: 700; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; }
         .order-time { font-size: 0.8rem; color: #666; }
         .order-details { font-size: 0.9rem; margin-bottom: 10px; }
         .order-detail-row { display: flex; justify-content: space-between; padding: 3px 0; }
         .order-total { font-weight: 700; color: var(--primary); font-size: 1.1rem; text-align: right; margin-top: 10px; padding-top: 10px; border-top: 2px dashed #ddd; }
-        .order-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .order-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         
         .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Montserrat', sans-serif; }
         .btn-cobrar { background: linear-gradient(135deg, var(--success), #2E7D32); color: white; }
@@ -87,6 +111,27 @@ Panel Cajero:
         .btn-ver { background: #e0e0e0; color: var(--secondary); }
         .btn-ver:hover { background: #d0d0d0; }
         .btn-rechazar { background: linear-gradient(135deg, var(--danger), #B71C1C); color: white; }
+        .btn-entregar { background: linear-gradient(135deg, var(--success), #2E7D32); color: white; }
+        .btn-entregar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 142, 60, 0.4); }
+        .btn-enviar { background: linear-gradient(135deg, var(--info), #1565C0); color: white; }
+        .btn-enviar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(25, 118, 210, 0.4); }
+        .btn-confirmar { background: linear-gradient(135deg, #9c27b0, #7b1fa2); color: white; }
+        .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(156, 39, 176, 0.4); }
+        
+        .status-badge { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 5px; 
+            padding: 5px 10px; 
+            border-radius: 15px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .status-en-cocina { background: #FFF3E0; color: var(--warning); }
+        .status-en-camino { background: #E3F2FD; color: var(--info); }
+        .status-reserva-pendiente { background: #F3E5F5; color: #9c27b0; }
+        .status-reserva-atendida { background: #FBE9E7; color: #ff5722; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
         .modal-overlay.show { display: flex; }
@@ -110,7 +155,7 @@ Panel Cajero:
         .form-group input:focus { outline: none; border-color: var(--primary); }
         .payment-summary { background: #f8f8f8; padding: 20px; border-radius: 12px; margin: 20px 0; }
         .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
-        .summary-row.total { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--primary); font-family: 'Montserrat', sans-serif; }
+        .summary-row:last-child { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--primary); font-family: 'Montserrat', sans-serif; }
         .change-display { background: var(--warning); color: white; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; font-size: 1.2rem; font-weight: 700; display: none; }
         .change-display.show { display: block; }
         .special-options { background: #FFF3E0; border: 2px solid var(--warning); border-radius: 12px; padding: 20px; margin: 20px 0; }
@@ -151,10 +196,40 @@ Panel Cajero:
         .badge-success { background: #E8F5E9; color: var(--success); }
         .badge-danger { background: #FFEBEE; color: var(--danger); }
         
+        /* Modal de confirmación de entrega */
+        .confirm-modal .modal-header { background: linear-gradient(135deg, var(--info), #1565C0); }
+        .confirm-modal .modal-header.entrega { background: linear-gradient(135deg, var(--success), #2E7D32); }
+        .confirm-modal .modal-header.envio { background: linear-gradient(135deg, var(--info), #1565C0); }
+        .confirm-modal .modal-header.reserva { background: linear-gradient(135deg, #9c27b0, #7b1fa2); }
+        
+        .info-box { background: #f8f8f8; border-radius: 10px; padding: 15px; margin: 15px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+        .info-row:last-child { border-bottom: none; font-weight: 600; }
+        
+        .keyboard-hint { 
+            background: #f0f0f0; 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            color: #666;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .keyboard-hint kbd {
+            background: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: monospace;
+        }
+        
         @media (max-width: 768px) {
             .tasa-bar { flex-direction: column; gap: 1rem; padding: 1rem; }
             .header { flex-direction: column; text-align: center; }
             .payment-method-grid { grid-template-columns: 1fr; }
+            .keyboard-hint { flex-direction: column; gap: 5px; text-align: center; }
         }
     </style>
 </head>
@@ -182,6 +257,23 @@ Panel Cajero:
     <div class="notification" id="notification">
         <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></i>
         <div><h4 style="margin: 0; color: var(--secondary);">Éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
+    </div>
+
+    <!-- Modal de Confirmación de Entrega/Envío/Reserva -->
+    <div class="modal-overlay confirm-modal" id="confirmEntregaModal">
+        <div class="modal-content">
+            <div class="modal-header" id="confirmEntregaHeader">
+                <h2 id="confirmEntregaTitle"><i class="fas fa-check-circle"></i> Confirmar Entrega</h2>
+                <button class="modal-close" onclick="cerrarModal('confirmEntregaModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="confirmEntregaBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="cerrarModal('confirmEntregaModal')">Cancelar (ESC)</button>
+                <button class="btn-modal primary" id="btnConfirmarAccion" onclick="ejecutarConfirmacion()">Confirmar (ENTER)</button>
+            </div>
+        </div>
     </div>
 
     <!-- Tasa del Día Bar -->
@@ -261,24 +353,53 @@ Panel Cajero:
             <div class="section active" id="section-pedidos">
                 <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Pedidos del Día</h2>
                 <div class="stats-grid">
-                    <div class="stat-card" onclick="showHistorial('pendientes')"><div class="stat-icon pendientes"><i class="fas fa-clock"></i></div><div class="stat-value" id="statPendientes">0</div><div class="stat-label">Pendientes</div></div>
-                    <div class="stat-card" onclick="showHistorial('cobrados')"><div class="stat-icon cobrados"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="statCobrados">0</div><div class="stat-label">Cobrados Hoy</div></div>
-                    <div class="stat-card" onclick="showHistorial('ventas')"><div class="stat-icon ventas"><i class="fas fa-dollar-sign"></i></div><div class="stat-value" id="statVentas">Bs. 0</div><div class="stat-label">Ventas Totales</div></div>
-                    <div class="stat-card" onclick="showHistorial('platillos')"><div class="stat-icon platillos"><i class="fas fa-utensils"></i></div><div class="stat-value" id="statPlatillos">0</div><div class="stat-label">Platillos Vendidos</div></div>
+                    <div class="stat-card"><div class="stat-icon pendientes"><i class="fas fa-fire"></i></div><div class="stat-value" id="statPendientes">0</div><div class="stat-label">En Preparación</div></div>
+                    <div class="stat-card"><div class="stat-icon cobrados"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="statCobrados">0</div><div class="stat-label">Cobrados Hoy</div></div>
+                    <div class="stat-card"><div class="stat-icon ventas"><i class="fas fa-dollar-sign"></i></div><div class="stat-value" id="statVentas">Bs. 0</div><div class="stat-label">Ventas Totales</div></div>
+                    <div class="stat-card"><div class="stat-icon platillos"><i class="fas fa-utensils"></i></div><div class="stat-value" id="statPlatillos">0</div><div class="stat-label">Platillos Vendidos</div></div>
                 </div>
 
-                <div class="orders-container" id="ordersContainer">
+                <!-- Pedidos Pendientes de Cobro (Originales) -->
+                <div class="section-subtitle">
+                    <i class="fas fa-clock"></i> 
+                    Pedidos a cobrar y confirmar:
+                    <span class="count-badge" id="badgePorCobrar">0</span>
+                </div>
+                
+                <div class="orders-container" id="ordersPorCobrar">
                     <div class="order-column">
                         <div class="order-column-header mesa"><i class="fas fa-chair"></i> MESA</div>
-                        <div class="order-column-content" id="colMesa"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos en mesa</p></div></div>
+                        <div class="order-column-content" id="colMesaPorCobrar"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos en mesa</p></div></div>
                     </div>
                     <div class="order-column">
                         <div class="order-column-header delivery"><i class="fas fa-motorcycle"></i> DELIVERY</div>
-                        <div class="order-column-content" id="colDelivery"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos delivery</p></div></div>
+                        <div class="order-column-content" id="colDeliveryPorCobrar"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos delivery</p></div></div>
                     </div>
                     <div class="order-column">
                         <div class="order-column-header reserva"><i class="fas fa-calendar-check"></i> RESERVAS</div>
-                        <div class="order-column-content" id="colReserva"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay reservas</p></div></div>
+                        <div class="order-column-content" id="colReservaPorCobrar"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay reservas</p></div></div>
+                    </div>
+                </div>
+
+                <!-- Pedidos en Preparación (Nueva sección) -->
+                <div class="section-subtitle">
+                    <i class="fas fa-fire"></i> 
+                    Pedidos en preparación:
+                    <span class="count-badge" id="badgeEnPreparacion">0</span>
+                </div>
+                
+                <div class="orders-container" id="ordersEnPreparacion">
+                    <div class="order-column">
+                        <div class="order-column-header mesa"><i class="fas fa-chair"></i> MESA - EN COCINA</div>
+                        <div class="order-column-content" id="colMesaEnCocina"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos en cocina</p></div></div>
+                    </div>
+                    <div class="order-column">
+                        <div class="order-column-header delivery"><i class="fas fa-motorcycle"></i> DELIVERY - EN CAMINO</div>
+                        <div class="order-column-content" id="colDeliveryEnCamino"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay delivery en camino</p></div></div>
+                    </div>
+                    <div class="order-column">
+                        <div class="order-column-header reserva"><i class="fas fa-calendar-check"></i> RESERVAS - PENDIENTES</div>
+                        <div class="order-column-content" id="colReservaPendiente"><div class="empty-state"><i class="fas fa-inbox"></i><p>No hay reservas pendientes</p></div></div>
                     </div>
                 </div>
             </div>
@@ -304,12 +425,17 @@ Panel Cajero:
         let currentPedido = null;
         let currentPaymentMethod = null;
         let pedidoRechazo = null;
+        let pedidoConfirmacion = null;
+        let tipoConfirmacion = null; // 'entrega', 'envio', 'reserva', 'reserva_entrega'
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
             verificarTasaDelDia();
             syncInterval = setInterval(cargarDatos, 10000);
+            
+            // Event listeners para teclas en modales
+            document.addEventListener('keydown', handleGlobalKeypress);
         });
 
         async function cargarDatos() {
@@ -340,7 +466,7 @@ Panel Cajero:
             
             sistemaData.pedidos.forEach(p => {
                 if (p.timestamp.startsWith(hoy)) pedidosHoy.push(p);
-                else if (p.estado === 'cobrado') pedidosArchivar.push(p);
+                else if (p.estado === 'cobrado' || p.estado === 'entregado' || p.estado === 'enviado' || p.estado === 'reserva_completada') pedidosArchivar.push(p);
             });
             
             if (pedidosArchivar.length > 0) {
@@ -352,7 +478,7 @@ Panel Cajero:
             sistemaData.pedidos = pedidosHoy;
         }
 
-        // Verificar Tasa del Día (Cajero puede establecerla si Admin no lo hizo)
+        // Verificar Tasa del Día
         function verificarTasaDelDia() {
             if (!sistemaData || !sistemaData.config) return;
             const hoy = new Date().toISOString().split('T')[0];
@@ -420,35 +546,65 @@ Panel Cajero:
             const hoy = new Date().toISOString().split('T')[0];
             const pedidosHoy = pedidos.filter(p => p.timestamp.startsWith(hoy));
             
+            // Separar por estado
             const pendientes = pedidosHoy.filter(p => p.estado === 'pendiente');
             const cobrados = pedidosHoy.filter(p => p.estado === 'cobrado');
+            const enCocina = pedidosHoy.filter(p => p.estado === 'en_cocina');
+            const enCamino = pedidosHoy.filter(p => p.estado === 'en_camino');
+            const reservaPendiente = pedidosHoy.filter(p => p.estado === 'reserva_pendiente');
+            const reservaAtendida = pedidosHoy.filter(p => p.estado === 'reserva_atendida');
             
-            document.getElementById('statPendientes').textContent = pendientes.length;
-            document.getElementById('statCobrados').textContent = cobrados.length;
+            // Stats
+            document.getElementById('statPendientes').textContent = enCocina.length + enCamino.length + reservaPendiente.length + reservaAtendida.length;
+            document.getElementById('statCobrados').textContent = cobrados.length + enCocina.length + enCamino.length + reservaAtendida.length;
             
             const tasa = sistemaData.config.tasaCambio || 400;
-            const totalVentas = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
-            // CORRECCIÓN: Usar toFixed(2) para mantener decimales
+            const totalVentas = pedidosHoy
+                .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
+                .reduce((sum, p) => sum + (p.total || 0), 0);
             document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasa).toFixed(2)}`;
             
-            const totalPlatillos = cobrados.reduce((sum, p) => sum + (p.items?.reduce((itemSum, item) => itemSum + (item.cantidad || 1), 0) || 0), 0);
+            const totalPlatillos = pedidosHoy
+                .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
+                .reduce((sum, p) => sum + (p.items?.reduce((itemSum, item) => itemSum + (item.cantidad || 1), 0) || 0), 0);
             document.getElementById('statPlatillos').textContent = totalPlatillos;
             
-            renderColumna('colMesa', pendientes.filter(p => p.tipo === 'mesa' || !p.tipo), 'mesa');
-            renderColumna('colDelivery', pendientes.filter(p => p.tipo === 'delivery'), 'delivery');
-            renderColumna('colReserva', pendientes.filter(p => p.tipo === 'reserva'), 'reserva');
+            // Badges de conteo
+            document.getElementById('badgePorCobrar').textContent = pendientes.length;
+            document.getElementById('badgeEnPreparacion').textContent = enCocina.length + enCamino.length + reservaPendiente.length + reservaAtendida.length;
+            
+            // Renderizar pedidos por cobrar (originales)
+            renderColumnaPorCobrar('colMesaPorCobrar', pendientes.filter(p => p.tipo === 'mesa' || !p.tipo), 'mesa');
+            renderColumnaPorCobrar('colDeliveryPorCobrar', pendientes.filter(p => p.tipo === 'delivery'), 'delivery');
+            renderColumnaPorCobrar('colReservaPorCobrar', pendientes.filter(p => p.tipo === 'reserva'), 'reserva');
+            
+            // Renderizar pedidos en preparación (nuevos)
+            renderColumnaEnPreparacion('colMesaEnCocina', enCocina, 'mesa');
+            renderColumnaEnPreparacion('colDeliveryEnCamino', enCamino, 'delivery');
+            renderColumnaEnPreparacion('colReservaPendiente', reservaPendiente.concat(reservaAtendida), 'reserva');
         }
 
-        function renderColumna(columnId, pedidos, tipo) {
+        // Renderizar pedidos por cobrar (con botones de cobro/rechazo)
+        function renderColumnaPorCobrar(columnId, pedidos, tipo) {
             const col = document.getElementById(columnId);
             if (pedidos.length === 0) {
-                col.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos ${tipo}</p></div>`;
+                col.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos ${tipo} por cobrar</p></div>`;
                 return;
             }
-            col.innerHTML = pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => crearCardPedido(p, tipo)).join('');
+            col.innerHTML = pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => crearCardPedidoPorCobrar(p, tipo)).join('');
         }
 
-        function crearCardPedido(pedido, tipo) {
+        // Renderizar pedidos en preparación (con botones de entrega/envío/confirmación)
+        function renderColumnaEnPreparacion(columnId, pedidos, tipo) {
+            const col = document.getElementById(columnId);
+            if (pedidos.length === 0) {
+                col.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos en esta sección</p></div>`;
+                return;
+            }
+            col.innerHTML = pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => crearCardPedidoEnPreparacion(p, tipo)).join('');
+        }
+
+        function crearCardPedidoPorCobrar(pedido, tipo) {
             const fecha = new Date(pedido.timestamp);
             const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             const tasa = sistemaData.config.tasaCambio || 400;
@@ -460,15 +616,12 @@ Panel Cajero:
                 timerText = minutosRestantes > 0 ? `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
-            // CORRECCIÓN: Calcular precio total correctamente con decimales
             const itemsHtml = (pedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                // CORRECCIÓN: Multiplicar precio unitario por cantidad
                 const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
                 return `<div class="order-detail-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
             }).join('');
             
-            // CORRECCIÓN: Calcular total con precisión decimal
             const total = (pedido.total || 0) * tasa;
             
             let extraInfo = '';
@@ -485,6 +638,248 @@ Panel Cajero:
             return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${total.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
         }
 
+        function crearCardPedidoEnPreparacion(pedido, tipo) {
+            const fecha = new Date(pedido.timestamp);
+            const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const tasa = sistemaData.config.tasaCambio || 400;
+            
+            // Determinar estado y clase CSS
+            let estadoClass = '';
+            let estadoBadge = '';
+            let estadoTexto = '';
+            let botonAccion = '';
+            let cardClass = '';
+            
+            switch(pedido.estado) {
+                case 'en_cocina':
+                    estadoClass = 'status-en-cocina';
+                    estadoBadge = '<span class="status-badge status-en-cocina"><i class="fas fa-fire"></i> En Cocina</span>';
+                    estadoTexto = 'Preparando en cocina';
+                    botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'entrega')"><i class="fas fa-check"></i> Pedido Entregado</button>`;
+                    cardClass = 'en-cocina';
+                    break;
+                case 'en_camino':
+                    estadoClass = 'status-en-camino';
+                    estadoBadge = '<span class="status-badge status-en-camino"><i class="fas fa-motorcycle"></i> En Camino</span>';
+                    estadoTexto = 'Delivery en camino';
+                    botonAccion = `<button class="btn btn-enviar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'envio')"><i class="fas fa-check"></i> Pedido Enviado</button>`;
+                    cardClass = 'en-camino';
+                    break;
+                case 'reserva_pendiente':
+                    estadoClass = 'status-reserva-pendiente';
+                    estadoBadge = '<span class="status-badge status-reserva-pendiente"><i class="fas fa-calendar"></i> Reserva Pendiente</span>';
+                    estadoTexto = 'Esperando al cliente';
+                    botonAccion = `<button class="btn btn-confirmar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva')"><i class="fas fa-user-check"></i> Cliente Confirmado</button>`;
+                    cardClass = 'reserva-pendiente';
+                    break;
+                case 'reserva_atendida':
+                    estadoClass = 'status-reserva-atendida';
+                    estadoBadge = '<span class="status-badge status-reserva-atendida"><i class="fas fa-utensils"></i> Cliente Atendido</span>';
+                    estadoTexto = 'Sirviendo al cliente';
+                    botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva_entrega')"><i class="fas fa-check"></i> Pedido Entregado</button>`;
+                    cardClass = 'reserva-atendida';
+                    break;
+            }
+            
+            const itemsHtml = (pedido.items || []).map(item => {
+                const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
+                const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
+                return `<div class="order-detail-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
+            }).join('');
+            
+            const total = (pedido.total || 0) * tasa;
+            
+            let extraInfo = '';
+            if (pedido.tipo === 'delivery') {
+                extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85rem;">
+                    <div><strong><i class="fas fa-map-marker-alt"></i> Dirección:</strong> ${pedido.direccion}</div>
+                    <div><strong><i class="fas fa-phone"></i> Teléfono:</strong> ${pedido.telefono}</div>
+                    ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
+                </div>`;
+            } else if (pedido.tipo === 'reserva') {
+                const fechaReserva = pedido.fechaReserva ? new Date(pedido.fechaReserva) : null;
+                const hoy = new Date();
+                const esHoy = fechaReserva && fechaReserva.toDateString() === hoy.toDateString();
+                
+                extraInfo = `<div style="background: #F3E5F5; border: 2px solid #9c27b0; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85rem;">
+                    <div><strong><i class="fas fa-user"></i> Cliente:</strong> ${pedido.clienteNombre || 'No especificado'}</div>
+                    <div><strong><i class="fas fa-calendar"></i> Fecha Reserva:</strong> ${fechaReserva ? fechaReserva.toLocaleDateString() : 'No especificada'} ${esHoy ? '<span style="color: #9c27b0; font-weight: bold;">(HOY)</span>' : ''}</div>
+                    ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
+                </div>`;
+            } else {
+                extraInfo = `<div style="margin: 10px 0; font-weight: 700; color: var(--info); background: #E3F2FD; padding: 10px; border-radius: 8px;"><i class="fas fa-chair"></i> Mesa #${pedido.mesa || '--'}</div>`;
+            }
+            
+            return `<div class="order-card ${cardClass}">
+                <div class="order-card-header">
+                    <span class="order-id">${pedido.id}</span>
+                    <span class="order-time"><i class="fas fa-clock"></i> ${hora}</span>
+                </div>
+                ${estadoBadge}
+                <div class="order-details">${itemsHtml}</div>
+                <div class="order-total">Total: Bs. ${total.toFixed(2)}</div>
+                ${extraInfo}
+                <div class="order-actions">${botonAccion}</div>
+            </div>`;
+        }
+
+        // NUEVA FUNCIONALIDAD: Confirmación de entrega/envío/reserva
+        function mostrarConfirmacionEntrega(pedidoId, tipo) {
+            pedidoConfirmacion = sistemaData.pedidos.find(p => p.id === pedidoId);
+            if (!pedidoConfirmacion) return;
+            
+            tipoConfirmacion = tipo;
+            const modal = document.getElementById('confirmEntregaModal');
+            const header = document.getElementById('confirmEntregaHeader');
+            const title = document.getElementById('confirmEntregaTitle');
+            const body = document.getElementById('confirmEntregaBody');
+            
+            const tasa = sistemaData.config.tasaCambio || 400;
+            const total = (pedidoConfirmacion.total || 0) * tasa;
+            
+            let titulo = '';
+            let mensaje = '';
+            let icono = '';
+            
+            switch(tipo) {
+                case 'entrega':
+                    titulo = 'Confirmar Entrega';
+                    mensaje = '¿Confirmas que el pedido ha sido entregado al cliente en la mesa?';
+                    icono = 'fa-check-circle';
+                    header.className = 'modal-header entrega';
+                    break;
+                case 'envio':
+                    titulo = 'Confirmar Envío';
+                    mensaje = '¿Confirmas que el pedido ha sido enviado al cliente?';
+                    icono = 'fa-motorcycle';
+                    header.className = 'modal-header envio';
+                    break;
+                case 'reserva':
+                    titulo = 'Confirmar Asistencia';
+                    mensaje = '¿Confirmas que el cliente ha llegado y está siendo atendido?';
+                    icono = 'fa-user-check';
+                    header.className = 'modal-header reserva';
+                    break;
+                case 'reserva_entrega':
+                    titulo = 'Confirmar Entrega';
+                    mensaje = '¿Confirmas que el pedido ha sido servido al cliente reservado?';
+                    icono = 'fa-utensils';
+                    header.className = 'modal-header entrega';
+                    break;
+            }
+            
+            title.innerHTML = `<i class="fas ${icono}"></i> ${titulo}`;
+            
+            let detallesExtras = '';
+            if (pedidoConfirmacion.tipo === 'delivery') {
+                detallesExtras = `<div class="info-row"><span>Dirección:</span><span>${pedidoConfirmacion.direccion}</span></div>
+                    <div class="info-row"><span>Teléfono:</span><span>${pedidoConfirmacion.telefono}</span></div>`;
+            } else if (pedidoConfirmacion.tipo === 'reserva') {
+                detallesExtras = `<div class="info-row"><span>Cliente:</span><span>${pedidoConfirmacion.clienteNombre || 'No especificado'}</span></div>
+                    <div class="info-row"><span>Fecha Reserva:</span><span>${pedidoConfirmacion.fechaReserva ? new Date(pedidoConfirmacion.fechaReserva).toLocaleDateString() : 'No especificada'}</span></div>`;
+            } else {
+                detallesExtras = `<div class="info-row"><span>Mesa:</span><span>#${pedidoConfirmacion.mesa || '--'}</span></div>`;
+            }
+            
+            body.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="fas ${icono}" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"></i>
+                    <p style="font-size: 1.1rem; color: #666;">${mensaje}</p>
+                </div>
+                <div class="info-box">
+                    <div class="info-row"><span>Pedido:</span><span>${pedidoConfirmacion.id}</span></div>
+                    <div class="info-row"><span>Items:</span><span>${pedidoConfirmacion.items?.length || 0}</span></div>
+                    ${detallesExtras}
+                    <div class="info-row"><span>Total:</span><span>Bs. ${total.toFixed(2)}</span></div>
+                </div>
+                <div class="keyboard-hint">
+                    <span><kbd>ENTER</kbd> para confirmar</span>
+                    <span><kbd>ESC</kbd> para cancelar</span>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            
+            // Enfocar el botón de confirmar para que ENTER funcione
+            setTimeout(() => {
+                document.getElementById('btnConfirmarAccion').focus();
+            }, 100);
+        }
+
+        async function ejecutarConfirmacion() {
+            if (!pedidoConfirmacion || !tipoConfirmacion) return;
+            
+            switch(tipoConfirmacion) {
+                case 'entrega':
+                    pedidoConfirmacion.estado = 'entregado';
+                    pedidoConfirmacion.fechaEntrega = new Date().toISOString();
+                    break;
+                case 'envio':
+                    pedidoConfirmacion.estado = 'enviado';
+                    pedidoConfirmacion.fechaEnvio = new Date().toISOString();
+                    break;
+                case 'reserva':
+                    pedidoConfirmacion.estado = 'reserva_atendida';
+                    pedidoConfirmacion.fechaAsistencia = new Date().toISOString();
+                    break;
+                case 'reserva_entrega':
+                    pedidoConfirmacion.estado = 'reserva_completada';
+                    pedidoConfirmacion.fechaCompletado = new Date().toISOString();
+                    break;
+            }
+            
+            await guardarCambios();
+            cerrarModal('confirmEntregaModal');
+            
+            const mensajes = {
+                'entrega': 'Pedido marcado como entregado',
+                'envio': 'Pedido marcado como enviado',
+                'reserva': 'Cliente confirmado y en atención',
+                'reserva_entrega': 'Pedido de reserva completado'
+            };
+            
+            mostrarNotificacion(mensajes[tipoConfirmacion]);
+            renderPedidos();
+            
+            pedidoConfirmacion = null;
+            tipoConfirmacion = null;
+        }
+
+        function handleGlobalKeypress(e) {
+            // Si el modal de confirmación está abierto
+            const modalConfirmacion = document.getElementById('confirmEntregaModal');
+            if (modalConfirmacion.classList.contains('show')) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ejecutarConfirmacion();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cerrarModal('confirmEntregaModal');
+                    pedidoConfirmacion = null;
+                    tipoConfirmacion = null;
+                }
+                return;
+            }
+            
+            // Si el modal de cobro está abierto
+            const modalCobro = document.getElementById('cobroModal');
+            if (modalCobro.classList.contains('show')) {
+                if (e.key === 'Escape') {
+                    closeModal('cobroModal');
+                }
+                return;
+            }
+            
+            // Si el modal de rechazo está abierto
+            const modalRechazo = document.getElementById('rechazoModal');
+            if (modalRechazo.classList.contains('show')) {
+                if (e.key === 'Escape') {
+                    closeModal('rechazoModal');
+                }
+                return;
+            }
+        }
+
         // Renderizar Menú (sincronizado con Admin)
         function renderMenuView() {
             const container = document.getElementById('menuViewContainer');
@@ -495,12 +890,10 @@ Panel Cajero:
             container.innerHTML = sistemaData.menu.map(item => {
                 const precioBs = ((item.precio || 0) * tasa).toFixed(2);
                 
-                // Calcular disponibilidad real basada en inventario
                 let disponible = item.disponible;
                 let stockReal = item.stock || 0;
                 
                 if (disponible && item.ingredientes) {
-                    // Verificar stock real de ingredientes
                     let maxPlatillos = Infinity;
                     Object.entries(item.ingredientes).forEach(([ingId, data]) => {
                         const ing = sistemaData.inventario[ingId];
@@ -542,12 +935,11 @@ Panel Cajero:
             
             let itemsHtml = (currentPedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                // CORRECCIÓN: Multiplicar por cantidad
                 const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
                 return `<div class="summary-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
             }).join('');
             
-            summary.innerHTML = `${itemsHtml}<div class="summary-row total"><span>TOTAL A PAGAR</span><span>Bs. ${total.toFixed(2)}</span></div>`;
+            summary.innerHTML = `${itemsHtml}<div class="summary-row"><span>TOTAL A PAGAR</span><span>Bs. ${total.toFixed(2)}</span></div>`;
             
             document.querySelectorAll('.payment-method-btn').forEach(btn => btn.classList.remove('selected'));
             document.querySelectorAll('.payment-form').forEach(form => form.classList.remove('show'));
@@ -623,8 +1015,15 @@ Panel Cajero:
             const diferencia = recibido - total;
             const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             
-            // CORRECCIÓN CRÍTICA: Cambiar estado a 'cobrado'
-            currentPedido.estado = 'cobrado';
+            // CAMBIO IMPORTANTE: Al cobrar, el pedido pasa a 'en_cocina' para mesa, 'en_camino' para delivery, 'reserva_pendiente' para reserva
+            if (currentPedido.tipo === 'delivery') {
+                currentPedido.estado = 'en_camino';
+            } else if (currentPedido.tipo === 'reserva') {
+                currentPedido.estado = 'reserva_pendiente';
+            } else {
+                currentPedido.estado = 'en_cocina';
+            }
+            
             currentPedido.cajero = 'Cajero Principal';
             currentPedido.fechaCobro = new Date().toISOString();
             currentPedido.metodoPago = metodoPago;
@@ -639,9 +1038,7 @@ Panel Cajero:
             
             await guardarCambios();
             closeModal('cobroModal');
-            mostrarNotificacion('Cobro procesado correctamente');
-            
-            // CORRECCIÓN CRÍTICA: Llamar a renderPedidos() para actualizar la vista
+            mostrarNotificacion('Cobro procesado. Pedido en preparación.');
             renderPedidos();
         }
 
@@ -682,12 +1079,15 @@ Panel Cajero:
 
         // Utilidades
         function closeModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
+        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
+        
         function mostrarNotificacion(mensaje) {
             const notif = document.getElementById('notification');
             document.getElementById('notificationText').textContent = mensaje;
             notif.classList.add('show');
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
+        
         function actualizarEstadoSync(estado) {
             const statusEl = document.getElementById('syncStatus');
             const iconEl = statusEl.querySelector('i');
@@ -699,6 +1099,7 @@ Panel Cajero:
                 case 'offline': iconEl.className = 'fas fa-exclamation-triangle'; textEl.textContent = 'Sin conexión'; break;
             }
         }
+        
         async function guardarCambios() {
             try {
                 await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
@@ -708,6 +1109,7 @@ Panel Cajero:
                 });
             } catch (error) { console.error('Error guardando:', error); }
         }
+        
         window.addEventListener('beforeunload', () => { if (syncInterval) clearInterval(syncInterval); });
     </script>
 </body>
