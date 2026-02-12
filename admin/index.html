@@ -223,7 +223,6 @@
         input:checked + .slider-plato { background-color: var(--success); }
         input:checked + .slider-plato:before { transform: translateX(24px); }
         
-        .password-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; cursor: pointer; border: 1px dashed var(--border); font-size: 0.875rem; }
         .password-field { position: relative; }
         
         .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
@@ -257,6 +256,24 @@
         .sync-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
         .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Password Overlay - Restaurado como antes */
+        .password-overlay { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: var(--bg-hover); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 0.5rem; 
+            cursor: pointer; 
+            border: 1px dashed var(--border); 
+            font-size: 0.875rem;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -388,7 +405,18 @@
         </div>
     </div>
 
-    
+    <!-- Modal Password para desbloquear stock -->
+    <div id="modal-password" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header"><h3>Desbloquear Stock</h3><button class="close-btn" onclick="cerrarModal('modal-password')">&times;</button></div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contraseña de administrador:</p>
+                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña" onkeypress="handlePasswordModalKeypress(event)"></div>
+                <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contraseña incorrecta</div>
+            </div>
+            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn-header btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
+        </div>
+    </div>
 
     <!-- Modal QR Ampliado -->
     <div id="modal-qr-ampliado" class="modal">
@@ -469,7 +497,7 @@
                     <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
                     <div style="position: relative;">
                         <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
-                        <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; cursor: pointer; border: 1px dashed var(--border); font-size: 0.875rem; z-index: 10;">
+                        <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()">
                             <span><i class="fas fa-lock"></i> Click para desbloquear</span>
                         </div>
                     </div>
@@ -1235,173 +1263,29 @@
         }
 
         // ==========================================
-        // GESTIÓN DE INVENTARIO - CORAZÓN DEL CAMBIO
+        // GESTIÓN DE INVENTARIO - CON PASSWORD OVERLAY RESTAURADO
         // ==========================================
-        async function guardarIngrediente() {
-            const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
-            const unidad = document.getElementById('ingrediente-unidad').value;
-            
-            let stockActual = parseFloat(document.getElementById('ingrediente-stock').value) || 0;
-            const stockNuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
-            const stockFinal = stockActual + stockNuevo;
-            
-            const precioCosto = parseFloat(document.getElementById('ingrediente-costo').value) || 0;
-            const precioVenta = parseFloat(document.getElementById('ingrediente-precio-venta').value) || 0;
-            
-            // Guardar ingrediente
-            datos.inventario[id] = {
-                nombre: document.getElementById('ingrediente-nombre').value,
-                stock: stockFinal,
-                unidad: unidad,
-                minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
-                precioCosto: precioCosto,
-                precioUnitario: precioVenta,
-                costoBs: precioCosto * (datos.config.tasaEfectiva || 0),
-                precioVentaBs: precioVenta * (datos.config.tasaEfectiva || 0)
-            };
-            
-            cerrarModal('modal-ingrediente');
-            
-            // ***** ACTUALIZACIÓN AUTOMÁTICA DE STOCK EN PLATILLOS *****
-            // Recalcular stock de todos los platillos que usan este ingrediente
-            recalcularStockPlatillosPorIngrediente(id);
-            
-            // Guardar cambios en JSONBin
-            await guardarDatos();
-            
-            // Actualizar todas las vistas
-            renderizarInventario();
-            renderizarMenu(); // Esto actualiza el stock visible en Gestión de Platillos
-            actualizarDashboard();
-            
-            mostrarNotificacion('Ingrediente guardado correctamente. Stock de platillos actualizado.');
-        }
-
-        // NUEVA FUNCIÓN: Recalcula el stock de todos los platillos afectados por un ingrediente
-        function recalcularStockPlatillosPorIngrediente(ingredienteId) {
-            let platillosActualizados = 0;
-            
-            datos.menu.forEach(platillo => {
-                if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
-                    // Recalcular stock máximo disponible para este platillo
-                    let maxPlatillos = Infinity;
-                    let hayIngredientesDisponibles = true;
-                    
-                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
-                        const ing = datos.inventario[ingId];
-                        if (ing) {
-                            const cantidadNecesaria = convertirUnidad(
-                                data.cantidad || 0, 
-                                data.unidad || 'unidades', 
-                                ing.unidad
-                            );
-                            if (cantidadNecesaria > 0) {
-                                const disponible = Math.floor(ing.stock / cantidadNecesaria);
-                                maxPlatillos = Math.min(maxPlatillos, disponible);
-                            }
-                        } else {
-                            // Si no existe el ingrediente en inventario, no se puede preparar
-                            if (data.obligatorio) {
-                                maxPlatillos = 0;
-                                hayIngredientesDisponibles = false;
-                            }
-                        }
-                    });
-                    
-                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
-                    
-                    // Actualizar stock del platillo
-                    const stockAnterior = platillo.stock || 0;
-                    platillo.stock = maxPlatillos;
-                    
-                    // Si antes estaba agotado y ahora tiene stock, reactivar
-                    if (stockAnterior === 0 && maxPlatillos > 0) {
-                        platillo.disponible = true;
-                    }
-                    
-                    platillosActualizados++;
-                }
-            });
-            
-            if (platillosActualizados > 0) {
-                console.log(`Stock recalculado para ${platillosActualizados} platillo(s)`);
-            }
-        }
-
-        // Versión sobrecargada para recalcular todos los platillos (útil después de cambios masivos)
-        function recalcularStockTodosPlatillos() {
-            let platillosActualizados = 0;
-            
-            datos.menu.forEach(platillo => {
-                if (platillo.ingredientes && Object.keys(platillo.ingredientes).length > 0) {
-                    let maxPlatillos = Infinity;
-                    
-                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
-                        const ing = datos.inventario[ingId];
-                        if (ing) {
-                            const cantidadNecesaria = convertirUnidad(
-                                data.cantidad || 0, 
-                                data.unidad || 'unidades', 
-                                ing.unidad
-                            );
-                            if (cantidadNecesaria > 0) {
-                                const disponible = Math.floor(ing.stock / cantidadNecesaria);
-                                maxPlatillos = Math.min(maxPlatillos, disponible);
-                            }
-                        } else {
-                            if (data.obligatorio) {
-                                maxPlatillos = 0;
-                            }
-                        }
-                    });
-                    
-                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
-                    
-                    const stockAnterior = platillo.stock || 0;
-                    platillo.stock = maxPlatillos;
-                    
-                    if (stockAnterior === 0 && maxPlatillos > 0) {
-                        platillo.disponible = true;
-                    }
-                    
-                    platillosActualizados++;
-                }
-            });
-            
-            return platillosActualizados;
-        }
-
-        async function eliminarIngrediente() {
-            const id = document.getElementById('ingrediente-id').value;
-            if (!id || !datos.inventario[id]) return;
-            
-            const enUso = datos.menu.some(p => p.ingredientes && p.ingredientes[id]);
-            if (enUso) {
-                alert('No se puede eliminar: este ingrediente está siendo usado en platillos. Elimínalo de los platillos primero.');
-                return;
-            }
-            
-            if (!confirm('¿Eliminar este ingrediente permanentemente?')) return;
-            
-            delete datos.inventario[id];
-            cerrarModal('modal-ingrediente');
-            await guardarDatos();
-            renderizarInventario();
-            mostrarNotificacion('Ingrediente eliminado');
-        }
-
         function desbloquearStock() {
-            const password = prompt('Introduce la contraseña de administrador para desbloquear el stock:');
-            if (password === null) return; // Cancelar
-            
-            if (password === datos.config.adminPassword) {
+            document.getElementById('modal-password').classList.add('active');
+            document.getElementById('admin-password').value = '';
+            document.getElementById('password-error').style.display = 'none';
+            document.getElementById('admin-password').focus();
+        }
+
+        function handlePasswordModalKeypress(e) {
+            if (e.key === 'Enter') verificarPassword();
+            else if (e.key === 'Escape') cerrarModal('modal-password');
+        }
+
+        function verificarPassword() {
+            if (document.getElementById('admin-password').value === datos.config.adminPassword) {
                 stockDesbloqueado = true;
                 document.getElementById('ingrediente-stock').disabled = false;
                 document.getElementById('stock-overlay').style.display = 'none';
+                cerrarModal('modal-password');
                 document.getElementById('ingrediente-stock').focus();
-                mostrarNotificacion('Stock desbloqueado', 'success');
             } else {
-                alert('Contraseña incorrecta');
+                document.getElementById('password-error').style.display = 'block';
             }
         }
 
@@ -1491,6 +1375,158 @@
             } else if (e.key === 'Escape') {
                 cerrarModal('modal-ingrediente');
             }
+        }
+
+        // ==========================================
+        // GESTIÓN DE INGREDIENTES - CON ACTUALIZACIÓN AUTOMÁTICA
+        // ==========================================
+        async function guardarIngrediente() {
+            const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
+            const unidad = document.getElementById('ingrediente-unidad').value;
+            
+            let stockActual = parseFloat(document.getElementById('ingrediente-stock').value) || 0;
+            const stockNuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
+            const stockFinal = stockActual + stockNuevo;
+            
+            const precioCosto = parseFloat(document.getElementById('ingrediente-costo').value) || 0;
+            const precioVenta = parseFloat(document.getElementById('ingrediente-precio-venta').value) || 0;
+            
+            // Guardar ingrediente
+            datos.inventario[id] = {
+                nombre: document.getElementById('ingrediente-nombre').value,
+                stock: stockFinal,
+                unidad: unidad,
+                minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
+                precioCosto: precioCosto,
+                precioUnitario: precioVenta,
+                costoBs: precioCosto * (datos.config.tasaEfectiva || 0),
+                precioVentaBs: precioVenta * (datos.config.tasaEfectiva || 0)
+            };
+            
+            cerrarModal('modal-ingrediente');
+            
+            // ACTUALIZACIÓN AUTOMÁTICA DE STOCK EN PLATILLOS
+            recalcularStockPlatillosPorIngrediente(id);
+            
+            await guardarDatos();
+            
+            // Actualizar todas las vistas
+            renderizarInventario();
+            renderizarMenu();
+            actualizarDashboard();
+            
+            mostrarNotificacion('Ingrediente guardado correctamente. Stock de platillos actualizado.');
+        }
+
+        // Función que recalcula el stock de todos los platillos afectados por un ingrediente
+        function recalcularStockPlatillosPorIngrediente(ingredienteId) {
+            let platillosActualizados = 0;
+            
+            datos.menu.forEach(platillo => {
+                if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
+                    let maxPlatillos = Infinity;
+                    let hayIngredientesDisponibles = true;
+                    
+                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
+                        const ing = datos.inventario[ingId];
+                        if (ing) {
+                            const cantidadNecesaria = convertirUnidad(
+                                data.cantidad || 0, 
+                                data.unidad || 'unidades', 
+                                ing.unidad
+                            );
+                            if (cantidadNecesaria > 0) {
+                                const disponible = Math.floor(ing.stock / cantidadNecesaria);
+                                maxPlatillos = Math.min(maxPlatillos, disponible);
+                            }
+                        } else {
+                            if (data.obligatorio) {
+                                maxPlatillos = 0;
+                                hayIngredientesDisponibles = false;
+                            }
+                        }
+                    });
+                    
+                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
+                    
+                    const stockAnterior = platillo.stock || 0;
+                    platillo.stock = maxPlatillos;
+                    platillo.stockMaximo = maxPlatillos;
+                    
+                    if (stockAnterior === 0 && maxPlatillos > 0) {
+                        platillo.disponible = true;
+                    }
+                    
+                    platillosActualizados++;
+                }
+            });
+            
+            if (platillosActualizados > 0) {
+                console.log(`Stock recalculado para ${platillosActualizados} platillo(s)`);
+            }
+        }
+
+        // Función para recalcular todos los platillos
+        function recalcularStockTodosPlatillos() {
+            let platillosActualizados = 0;
+            
+            datos.menu.forEach(platillo => {
+                if (platillo.ingredientes && Object.keys(platillo.ingredientes).length > 0) {
+                    let maxPlatillos = Infinity;
+                    
+                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
+                        const ing = datos.inventario[ingId];
+                        if (ing) {
+                            const cantidadNecesaria = convertirUnidad(
+                                data.cantidad || 0, 
+                                data.unidad || 'unidades', 
+                                ing.unidad
+                            );
+                            if (cantidadNecesaria > 0) {
+                                const disponible = Math.floor(ing.stock / cantidadNecesaria);
+                                maxPlatillos = Math.min(maxPlatillos, disponible);
+                            }
+                        } else {
+                            if (data.obligatorio) {
+                                maxPlatillos = 0;
+                            }
+                        }
+                    });
+                    
+                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
+                    
+                    const stockAnterior = platillo.stock || 0;
+                    platillo.stock = maxPlatillos;
+                    platillo.stockMaximo = maxPlatillos;
+                    
+                    if (stockAnterior === 0 && maxPlatillos > 0) {
+                        platillo.disponible = true;
+                    }
+                    
+                    platillosActualizados++;
+                }
+            });
+            
+            return platillosActualizados;
+        }
+
+        async function eliminarIngrediente() {
+            const id = document.getElementById('ingrediente-id').value;
+            if (!id || !datos.inventario[id]) return;
+            
+            const enUso = datos.menu.some(p => p.ingredientes && p.ingredientes[id]);
+            if (enUso) {
+                alert('No se puede eliminar: este ingrediente está siendo usado en platillos. Elimínalo de los platillos primero.');
+                return;
+            }
+            
+            if (!confirm('¿Eliminar este ingrediente permanentemente?')) return;
+            
+            delete datos.inventario[id];
+            cerrarModal('modal-ingrediente');
+            await guardarDatos();
+            renderizarInventario();
+            mostrarNotificacion('Ingrediente eliminado');
         }
 
         // ==========================================
@@ -1720,7 +1756,6 @@
                 }
             });
             
-            // Calcular stock máximo basado en ingredientes
             let maxPlatillos = Infinity;
             ingredientesPlato.forEach(ing => {
                 const ingEnInv = Object.entries(datos.inventario).find(([_, i]) => i.nombre.toLowerCase() === (ing.nombre || ing.id).toLowerCase());
