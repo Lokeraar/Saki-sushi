@@ -143,21 +143,142 @@
         .modal-body { padding: 25px; }
         .modal-footer { padding: 25px; border-top: 2px solid #f0f0f0; display: flex; gap: 15px; }
         
-        .payment-method-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
-        .payment-method-btn { padding: 20px; border: 2px solid #e0e0e0; border-radius: 12px; background: white; cursor: pointer; transition: var(--transition); text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 600; }
-        .payment-method-btn:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .payment-method-btn.selected { border-color: var(--success); background: #E8F5E9; color: var(--success); }
-        .payment-form { display: none; }
-        .payment-form.show { display: block; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--secondary); font-family: 'Montserrat', sans-serif; }
-        .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem; transition: var(--transition); }
-        .form-group input:focus { outline: none; border-color: var(--primary); }
-        .payment-summary { background: #f8f8f8; padding: 20px; border-radius: 12px; margin: 20px 0; }
-        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
-        .summary-row:last-child { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--primary); font-family: 'Montserrat', sans-serif; }
-        .change-display { background: var(--warning); color: white; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; font-size: 1.2rem; font-weight: 700; display: none; }
-        .change-display.show { display: block; }
+        /* Payment Mix Styles */
+        .payment-mix-container { margin-bottom: 25px; }
+        .payment-mix-item { 
+            background: #f8f8f8; 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border: 2px solid #e0e0e0;
+            transition: var(--transition);
+        }
+        .payment-mix-item.active { border-color: var(--success); background: #E8F5E9; }
+        .payment-mix-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 10px;
+        }
+        .payment-mix-title { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-weight: 600; 
+            font-family: 'Montserrat', sans-serif;
+        }
+        .payment-mix-input { 
+            width: 150px; 
+            padding: 10px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            text-align: right;
+            font-weight: 600;
+        }
+        .payment-mix-input:focus { outline: none; border-color: var(--success); }
+        .payment-mix-input:disabled { background: #f0f0f0; color: #999; }
+        
+        .payment-mix-total {
+            background: linear-gradient(135deg, var(--secondary), #424242);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .payment-mix-total-label { font-size: 1.1rem; }
+        .payment-mix-total-value { font-size: 2rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+        
+        .payment-mix-remaining {
+            background: #FFF3E0;
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .payment-mix-remaining.paid { background: #E8F5E9; border-color: var(--success); }
+        .payment-mix-remaining.overpaid { background: #FFEBEE; border-color: var(--danger); }
+        
+        .payment-mix-add {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            background: transparent;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .payment-mix-add:hover { background: rgba(211, 47, 47, 0.1); }
+        .payment-mix-add:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .payment-mix-summary {
+            background: #f8f8f8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .payment-mix-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .payment-mix-summary-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        
+        .btn-remove-payment {
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .btn-remove-payment:hover { transform: scale(1.1); }
+        
+        .payment-method-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .payment-method-select:focus { outline: none; border-color: var(--success); }
+        
+        .reference-input {
+            margin-top: 10px;
+        }
+        .reference-input input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
         .special-options { background: #FFF3E0; border: 2px solid var(--warning); border-radius: 12px; padding: 20px; margin: 20px 0; }
         .special-option { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .special-option input[type="radio"] { width: 20px; height: 20px; }
@@ -225,10 +346,27 @@
             font-family: monospace;
         }
         
+        /* Ingredient discount display */
+        .ingredient-discount {
+            background: #E8F5E9;
+            color: var(--success);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        .item-subtotal {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        
         @media (max-width: 768px) {
             .tasa-bar { flex-direction: column; gap: 1rem; padding: 1rem; }
             .header { flex-direction: column; text-align: center; }
-            .payment-method-grid { grid-template-columns: 1fr; }
+            .payment-mix-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+            .payment-mix-input { width: 100%; }
             .keyboard-hint { flex-direction: column; gap: 5px; text-align: center; }
         }
     </style>
@@ -276,34 +414,53 @@
         </div>
     </div>
 
-    <!-- Tasa del Día Bar -->
-    <div class="tasa-bar">
-        <div class="tasa-display">
-            <span>Tasa del Día:</span>
-            <input type="number" step="0.01" class="tasa-input" id="tasaDiaInput" placeholder="0.00">
-            <span>Bs/$</span>
-        </div>
-        <button class="btn-tasa" onclick="actualizarTasaManual()"><i class="fas fa-sync-alt"></i> Actualizar</button>
-    </div>
-
-    <!-- Modal de Cobro -->
+    <!-- Modal de Cobro con Múltiples Métodos de Pago -->
     <div class="modal-overlay" id="cobroModal">
-        <div class="modal-content">
-            <div class="modal-header"><h2><i class="fas fa-cash-register"></i> Procesar Cobro</h2><button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header"><h2><i class="fas fa-cash-register"></i> Procesar Cobro - Pago Mixto</h2><button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
-                <div class="payment-summary" id="cobroSummary"></div>
-                <h3 style="font-family: 'Montserrat', sans-serif; margin-bottom: 15px;">Método de Pago</h3>
-                <div class="payment-method-grid">
-                    <button class="payment-method-btn" onclick="selectPaymentMethod('efectivo_bs')"><i class="fas fa-money-bill-wave"></i><br>Efectivo Bs</button>
-                    <button class="payment-method-btn" onclick="selectPaymentMethod('efectivo_usd')"><i class="fas fa-dollar-sign"></i><br>Efectivo $</button>
-                    <button class="payment-method-btn" onclick="selectPaymentMethod('pago_movil')"><i class="fas fa-mobile-alt"></i><br>Pago Móvil</button>
-                    <button class="payment-method-btn" onclick="selectPaymentMethod('punto_venta')"><i class="fas fa-credit-card"></i><br>Punto de Venta</button>
+                <!-- Resumen del pedido con descuentos por ingredientes -->
+                <div id="cobroSummary" style="margin-bottom: 20px;"></div>
+                
+                <!-- Total a pagar -->
+                <div class="payment-mix-total">
+                    <span class="payment-mix-total-label">TOTAL A PAGAR:</span>
+                    <span class="payment-mix-total-value" id="totalPagarDisplay">Bs. 0.00</span>
                 </div>
-                <div class="payment-form" id="form-efectivo_bs"><div class="form-group"><label>Monto recibido (Bs)</label><input type="number" step="0.01" id="montoRecibidoBs" placeholder="0.00" oninput="calcularCambio()"></div></div>
-                <div class="payment-form" id="form-efectivo_usd"><div class="form-group"><label>Monto recibido ($)</label><input type="number" step="0.01" id="montoRecibidoUsd" placeholder="0.00" oninput="calcularCambio()"></div><div class="form-group"><label>Tasa de cambio (Bs/$)</label><input type="number" id="tasaCambioCobro" readonly></div></div>
-                <div class="payment-form" id="form-pago_movil"><div class="form-group"><label>Últimos 6 dígitos de referencia</label><input type="text" id="referenciaPago" placeholder="000000" maxlength="6"></div><div class="form-group"><label>Monto pagado (Bs)</label><input type="number" step="0.01" id="montoPagoMovil" placeholder="0.00" oninput="calcularCambio()"></div></div>
-                <div class="payment-form" id="form-punto_venta"><div class="form-group"><label>Monto pagado (Bs)</label><input type="number" step="0.01" id="montoPuntoVenta" placeholder="0.00" oninput="calcularCambio()"></div></div>
-                <div class="change-display" id="changeDisplay"></div>
+                
+                <!-- Monto restante por pagar -->
+                <div class="payment-mix-remaining" id="remainingDisplay">
+                    <span>Pendiente por pagar:</span>
+                    <span style="font-size: 1.5rem; font-weight: 700;" id="remainingAmount">Bs. 0.00</span>
+                </div>
+                
+                <!-- Lista de pagos -->
+                <div class="payment-mix-container" id="paymentMixContainer">
+                    <!-- Los pagos se agregan dinámicamente -->
+                </div>
+                
+                <!-- Botón para agregar método de pago -->
+                <button class="payment-mix-add" id="btnAddPayment" onclick="agregarMetodoPago()">
+                    <i class="fas fa-plus-circle"></i> Agregar Método de Pago
+                </button>
+                
+                <!-- Resumen de pagos -->
+                <div class="payment-mix-summary" id="paymentSummary" style="display: none;">
+                    <div class="payment-mix-summary-item">
+                        <span>Total recibido:</span>
+                        <span id="totalRecibido">Bs. 0.00</span>
+                    </div>
+                    <div class="payment-mix-summary-item" id="cambioRow" style="display: none;">
+                        <span>Cambio a entregar:</span>
+                        <span id="cambioAmount" style="color: var(--success);">Bs. 0.00</span>
+                    </div>
+                    <div class="payment-mix-summary-item" id="faltanteRow" style="display: none; color: var(--danger);">
+                        <span>Faltante:</span>
+                        <span id="faltanteAmount">Bs. 0.00</span>
+                    </div>
+                </div>
+                
+                <!-- Opciones especiales para faltante -->
                 <div class="special-options" id="specialOptions" style="display: none;">
                     <h3><i class="fas fa-exclamation-circle"></i> Opciones de Diferencia</h3>
                     <div class="special-option"><input type="radio" name="specialOption" id="optNormal" value="normal" checked onchange="toggleSpecialInput()"><label for="optNormal">Cobro exacto</label></div>
@@ -315,7 +472,10 @@
                     <div class="special-input" id="inputCasa"><label>Nombre de quien invita:</label><input type="text" id="nombreInvita" placeholder="Nombre del empleado/admin"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button class="btn-modal secondary" onclick="closeModal('cobroModal')">Cancelar</button><button class="btn-modal primary" id="btnConfirmarCobro" onclick="confirmarCobro()" disabled>Confirmar Cobro</button></div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="closeModal('cobroModal')">Cancelar</button>
+                <button class="btn-modal primary" id="btnConfirmarCobro" onclick="confirmarCobro()" disabled>Confirmar Cobro</button>
+            </div>
         </div>
     </div>
 
@@ -423,10 +583,14 @@
         let sistemaData = null;
         let syncInterval = null;
         let currentPedido = null;
-        let currentPaymentMethod = null;
         let pedidoRechazo = null;
         let pedidoConfirmacion = null;
-        let tipoConfirmacion = null; // 'entrega', 'envio', 'reserva', 'reserva_entrega'
+        let tipoConfirmacion = null;
+        
+        // Variables para pago mixto
+        let pagosMixtos = [];
+        let totalPagar = 0;
+        let tasaEfectiva = 400;
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
@@ -478,6 +642,31 @@
             sistemaData.pedidos = pedidosHoy;
         }
 
+        // Calcular tasa efectiva considerando aumento diario acumulado
+        function calcularTasaEfectiva() {
+            if (!sistemaData || !sistemaData.config) return 400;
+            
+            const tasaBase = sistemaData.config.tasaCambio || 400;
+            const aumentoDiario = sistemaData.config.aumentoDiario || 0;
+            const aumentoActivo = sistemaData.config.aumentoActivo || false;
+            const aumentoDetenido = sistemaData.config.aumentoDetenido || false;
+            const fechaInicio = sistemaData.config.fechaInicioAumento;
+            const fechaUltimoAumento = sistemaData.config.fechaUltimoAumento || fechaInicio;
+            
+            if (aumentoActivo && !aumentoDetenido && aumentoDiario > 0 && fechaInicio) {
+                const inicio = new Date(fechaInicio);
+                const hoy = new Date();
+                const diffTime = Math.abs(hoy - inicio);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // Calcular aumento acumulado
+                const porcentajeTotal = aumentoDiario * diffDays;
+                return tasaBase * (1 + (porcentajeTotal / 100));
+            }
+            
+            return tasaBase;
+        }
+
         // Verificar Tasa del Día
         function verificarTasaDelDia() {
             if (!sistemaData || !sistemaData.config) return;
@@ -493,7 +682,10 @@
 
         async function guardarTasaInicial() {
             const tasa = parseFloat(document.getElementById('tasaInicialInput').value);
-            if (!tasa || tasa <= 0) { alert('Introduce una tasa válida'); return; }
+            if (!tasa || tasa <= 0) { 
+                mostrarNotificacion('Introduce una tasa válida', 'error'); 
+                return; 
+            }
             
             sistemaData.config.tasaCambio = tasa;
             sistemaData.config.ultimaActualizacion = new Date().toISOString();
@@ -506,23 +698,8 @@
             mostrarNotificacion('Tasa del día guardada correctamente');
         }
 
-        async function actualizarTasaManual() {
-            const tasa = parseFloat(document.getElementById('tasaDiaInput').value);
-            if (!tasa || tasa <= 0) { alert('Introduce una tasa válida'); return; }
-            
-            sistemaData.config.tasaCambio = tasa;
-            sistemaData.config.ultimaActualizacion = new Date().toISOString();
-            
-            await guardarCambios();
-            actualizarDisplayTasa();
-            actualizarVista();
-            mostrarNotificacion('Tasa actualizada correctamente');
-        }
-
         function actualizarDisplayTasa() {
-            const tasa = sistemaData?.config?.tasaCambio || 0;
-            document.getElementById('tasaDiaInput').value = tasa || '';
-            document.getElementById('tasaCambioCobro').value = tasa.toFixed(2);
+            tasaEfectiva = calcularTasaEfectiva();
         }
 
         // Vistas
@@ -536,6 +713,7 @@
         }
 
         function actualizarVista() {
+            tasaEfectiva = calcularTasaEfectiva();
             renderPedidos();
             renderMenuView();
         }
@@ -558,11 +736,10 @@
             document.getElementById('statPendientes').textContent = enCocina.length + enCamino.length + reservaPendiente.length + reservaAtendida.length;
             document.getElementById('statCobrados').textContent = cobrados.length + enCocina.length + enCamino.length + reservaAtendida.length;
             
-            const tasa = sistemaData.config.tasaCambio || 400;
             const totalVentas = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
                 .reduce((sum, p) => sum + (p.total || 0), 0);
-            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasa).toFixed(2)}`;
+            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasaEfectiva).toFixed(2)}`;
             
             const totalPlatillos = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
@@ -607,7 +784,6 @@
         function crearCardPedidoPorCobrar(pedido, tipo) {
             const fecha = new Date(pedido.timestamp);
             const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            const tasa = sistemaData.config.tasaCambio || 400;
             const minutosTranscurridos = Math.floor((new Date() - fecha) / 60000);
             
             let timerText = '';
@@ -616,13 +792,32 @@
                 timerText = minutosRestantes > 0 ? `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
+            // Calcular total con descuentos por ingredientes
+            let totalCalculado = 0;
             const itemsHtml = (pedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
-                return `<div class="order-detail-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
+                
+                // Calcular subtotal considerando descuento por ingredientes
+                let subtotal = (item.subtotal || 0);
+                let descuentoTexto = '';
+                
+                if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
+                    const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
+                    descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
+                    // El subtotal ya viene con descuento aplicado desde el cliente
+                }
+                
+                subtotal = subtotal * tasaEfectiva;
+                totalCalculado += subtotal;
+                
+                return `<div class="order-detail-row">
+                    <span>${item.cantidad || 1}x ${item.nombre}${personalizacion} ${descuentoTexto}</span>
+                    <span class="item-subtotal">Bs. ${subtotal.toFixed(2)}</span>
+                </div>`;
             }).join('');
             
-            const total = (pedido.total || 0) * tasa;
+            // Usar el total calculado o el guardado (el calculado es más preciso)
+            const totalMostrar = totalCalculado > 0 ? totalCalculado : (pedido.total || 0) * tasaEfectiva;
             
             let extraInfo = '';
             if (pedido.tipo === 'delivery') {
@@ -635,18 +830,40 @@
             
             const botonesRechazo = (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') ? `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')"><i class="fas fa-times"></i> Rechazar</button>` : '';
             
-            return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${total.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
+            return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
         }
 
         function crearCardPedidoEnPreparacion(pedido, tipo) {
             const fecha = new Date(pedido.timestamp);
             const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            const tasa = sistemaData.config.tasaCambio || 400;
+            
+            // Calcular total con descuentos por ingredientes
+            let totalCalculado = 0;
+            const itemsHtml = (pedido.items || []).map(item => {
+                const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
+                
+                let subtotal = (item.subtotal || 0);
+                let descuentoTexto = '';
+                
+                if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
+                    const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
+                    descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
+                }
+                
+                subtotal = subtotal * tasaEfectiva;
+                totalCalculado += subtotal;
+                
+                return `<div class="order-detail-row">
+                    <span>${item.cantidad || 1}x ${item.nombre}${personalizacion} ${descuentoTexto}</span>
+                    <span class="item-subtotal">Bs. ${subtotal.toFixed(2)}</span>
+                </div>`;
+            }).join('');
+            
+            const totalMostrar = totalCalculado > 0 ? totalCalculado : (pedido.total || 0) * tasaEfectiva;
             
             // Determinar estado y clase CSS
             let estadoClass = '';
             let estadoBadge = '';
-            let estadoTexto = '';
             let botonAccion = '';
             let cardClass = '';
             
@@ -654,40 +871,28 @@
                 case 'en_cocina':
                     estadoClass = 'status-en-cocina';
                     estadoBadge = '<span class="status-badge status-en-cocina"><i class="fas fa-fire"></i> En Cocina</span>';
-                    estadoTexto = 'Preparando en cocina';
                     botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'entrega')"><i class="fas fa-check"></i> Pedido Entregado</button>`;
                     cardClass = 'en-cocina';
                     break;
                 case 'en_camino':
                     estadoClass = 'status-en-camino';
                     estadoBadge = '<span class="status-badge status-en-camino"><i class="fas fa-motorcycle"></i> En Camino</span>';
-                    estadoTexto = 'Delivery en camino';
                     botonAccion = `<button class="btn btn-enviar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'envio')"><i class="fas fa-check"></i> Pedido Enviado</button>`;
                     cardClass = 'en-camino';
                     break;
                 case 'reserva_pendiente':
                     estadoClass = 'status-reserva-pendiente';
                     estadoBadge = '<span class="status-badge status-reserva-pendiente"><i class="fas fa-calendar"></i> Reserva Pendiente</span>';
-                    estadoTexto = 'Esperando al cliente';
                     botonAccion = `<button class="btn btn-confirmar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva')"><i class="fas fa-user-check"></i> Cliente Confirmado</button>`;
                     cardClass = 'reserva-pendiente';
                     break;
                 case 'reserva_atendida':
                     estadoClass = 'status-reserva-atendida';
                     estadoBadge = '<span class="status-badge status-reserva-atendida"><i class="fas fa-utensils"></i> Cliente Atendido</span>';
-                    estadoTexto = 'Sirviendo al cliente';
                     botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva_entrega')"><i class="fas fa-check"></i> Pedido Entregado</button>`;
                     cardClass = 'reserva-atendida';
                     break;
             }
-            
-            const itemsHtml = (pedido.items || []).map(item => {
-                const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
-                return `<div class="order-detail-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
-            }).join('');
-            
-            const total = (pedido.total || 0) * tasa;
             
             let extraInfo = '';
             if (pedido.tipo === 'delivery') {
@@ -717,7 +922,7 @@
                 </div>
                 ${estadoBadge}
                 <div class="order-details">${itemsHtml}</div>
-                <div class="order-total">Total: Bs. ${total.toFixed(2)}</div>
+                <div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div>
                 ${extraInfo}
                 <div class="order-actions">${botonAccion}</div>
             </div>`;
@@ -734,8 +939,12 @@
             const title = document.getElementById('confirmEntregaTitle');
             const body = document.getElementById('confirmEntregaBody');
             
-            const tasa = sistemaData.config.tasaCambio || 400;
-            const total = (pedidoConfirmacion.total || 0) * tasa;
+            // Calcular total con tasa efectiva y descuentos
+            let totalCalculado = 0;
+            (pedidoConfirmacion.items || []).forEach(item => {
+                totalCalculado += (item.subtotal || 0) * tasaEfectiva;
+            });
+            const total = totalCalculado > 0 ? totalCalculado : (pedidoConfirmacion.total || 0) * tasaEfectiva;
             
             let titulo = '';
             let mensaje = '';
@@ -800,7 +1009,6 @@
             
             modal.classList.add('show');
             
-            // Enfocar el botón de confirmar para que ENTER funcione
             setTimeout(() => {
                 document.getElementById('btnConfirmarAccion').focus();
             }, 100);
@@ -846,7 +1054,6 @@
         }
 
         function handleGlobalKeypress(e) {
-            // Si el modal de confirmación está abierto
             const modalConfirmacion = document.getElementById('confirmEntregaModal');
             if (modalConfirmacion.classList.contains('show')) {
                 if (e.key === 'Enter') {
@@ -861,7 +1068,6 @@
                 return;
             }
             
-            // Si el modal de cobro está abierto
             const modalCobro = document.getElementById('cobroModal');
             if (modalCobro.classList.contains('show')) {
                 if (e.key === 'Escape') {
@@ -870,7 +1076,6 @@
                 return;
             }
             
-            // Si el modal de rechazo está abierto
             const modalRechazo = document.getElementById('rechazoModal');
             if (modalRechazo.classList.contains('show')) {
                 if (e.key === 'Escape') {
@@ -885,10 +1090,8 @@
             const container = document.getElementById('menuViewContainer');
             if (!sistemaData || !sistemaData.menu) return;
             
-            const tasa = sistemaData.config.tasaCambio || 400;
-            
             container.innerHTML = sistemaData.menu.map(item => {
-                const precioBs = ((item.precio || 0) * tasa).toFixed(2);
+                const precioBs = ((item.precio || 0) * tasaEfectiva).toFixed(2);
                 
                 let disponible = item.disponible;
                 let stockReal = item.stock || 0;
@@ -923,71 +1126,301 @@
             }).join('');
         }
 
-        // Cobro
+        // Cobro con Múltiples Métodos de Pago
         function mostrarCobro(pedidoId) {
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
-            const modal = document.getElementById('cobroModal');
+            // Calcular total con tasa efectiva y descuentos por ingredientes
+            let totalCalculado = 0;
             const summary = document.getElementById('cobroSummary');
-            const tasa = sistemaData.config.tasaCambio || 400;
-            const total = (currentPedido.total || 0) * tasa;
             
             let itemsHtml = (currentPedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                const subtotal = (item.precioUnitario || item.subtotal || 0) * (item.cantidad || 1);
-                return `<div class="summary-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(subtotal * tasa).toFixed(2)}</span></div>`;
+                
+                let subtotal = (item.subtotal || 0) * tasaEfectiva;
+                let descuentoTexto = '';
+                let descuentoDetalle = '';
+                
+                if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
+                    const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
+                    descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
+                    descuentoDetalle = `<div style="font-size: 0.8rem; color: var(--success); margin-top: 2px;">
+                        <i class="fas fa-tag"></i> Descuento por ingredientes removidos: -Bs. ${descuentoBs.toFixed(2)}
+                    </div>`;
+                }
+                
+                totalCalculado += subtotal;
+                
+                return `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                    <div>
+                        <span>${item.cantidad || 1}x ${item.nombre}${personalizacion} ${descuentoTexto}</span>
+                        ${descuentoDetalle}
+                    </div>
+                    <span style="font-weight: 600;">Bs. ${subtotal.toFixed(2)}</span>
+                </div>`;
             }).join('');
             
-            summary.innerHTML = `${itemsHtml}<div class="summary-row"><span>TOTAL A PAGAR</span><span>Bs. ${total.toFixed(2)}</span></div>`;
+            // Usar total calculado o el guardado
+            totalPagar = totalCalculado > 0 ? totalCalculado : (currentPedido.total || 0) * tasaEfectiva;
             
-            document.querySelectorAll('.payment-method-btn').forEach(btn => btn.classList.remove('selected'));
-            document.querySelectorAll('.payment-form').forEach(form => form.classList.remove('show'));
+            summary.innerHTML = `<div style="background: #f8f8f8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h4 style="margin-bottom: 10px; color: var(--secondary);">Detalle del Pedido:</h4>
+                ${itemsHtml}
+            </div>`;
+            
+            // Mostrar total
+            document.getElementById('totalPagarDisplay').textContent = `Bs. ${totalPagar.toFixed(2)}`;
+            
+            // Resetear pagos mixtos
+            pagosMixtos = [];
+            renderPagosMixtos();
+            actualizarResumenPago();
+            
             document.getElementById('specialOptions').style.display = 'none';
-            document.getElementById('changeDisplay').classList.remove('show');
             document.getElementById('btnConfirmarCobro').disabled = true;
             
-            modal.classList.add('show');
+            document.getElementById('cobroModal').classList.add('show');
         }
 
-        function selectPaymentMethod(method) {
-            currentPaymentMethod = method;
-            document.querySelectorAll('.payment-method-btn').forEach(btn => btn.classList.remove('selected'));
-            event.target.closest('.payment-method-btn').classList.add('selected');
-            document.querySelectorAll('.payment-form').forEach(form => form.classList.remove('show'));
-            document.getElementById(`form-${method}`).classList.add('show');
-            document.getElementById('btnConfirmarCobro').disabled = false;
-        }
-
-        function calcularCambio() {
-            if (!currentPedido) return;
-            const tasa = sistemaData.config.tasaCambio || 400;
-            const total = (currentPedido.total || 0) * tasa;
-            let recibido = 0;
-            
-            if (currentPaymentMethod === 'efectivo_bs') recibido = parseFloat(document.getElementById('montoRecibidoBs').value) || 0;
-            else if (currentPaymentMethod === 'efectivo_usd') recibido = (parseFloat(document.getElementById('montoRecibidoUsd').value) || 0) * tasa;
-            else if (currentPaymentMethod === 'pago_movil') recibido = parseFloat(document.getElementById('montoPagoMovil').value) || 0;
-            else if (currentPaymentMethod === 'punto_venta') recibido = parseFloat(document.getElementById('montoPuntoVenta').value) || 0;
-            
-            const diferencia = recibido - total;
-            const changeDisplay = document.getElementById('changeDisplay');
-            const specialOptions = document.getElementById('specialOptions');
-            
-            if (diferencia > 0) {
-                changeDisplay.innerHTML = `<i class="fas fa-hand-holding-usd"></i> CAMBIO A ENTREGAR: Bs. ${diferencia.toFixed(2)}`;
-                changeDisplay.classList.add('show');
-                specialOptions.style.display = 'none';
-            } else if (diferencia < 0) {
-                changeDisplay.innerHTML = `<i class="fas fa-exclamation-circle"></i> FALTAN: Bs. ${Math.abs(diferencia).toFixed(2)}`;
-                changeDisplay.classList.add('show');
-                specialOptions.style.display = 'block';
-                document.getElementById('montoAfavor').value = Math.abs(diferencia).toFixed(2);
-                document.getElementById('montoCondonacion').value = Math.abs(diferencia).toFixed(2);
-            } else {
-                changeDisplay.classList.remove('show');
-                specialOptions.style.display = 'none';
+        function agregarMetodoPago() {
+            if (pagosMixtos.length >= 4) {
+                mostrarNotificacion('Máximo 4 métodos de pago', 'error');
+                return;
             }
+            
+            const metodosDisponibles = [
+                { id: 'efectivo_bs', nombre: 'Efectivo Bs', icono: 'fa-money-bill-wave' },
+                { id: 'efectivo_usd', nombre: 'Efectivo $', icono: 'fa-dollar-sign' },
+                { id: 'pago_movil', nombre: 'Pago Móvil', icono: 'fa-mobile-alt' },
+                { id: 'punto_venta', nombre: 'Punto de Venta', icono: 'fa-credit-card' }
+            ];
+            
+            // Filtrar métodos ya usados
+            const usados = pagosMixtos.map(p => p.metodo);
+            const disponibles = metodosDisponibles.filter(m => !usados.includes(m.id));
+            
+            if (disponibles.length === 0) {
+                mostrarNotificacion('Todos los métodos de pago ya fueron agregados', 'error');
+                return;
+            }
+            
+            pagosMixtos.push({
+                id: Date.now(),
+                metodo: disponibles[0].id,
+                monto: 0,
+                referencia: ''
+            });
+            
+            renderPagosMixtos();
+            actualizarResumenPago();
+        }
+
+        function renderPagosMixtos() {
+            const container = document.getElementById('paymentMixContainer');
+            
+            if (pagosMixtos.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Agrega un método de pago para comenzar</p>';
+                document.getElementById('btnAddPayment').disabled = false;
+                return;
+            }
+            
+            const metodosOptions = [
+                { id: 'efectivo_bs', nombre: 'Efectivo Bs' },
+                { id: 'efectivo_usd', nombre: 'Efectivo $' },
+                { id: 'pago_movil', nombre: 'Pago Móvil' },
+                { id: 'punto_venta', nombre: 'Punto de Venta' }
+            ];
+            
+            container.innerHTML = pagosMixtos.map((pago, index) => {
+                const usados = pagosMixtos.map(p => p.metodo);
+                const options = metodosOptions.map(m => 
+                    `<option value="${m.id}" ${pago.metodo === m.id ? 'selected' : ''} ${usados.includes(m.id) && pago.metodo !== m.id ? 'disabled' : ''}>${m.nombre}</option>`
+                ).join('');
+                
+                const showReferencia = pago.metodo === 'pago_movil';
+                const isUsd = pago.metodo === 'efectivo_usd';
+                
+                return `
+                    <div class="payment-mix-item" id="pago-${pago.id}">
+                        <div class="payment-mix-header">
+                            <div class="payment-mix-title">
+                                <i class="fas fa-${getIconoMetodo(pago.metodo)}"></i>
+                                <select class="payment-method-select" onchange="cambiarMetodoPago(${pago.id}, this.value)">
+                                    ${options}
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-weight: 600; color: var(--secondary);">${isUsd ? '$' : 'Bs.'}</span>
+                                <input type="number" step="0.01" class="payment-mix-input" 
+                                    value="${pago.monto > 0 ? pago.monto : ''}" 
+                                    placeholder="0.00" 
+                                    oninput="actualizarMontoPago(${pago.id}, this.value)"
+                                    onkeypress="handlePaymentKeypress(event)">
+                                ${pagosMixtos.length > 1 ? `<button class="btn-remove-payment" onclick="eliminarMetodoPago(${pago.id})"><i class="fas fa-times"></i></button>` : ''}
+                            </div>
+                        </div>
+                        ${showReferencia ? `
+                            <div class="reference-input">
+                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">Últimos 6 dígitos de referencia:</label>
+                                <input type="text" maxlength="6" placeholder="000000" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Deshabilitar botón de agregar si ya hay 4
+            document.getElementById('btnAddPayment').disabled = pagosMixtos.length >= 4;
+        }
+
+        function getIconoMetodo(metodo) {
+            const iconos = {
+                'efectivo_bs': 'money-bill-wave',
+                'efectivo_usd': 'dollar-sign',
+                'pago_movil': 'mobile-alt',
+                'punto_venta': 'credit-card'
+            };
+            return iconos[metodo] || 'money-bill';
+        }
+
+        function cambiarMetodoPago(id, nuevoMetodo) {
+            const pago = pagosMixtos.find(p => p.id === id);
+            if (pago) {
+                pago.metodo = nuevoMetodo;
+                pago.monto = 0; // Resetear monto al cambiar método
+                pago.referencia = '';
+                renderPagosMixtos();
+                actualizarResumenPago();
+            }
+        }
+
+        function actualizarMontoPago(id, monto) {
+            const pago = pagosMixtos.find(p => p.id === id);
+            if (pago) {
+                pago.monto = parseFloat(monto) || 0;
+                actualizarResumenPago();
+            }
+        }
+
+        function actualizarReferencia(id, referencia) {
+            const pago = pagosMixtos.find(p => p.id === id);
+            if (pago) {
+                pago.referencia = referencia;
+            }
+        }
+
+        function eliminarMetodoPago(id) {
+            pagosMixtos = pagosMixtos.filter(p => p.id !== id);
+            renderPagosMixtos();
+            actualizarResumenPago();
+        }
+
+        function handlePaymentKeypress(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // Si hay pendiente, agregar otro método
+                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
+                const pendiente = totalPagar - totalRecibido;
+                
+                if (pendiente > 0 && pagosMixtos.length < 4) {
+                    agregarMetodoPago();
+                }
+            }
+        }
+
+        function convertirAMontoReal(pago) {
+            if (pago.metodo === 'efectivo_usd') {
+                return pago.monto * tasaEfectiva;
+            }
+            return pago.monto;
+        }
+
+        function actualizarResumenPago() {
+            let totalRecibido = 0;
+            let totalRecibidoUsd = 0;
+            let totalRecibidoBs = 0;
+            
+            pagosMixtos.forEach(pago => {
+                if (pago.metodo === 'efectivo_usd') {
+                    totalRecibidoUsd += pago.monto;
+                    totalRecibido += pago.monto * tasaEfectiva;
+                } else {
+                    totalRecibidoBs += pago.monto;
+                    totalRecibido += pago.monto;
+                }
+            });
+            
+            const pendiente = totalPagar - totalRecibido;
+            const cambio = totalRecibido > totalPagar ? totalRecibido - totalPagar : 0;
+            const faltante = totalRecibido < totalPagar ? totalPagar - totalRecibido : 0;
+            
+            // Actualizar display de pendiente
+            const remainingDisplay = document.getElementById('remainingDisplay');
+            const remainingAmount = document.getElementById('remainingAmount');
+            
+            if (pendiente > 0) {
+                remainingDisplay.className = 'payment-mix-remaining';
+                remainingAmount.textContent = `Bs. ${pendiente.toFixed(2)}`;
+                remainingAmount.style.color = 'var(--warning)';
+            } else if (pendiente === 0) {
+                remainingDisplay.className = 'payment-mix-remaining paid';
+                remainingAmount.textContent = '¡PAGO COMPLETO!';
+                remainingAmount.style.color = 'var(--success)';
+            } else {
+                remainingDisplay.className = 'payment-mix-remaining overpaid';
+                remainingAmount.textContent = `Bs. ${Math.abs(pendiente).toFixed(2)} (excedente)`;
+                remainingAmount.style.color = 'var(--danger)';
+            }
+            
+            // Mostrar resumen
+            const summaryDiv = document.getElementById('paymentSummary');
+            if (pagosMixtos.length > 0 && pagosMixtos.some(p => p.monto > 0)) {
+                summaryDiv.style.display = 'block';
+                
+                let resumenTexto = `Total recibido: Bs. ${totalRecibido.toFixed(2)}`;
+                if (totalRecibidoUsd > 0) {
+                    resumenTexto += ` ($${totalRecibidoUsd.toFixed(2)} × ${tasaEfectiva.toFixed(2)})`;
+                }
+                document.getElementById('totalRecibido').textContent = resumenTexto;
+                
+                // Cambio
+                if (cambio > 0) {
+                    document.getElementById('cambioRow').style.display = 'flex';
+                    document.getElementById('cambioAmount').textContent = `Bs. ${cambio.toFixed(2)}`;
+                } else {
+                    document.getElementById('cambioRow').style.display = 'none';
+                }
+                
+                // Faltante
+                if (faltante > 0) {
+                    document.getElementById('faltanteRow').style.display = 'flex';
+                    document.getElementById('faltanteAmount').textContent = `Bs. ${faltante.toFixed(2)}`;
+                    document.getElementById('montoAfavor').value = faltante.toFixed(2);
+                    document.getElementById('montoCondonacion').value = faltante.toFixed(2);
+                    document.getElementById('specialOptions').style.display = 'block';
+                } else {
+                    document.getElementById('faltanteRow').style.display = 'none';
+                    document.getElementById('specialOptions').style.display = 'none';
+                    // Resetear opciones especiales
+                    document.getElementById('optNormal').checked = true;
+                    toggleSpecialInput();
+                }
+            } else {
+                summaryDiv.style.display = 'none';
+            }
+            
+            // Habilitar/deshabilitar botón de confirmar
+            const btnConfirmar = document.getElementById('btnConfirmarCobro');
+            const hayMontoValido = pagosMixtos.some(p => p.monto > 0);
+            const hayReferenciaValida = pagosMixtos.every(p => {
+                if (p.metodo === 'pago_movil') {
+                    return p.referencia && p.referencia.length === 6;
+                }
+                return true;
+            });
+            
+            btnConfirmar.disabled = !hayMontoValido || !hayReferenciaValida;
         }
 
         function toggleSpecialInput() {
@@ -998,24 +1431,24 @@
         }
 
         async function confirmarCobro() {
-            if (!currentPedido) return;
-            const tasa = sistemaData.config.tasaCambio || 400;
-            const total = (currentPedido.total || 0) * tasa;
-            let recibido = 0;
-            let metodoPago = currentPaymentMethod;
-            let referencia = '';
+            if (!currentPedido || pagosMixtos.length === 0) return;
             
-            if (currentPaymentMethod === 'efectivo_bs') recibido = parseFloat(document.getElementById('montoRecibidoBs').value) || 0;
-            else if (currentPaymentMethod === 'efectivo_usd') recibido = parseFloat(document.getElementById('montoRecibidoUsd').value) || 0;
-            else if (currentPaymentMethod === 'pago_movil') {
-                recibido = parseFloat(document.getElementById('montoPagoMovil').value) || 0;
-                referencia = document.getElementById('referenciaPago').value || '000000';
-            } else if (currentPaymentMethod === 'punto_venta') recibido = parseFloat(document.getElementById('montoPuntoVenta').value) || 0;
+            let totalRecibido = 0;
+            let totalRecibidoUsd = 0;
             
-            const diferencia = recibido - total;
+            pagosMixtos.forEach(pago => {
+                if (pago.metodo === 'efectivo_usd') {
+                    totalRecibidoUsd += pago.monto;
+                    totalRecibido += pago.monto * tasaEfectiva;
+                } else {
+                    totalRecibido += pago.monto;
+                }
+            });
+            
+            const diferencia = totalRecibido - totalPagar;
             const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             
-            // CAMBIO IMPORTANTE: Al cobrar, el pedido pasa a 'en_cocina' para mesa, 'en_camino' para delivery, 'reserva_pendiente' para reserva
+            // Determinar siguiente estado según tipo de pedido
             if (currentPedido.tipo === 'delivery') {
                 currentPedido.estado = 'en_camino';
             } else if (currentPedido.tipo === 'reserva') {
@@ -1026,15 +1459,27 @@
             
             currentPedido.cajero = 'Cajero Principal';
             currentPedido.fechaCobro = new Date().toISOString();
-            currentPedido.metodoPago = metodoPago;
-            currentPedido.montoRecibido = recibido;
-            currentPedido.referencia = referencia;
+            
+            // Guardar información de pago mixto
+            currentPedido.pagosMixtos = pagosMixtos.map(p => ({
+                metodo: p.metodo,
+                monto: p.monto,
+                montoBs: p.metodo === 'efectivo_usd' ? p.monto * tasaEfectiva : p.monto,
+                referencia: p.referencia
+            }));
+            
+            currentPedido.metodoPago = 'mixto';
+            currentPedido.montoRecibido = totalRecibido;
+            currentPedido.montoRecibidoUsd = totalRecibidoUsd;
+            currentPedido.tasaAplicada = tasaEfectiva;
             
             if (diferencia < 0) {
                 currentPedido.diferencia = Math.abs(diferencia);
                 currentPedido.tipoDiferencia = specialOption;
                 if (specialOption === 'casa') currentPedido.invitadoPor = document.getElementById('nombreInvita').value;
-            } else if (diferencia > 0) currentPedido.cambio = diferencia;
+            } else if (diferencia > 0) {
+                currentPedido.cambio = diferencia;
+            }
             
             await guardarCambios();
             closeModal('cobroModal');
@@ -1081,9 +1526,10 @@
         function closeModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
         function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
         
-        function mostrarNotificacion(mensaje) {
+        function mostrarNotificacion(mensaje, tipo = 'success') {
             const notif = document.getElementById('notification');
             document.getElementById('notificationText').textContent = mensaje;
+            notif.style.borderLeftColor = tipo === 'error' ? 'var(--danger)' : 'var(--success)';
             notif.classList.add('show');
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
