@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?? Panel del Cajero - Saki Sushi</title>
+    <title>🍣 Panel del Cajero - Saki Sushi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -420,7 +420,7 @@
         <div class="modal-content">
             <div class="modal-body" style="padding: 2rem;">
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h2 style="margin-bottom: 1rem; color: var(--secondary);">?Buenos días!</h2>
+                <h2 style="margin-bottom: 1rem; color: var(--secondary);">¡Buenos días!</h2>
                 <p style="color: #666; margin-bottom: 1.5rem;">El administrador no ha establecido la <strong>tasa del dólar del día</strong>. Por favor, introdúcela para continuar.</p>
                 <div style="background: #f8f8f8; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--secondary);">Tasa del Día (Bs. por $1)</label>
@@ -437,7 +437,7 @@
     <!-- Notification -->
     <div class="notification" id="notification">
         <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></i>
-        <div><h4 style="margin: 0; color: var(--secondary);">éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
+        <div><h4 style="margin: 0; color: var(--secondary);">Éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
     </div>
 
     <!-- Modal de Confirmación de Entrega/Envío/Reserva -->
@@ -637,7 +637,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIóN JSONBin
+        // CONFIGURACIÓN JSONBin
         // ==========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
@@ -656,24 +656,6 @@
         let pagosMixtos = [];
         let totalPagar = 0;
         let tasaEfectiva = 400;
-
-		// Función para que el cajero/admin solicite el comprobante
-		function solicitarComprobante(pedidoId) {
-			const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
-			const comprobante = comprobantes[pedidoId];
-			
-			if (!comprobante) {
-				showToast('No se encontró comprobante para este pedido', 'error');
-				return null;
-			}
-			
-			if (!comprobante.disponible) {
-				showToast('El comprobante era muy grande y no se guardó. Solicitar por WhatsApp.', 'warning');
-				return null;
-			}
-			
-			return comprobante;
-		}
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
@@ -806,7 +788,7 @@
             const hoy = new Date().toISOString().split('T')[0];
             const pedidosHoy = pedidos.filter(p => p.timestamp.startsWith(hoy));
             
-            // Separar por estado
+            // Separar por estado - CORREGIDO: incluir 'pendiente' y 'cobrado' en por cobrar
             const pendientes = pedidosHoy.filter(p => p.estado === 'pendiente');
             const cobrados = pedidosHoy.filter(p => p.estado === 'cobrado');
             const enCocina = pedidosHoy.filter(p => p.estado === 'en_cocina');
@@ -821,7 +803,7 @@
             const totalVentas = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
                 .reduce((sum, p) => sum + (p.total || 0), 0);
-            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas * tasaEfectiva).toFixed(2)}`;
+            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas).toFixed(2)}`;
             
             const totalPlatillos = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
@@ -874,30 +856,25 @@
                 timerText = minutosRestantes > 0 ? `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
-            // Calcular total con descuentos por ingredientes
-            let totalCalculado = 0;
+            // CORREGIDO: El total ya viene en Bs desde el cliente, no multiplicar por tasa nuevamente
+            let totalMostrar = pedido.total || 0;
+            
             const itemsHtml = (pedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
                 
-                let subtotal = (item.subtotal || 0);
                 let descuentoTexto = '';
-                
                 if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
-                    const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
-                    descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
+                    descuentoTexto = `<span class="ingredient-discount">-${item.descuentoPorIngredientes.toFixed(2)} Bs</span>`;
                 }
                 
-                subtotal = subtotal * tasaEfectiva;
-                totalCalculado += subtotal;
+                // CORREGIDO: subtotal ya está en Bs
+                let subtotal = item.subtotal || 0;
                 
                 return `<div class="order-detail-row">
                     <span>${item.cantidad || 1}x ${item.nombre}${personalizacion} ${descuentoTexto}</span>
                     <span class="item-subtotal">Bs. ${subtotal.toFixed(2)}</span>
                 </div>`;
             }).join('');
-            
-            // Usar el total calculado o el guardado
-            const totalMostrar = totalCalculado > 0 ? totalCalculado : (pedido.total || 0) * tasaEfectiva;
             
             let extraInfo = '';
             if (pedido.tipo === 'delivery') {
@@ -908,12 +885,11 @@
                 </div>${timerText}`;
                 
                 // Agregar visualización de comprobante si existe
-                if (pedido.comprobanteBase64) {
+                if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview">
                             <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
-                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" alt="Comprobante">
-                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                            <button class="btn-ver-comprobante" onclick="solicitarComprobante('${pedido.id}')">
                                 <i class="fas fa-search-plus"></i> Ver Comprobante
                             </button>
                         </div>
@@ -927,12 +903,11 @@
                 </div>`;
                 
                 // Agregar visualización de comprobante si existe
-                if (pedido.comprobanteBase64) {
+                if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview">
                             <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
-                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" alt="Comprobante">
-                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                            <button class="btn-ver-comprobante" onclick="solicitarComprobante('${pedido.id}')">
                                 <i class="fas fa-search-plus"></i> Ver Comprobante
                             </button>
                         </div>
@@ -947,67 +922,70 @@
             return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
         }
 
-        function verComprobante(pedidoId) {
-            const pedido = sistemaData.pedidos.find(p => p.id === pedidoId);
-            if (!pedido || !pedido.comprobanteBase64) return;
+        // Función para que el cajero/admin solicite el comprobante del cliente
+        function solicitarComprobante(pedidoId) {
+            const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
+            const comprobante = comprobantes[pedidoId];
             
+            if (!comprobante) {
+                mostrarNotificacion('No se encontró comprobante en el almacenamiento local del navegador. El cliente debe enviarlo por WhatsApp.', 'error');
+                return null;
+            }
+            
+            if (!comprobante.disponible) {
+                mostrarNotificacion('El comprobante era muy grande y no se guardó. Solicitar por WhatsApp.', 'warning');
+                return null;
+            }
+            
+            // Mostrar en modal
             const modal = document.getElementById('comprobanteModal');
             const imgContainer = document.getElementById('comprobanteImagenContainer');
             const infoContainer = document.getElementById('comprobanteInfo');
             const downloadLink = document.getElementById('comprobanteDownloadLink');
             
-            imgContainer.innerHTML = `<img src="${pedido.comprobanteBase64}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #ddd;" alt="Comprobante de pago">`;
+            imgContainer.innerHTML = `<img src="${comprobante.base64}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #ddd;" alt="Comprobante de pago">`;
             
+            const pedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             let infoHtml = `<h4 style="margin-bottom: 15px; color: var(--secondary);">Detalles del Comprobante</h4>`;
             infoHtml += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">`;
-            infoHtml += `<div><strong>Pedido:</strong> ${pedido.id}</div>`;
-            infoHtml += `<div><strong>Tipo:</strong> ${pedido.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</div>`;
-            if (pedido.tipo === 'delivery') {
-                infoHtml += `<div><strong>Teléfono:</strong> ${pedido.telefono}</div>`;
-                infoHtml += `<div><strong>Dirección:</strong> ${pedido.direccion}</div>`;
-            } else {
-                infoHtml += `<div><strong>Cliente:</strong> ${pedido.clienteNombre}</div>`;
-                infoHtml += `<div><strong>Fecha Reserva:</strong> ${new Date(pedido.fechaReserva).toLocaleDateString()}</div>`;
-            }
-            infoHtml += `<div><strong>Referencia:</strong> ${pedido.referencia}</div>`;
-            infoHtml += `<div><strong>Total:</strong> $${pedido.total.toFixed(2)}</div>`;
-            infoHtml += `<div><strong>Archivo:</strong> ${pedido.comprobanteNombre || 'comprobante.jpg'}</div>`;
+            infoHtml += `<div><strong>Pedido:</strong> ${pedidoId}</div>`;
+            infoHtml += `<div><strong>Tipo:</strong> ${pedido?.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</div>`;
+            infoHtml += `<div><strong>Archivo:</strong> ${comprobante.nombre || 'comprobante.jpg'}</div>`;
+            infoHtml += `<div><strong>Fecha:</strong> ${new Date(comprobante.timestamp).toLocaleString()}</div>`;
             infoHtml += `</div>`;
             
             infoContainer.innerHTML = infoHtml;
-            downloadLink.href = pedido.comprobanteBase64;
-            downloadLink.download = pedido.comprobanteNombre || 'comprobante.jpg';
+            downloadLink.href = comprobante.base64;
+            downloadLink.download = comprobante.nombre || 'comprobante.jpg';
             
             modal.classList.add('show');
+            
+            return comprobante;
         }
 
         function crearCardPedidoEnPreparacion(pedido, tipo) {
             const fecha = new Date(pedido.timestamp);
             const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             
-            // Calcular total con descuentos por ingredientes
-            let totalCalculado = 0;
+            // CORREGIDO: El total ya viene en Bs desde el cliente
+            let totalMostrar = pedido.total || 0;
+            
             const itemsHtml = (pedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
                 
-                let subtotal = (item.subtotal || 0);
                 let descuentoTexto = '';
-                
                 if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
-                    const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
-                    descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
+                    descuentoTexto = `<span class="ingredient-discount">-${item.descuentoPorIngredientes.toFixed(2)} Bs</span>`;
                 }
                 
-                subtotal = subtotal * tasaEfectiva;
-                totalCalculado += subtotal;
+                // CORREGIDO: subtotal ya está en Bs
+                let subtotal = item.subtotal || 0;
                 
                 return `<div class="order-detail-row">
                     <span>${item.cantidad || 1}x ${item.nombre}${personalizacion} ${descuentoTexto}</span>
                     <span class="item-subtotal">Bs. ${subtotal.toFixed(2)}</span>
                 </div>`;
             }).join('');
-            
-            const totalMostrar = totalCalculado > 0 ? totalCalculado : (pedido.total || 0) * tasaEfectiva;
             
             // Determinar estado y clase CSS
             let estadoClass = '';
@@ -1051,12 +1029,11 @@
                 </div>`;
                 
                 // Agregar visualización de comprobante si existe
-                if (pedido.comprobanteBase64) {
+                if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview" style="margin-top: 10px;">
                             <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
-                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" style="max-height: 100px;" alt="Comprobante">
-                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                            <button class="btn-ver-comprobante" onclick="solicitarComprobante('${pedido.id}')">
                                 <i class="fas fa-search-plus"></i> Ver Completo
                             </button>
                         </div>
@@ -1074,12 +1051,11 @@
                 </div>`;
                 
                 // Agregar visualización de comprobante si existe
-                if (pedido.comprobanteBase64) {
+                if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview" style="margin-top: 10px;">
                             <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
-                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" style="max-height: 100px;" alt="Comprobante">
-                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                            <button class="btn-ver-comprobante" onclick="solicitarComprobante('${pedido.id}')">
                                 <i class="fas fa-search-plus"></i> Ver Completo
                             </button>
                         </div>
@@ -1113,12 +1089,8 @@
             const title = document.getElementById('confirmEntregaTitle');
             const body = document.getElementById('confirmEntregaBody');
             
-            // Calcular total con tasa efectiva y descuentos
-            let totalCalculado = 0;
-            (pedidoConfirmacion.items || []).forEach(item => {
-                totalCalculado += (item.subtotal || 0) * tasaEfectiva;
-            });
-            const total = totalCalculado > 0 ? totalCalculado : (pedidoConfirmacion.total || 0) * tasaEfectiva;
+            // CORREGIDO: El total ya viene en Bs
+            const total = pedidoConfirmacion.total || 0;
             
             let titulo = '';
             let mensaje = '';
@@ -1127,25 +1099,25 @@
             switch(tipo) {
                 case 'entrega':
                     titulo = 'Confirmar Entrega';
-                    mensaje = '?Confirmas que el pedido ha sido entregado al cliente en la mesa?';
+                    mensaje = '¿Confirmas que el pedido ha sido entregado al cliente en la mesa?';
                     icono = 'fa-check-circle';
                     header.className = 'modal-header entrega';
                     break;
                 case 'envio':
                     titulo = 'Confirmar Envío';
-                    mensaje = '?Confirmas que el pedido ha sido enviado al cliente?';
+                    mensaje = '¿Confirmas que el pedido ha sido enviado al cliente?';
                     icono = 'fa-motorcycle';
                     header.className = 'modal-header envio';
                     break;
                 case 'reserva':
                     titulo = 'Confirmar Asistencia';
-                    mensaje = '?Confirmas que el cliente ha llegado y está siendo atendido?';
+                    mensaje = '¿Confirmas que el cliente ha llegado y está siendo atendido?';
                     icono = 'fa-user-check';
                     header.className = 'modal-header reserva';
                     break;
                 case 'reserva_entrega':
                     titulo = 'Confirmar Entrega';
-                    mensaje = '?Confirmas que el pedido ha sido servido al cliente reservado?';
+                    mensaje = '¿Confirmas que el pedido ha sido servido al cliente reservado?';
                     icono = 'fa-utensils';
                     header.className = 'modal-header entrega';
                     break;
@@ -1314,26 +1286,24 @@
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
-            // Calcular total con tasa efectiva y descuentos por ingredientes
-            let totalCalculado = 0;
+            // CORREGIDO: El total ya viene en Bs desde el cliente, no multiplicar por tasa
             const summary = document.getElementById('cobroSummary');
             
             let itemsHtml = (currentPedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
                 
-                let subtotal = (item.subtotal || 0) * tasaEfectiva;
                 let descuentoTexto = '';
                 let descuentoDetalle = '';
                 
                 if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
-                    const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
-                    descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
+                    descuentoTexto = `<span class="ingredient-discount">-${item.descuentoPorIngredientes.toFixed(2)} Bs</span>`;
                     descuentoDetalle = `<div style="font-size: 0.8rem; color: var(--success); margin-top: 2px;">
-                        <i class="fas fa-tag"></i> Descuento por ingredientes removidos: -Bs. ${descuentoBs.toFixed(2)}
+                        <i class="fas fa-tag"></i> Descuento por ingredientes removidos: -Bs. ${item.descuentoPorIngredientes.toFixed(2)}
                     </div>`;
                 }
                 
-                totalCalculado += subtotal;
+                // CORREGIDO: subtotal ya está en Bs
+                let subtotal = item.subtotal || 0;
                 
                 return `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
                     <div>
@@ -1344,8 +1314,8 @@
                 </div>`;
             }).join('');
             
-            // Usar total calculado o el guardado
-            totalPagar = totalCalculado > 0 ? totalCalculado : (currentPedido.total || 0) * tasaEfectiva;
+            // CORREGIDO: El total ya viene en Bs
+            totalPagar = currentPedido.total || 0;
             
             summary.innerHTML = `<div style="background: #f8f8f8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
                 <h4 style="margin-bottom: 10px; color: var(--secondary);">Detalle del Pedido:</h4>
@@ -1445,7 +1415,7 @@
                         </div>
                         ${showReferencia ? `
                             <div class="reference-input">
-                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">últimos 6 dígitos de referencia:</label>
+                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">Últimos 6 dígitos de referencia:</label>
                                 <input type="text" maxlength="6" placeholder="000000" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
                             </div>
                         ` : ''}
@@ -1548,7 +1518,7 @@
                 remainingAmount.style.color = 'var(--warning)';
             } else if (pendiente === 0) {
                 remainingDisplay.className = 'payment-mix-remaining paid';
-                remainingAmount.textContent = '?PAGO COMPLETO!';
+                remainingAmount.textContent = '¡PAGO COMPLETO!';
                 remainingAmount.style.color = 'var(--success)';
             } else {
                 remainingDisplay.className = 'payment-mix-remaining overpaid';
@@ -1631,7 +1601,7 @@
             const diferencia = totalRecibido - totalPagar;
             const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             
-            // Determinar siguiente estado según tipo de pedido
+            // CORREGIDO: Determinar siguiente estado según tipo de pedido
             if (currentPedido.tipo === 'delivery') {
                 currentPedido.estado = 'en_camino';
             } else if (currentPedido.tipo === 'reserva') {
