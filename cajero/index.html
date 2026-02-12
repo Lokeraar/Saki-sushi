@@ -534,6 +534,31 @@
             font-size: 0.7rem;
             font-weight: 600;
         }
+
+        /* Botón de sincronización manual */
+        .sync-manual-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+        }
+        .sync-manual-btn:hover {
+            background: white;
+            color: var(--primary);
+            transform: scale(1.05);
+        }
+        .sync-manual-btn.syncing {
+            animation: pulse 1.5s infinite;
+        }
     </style>
 </head>
 <body>
@@ -692,7 +717,17 @@
     <div class="container">
         <div class="header">
             <div class="header-left"><h1><i class="fas fa-cash-register"></i> Panel del Cajero</h1><p>Saki Sushi - Gestión de pedidos y cobros</p></div>
-            <div class="header-right"><div class="sync-status offline" id="syncStatus"><i class="fas fa-sync-alt"></i><span>Conectando...</span></div></div>
+            <div class="header-right">
+                <!-- Botón de sincronización manual -->
+                <div class="sync-manual-btn" onclick="sincronizarManual()" title="Sincronizar con servidor">
+                    <i class="fas fa-sync-alt" id="manualSyncIcon"></i>
+                    <span>JSONbin</span>
+                </div>
+                <div class="sync-status offline" id="syncStatus">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Conectando...</span>
+                </div>
+            </div>
         </div>
 
         <div class="nav-tabs">
@@ -798,6 +833,8 @@
         let isProcessing = false;
         let operationQueue = [];
         let processingTimeout = null;
+        let syncIntervalId = null;
+        let isManualSyncing = false;
         
         async function executeNextOperation() {
             if (isProcessing || operationQueue.length === 0) return;
@@ -837,7 +874,6 @@
         }
 
         let sistemaData = null;
-        let syncInterval = null;
         let currentPedido = null;
         let pedidoRechazo = null;
         let pedidoConfirmacion = null;
@@ -846,6 +882,9 @@
         let pagosMixtos = [];
         let totalPagar = 0;
         let tasaEfectiva = 400;
+        
+        let lastSyncTime = 0;
+        const SYNC_COOLDOWN = 60000;
 
         // ==========================================
         // INICIALIZACIÓN
@@ -853,12 +892,22 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
             verificarTasaDelDia();
-            syncInterval = setInterval(cargarDatos, 10000);
+            // Sincronización automática cada 3 minutos
+            syncIntervalId = setInterval(() => {
+                sincronizarAutomatica();
+            }, 180000);
             document.addEventListener('keydown', handleGlobalKeypress);
         });
 
-        async function cargarDatos() {
-            if (isProcessing) return;
+        async function cargarDatos(skipCooldown = false) {
+            if (isProcessing && !skipCooldown) return;
+            
+            const ahora = Date.now();
+            if (!skipCooldown && (ahora - lastSyncTime < SYNC_COOLDOWN)) {
+                console.log('Carga omitida - en cooldown');
+                return false;
+            }
+            
             actualizarEstadoSync('syncing');
             
             try {
@@ -870,6 +919,10 @@
                 if (!response.ok) throw new Error('Error al cargar datos');
                 const data = await response.json();
                 
+                // PRESERVAR DATOS DEL MODAL DE COBRO
+                const currentPedidoGuardado = currentPedido;
+                const pagosMixtosGuardados = [...pagosMixtos];
+                
                 await new Promise(resolve => setTimeout(resolve, 100));
                 sistemaData = data.record || data;
                 limpiarPedidosDiaAnterior();
@@ -878,10 +931,54 @@
                 document.getElementById('loadingOverlay').style.display = 'none';
                 actualizarVista();
                 
+                // RESTAURAR DATOS DEL MODAL DE COBRO
+                if (currentPedidoGuardado) {
+                    currentPedido = sistemaData.pedidos?.find(p => p.id === currentPedidoGuardado.id) || null;
+                }
+                pagosMixtos = pagosMixtosGuardados;
+                
+                lastSyncTime = ahora;
+                return true;
+                
             } catch (error) {
                 console.error('Error cargando datos:', error);
                 actualizarEstadoSync('offline');
+                return false;
             }
+        }
+
+        // Sincronización automática silenciosa (no interfiere con UI)
+        async function sincronizarAutomatica() {
+            if (isManualSyncing) return; // No solapar con sincronización manual
+            await cargarDatos(true); // skipCooldown
+        }
+
+        // Sincronización manual con feedback visual
+        async function sincronizarManual() {
+            if (isManualSyncing) {
+                mostrarNotificacion('Ya hay una sincronización en curso...', 'info');
+                return;
+            }
+            
+            isManualSyncing = true;
+            const syncIcon = document.getElementById('manualSyncIcon');
+            const originalClass = syncIcon.className;
+            syncIcon.className = 'fas fa-sync-alt fa-spin';
+            document.querySelector('.sync-manual-btn').classList.add('syncing');
+            
+            mostrarNotificacion('Sincronizando con servidor...', 'success');
+            
+            const sincronizado = await cargarDatos(true);
+            
+            if (sincronizado) {
+                mostrarNotificacion('Datos sincronizados', 'success');
+            } else {
+                mostrarNotificacion('Error al sincronizar. Modo offline.', 'error');
+            }
+            
+            syncIcon.className = originalClass;
+            document.querySelector('.sync-manual-btn').classList.remove('syncing');
+            isManualSyncing = false;
         }
 
         function limpiarPedidosDiaAnterior() {
@@ -2376,6 +2473,8 @@
                 if (!response.ok) throw new Error('Error al guardar');
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
+                lastSyncTime = Date.now();
+                
             } catch (error) { 
                 console.error('Error guardando:', error);
                 throw error;
@@ -2383,7 +2482,7 @@
         }
         
         window.addEventListener('beforeunload', () => { 
-            if (syncInterval) clearInterval(syncInterval); 
+            if (syncIntervalId) clearInterval(syncIntervalId); 
             if (processingTimeout) clearTimeout(processingTimeout);
         });
     </script>
