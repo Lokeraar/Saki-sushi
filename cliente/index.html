@@ -2220,40 +2220,66 @@
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
         // ==========================================
-        function checkLocation() {
-            const sessionData = localStorage.getItem('sakiSession');
-            if (sessionData) {
-                try {
-                    const session = JSON.parse(sessionData);
-                    const ahora = new Date().getTime();
-                    const tiempoTranscurrido = ahora - session.timestamp;
-                    
-                    if (tiempoTranscurrido < 1800000) {
-                        sessionId = session.id;
-                        isInRestaurant = session.isInRestaurant;
-                        tableNumber = session.tableNumber;
-                        
-                        if (isInRestaurant && tableNumber) {
-                            document.getElementById('tableNumber').textContent = tableNumber;
-                            document.getElementById('tableBadge').style.display = 'block';
-                            document.getElementById('confirmTableNumber').textContent = `Mesa #${tableNumber}`;
-                        }
-                        
-                        document.getElementById('locationCheck').classList.add('hidden');
-                        document.getElementById('mainContainer').style.display = 'block';
-                        
-                        cargarDatosDesdeCache();
-                        initApp();
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Error parsing session:', e);
-                    localStorage.removeItem('sakiSession');
-                }
-            }
-            
-            verifyLocation();
-        }
+		function checkLocation() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const mesaUrl = urlParams.get('mesa');
+
+			// 🔥 PRIORIDAD 1: Si hay mesa en la URL, USAR ESA SIEMPRE
+			if (mesaUrl) {
+				isInRestaurant = true;
+				tableNumber = mesaUrl;
+
+				// Crear nueva sesión (sobrescribe la anterior)
+				crearSesion();
+
+				document.getElementById('tableNumber').textContent = mesaUrl;
+				document.getElementById('tableBadge').style.display = 'block';
+				document.getElementById('confirmTableNumber').textContent = `Mesa #${mesaUrl}`;
+				document.getElementById('locationCheck').classList.add('hidden');
+				document.getElementById('mainContainer').style.display = 'block';
+				document.getElementById('onlineOrderOptions').classList.remove('show');
+				document.getElementById('restaurantOrderSection').classList.add('show');
+
+				cargarDatosDesdeCache();
+				initApp();
+				return;
+			}
+
+			// 🔥 PRIORIDAD 2: Si NO hay mesa en URL, intentar recuperar sesión guardada
+			const sessionData = localStorage.getItem('sakiSession');
+			if (sessionData) {
+				try {
+					const session = JSON.parse(sessionData);
+					const ahora = new Date().getTime();
+					const tiempoTranscurrido = ahora - session.timestamp;
+
+					if (tiempoTranscurrido < 1800000) { // 30 minutos
+						sessionId = session.id;
+						isInRestaurant = session.isInRestaurant;
+						tableNumber = session.tableNumber;
+
+						if (isInRestaurant && tableNumber) {
+							document.getElementById('tableNumber').textContent = tableNumber;
+							document.getElementById('tableBadge').style.display = 'block';
+							document.getElementById('confirmTableNumber').textContent = `Mesa #${tableNumber}`;
+						}
+
+						document.getElementById('locationCheck').classList.add('hidden');
+						document.getElementById('mainContainer').style.display = 'block';
+
+						cargarDatosDesdeCache();
+						initApp();
+						return;
+					}
+				} catch (e) {
+					console.error('Error parsing session:', e);
+					localStorage.removeItem('sakiSession');
+				}
+			}
+
+			// 🔥 PRIORIDAD 3: Sin mesa y sin sesión válida → Verificar ubicación
+			verifyLocation();
+		}
 
         function cargarDatosDesdeCache() {
             const cachedData = localStorage.getItem('sakiMenuCache');
@@ -2332,16 +2358,16 @@
             }
         }
 
-        function crearSesion() {
-            sessionId = 'SES-' + Date.now();
-            const sessionData = {
-                id: sessionId,
-                timestamp: new Date().getTime(),
-                isInRestaurant: isInRestaurant,
-                tableNumber: tableNumber
-            };
-            localStorage.setItem('sakiSession', JSON.stringify(sessionData));
-        }
+		function crearSesion() {
+			sessionId = 'SES-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
+			const sessionData = {
+				id: sessionId,
+				timestamp: new Date().getTime(),
+				isInRestaurant: isInRestaurant,
+				tableNumber: tableNumber
+			};
+			localStorage.setItem('sakiSession', JSON.stringify(sessionData));
+		}
 
         function showLocationError() {
             document.getElementById('locationError').classList.add('show');
