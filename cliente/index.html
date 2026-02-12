@@ -652,7 +652,7 @@
             z-index: 10;
         }
 
-        /* Imagen del platillo - AHORA CON <img> EN LUGAR DE background-image */
+        /* Imagen del platillo */
         .item-image-container {
             height: 250px;
             width: 100%;
@@ -1028,7 +1028,7 @@
             display: block;
         }
 
-        /* Order Summary - Centered and half width on desktop */
+        /* Order Summary */
         .order-summary-section {
             background: #F8F8F8;
             padding: 40px 30px;
@@ -1753,6 +1753,10 @@
             background: var(--primary);
         }
 
+        .toast.info {
+            background: var(--info);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
@@ -1779,7 +1783,7 @@
     </div>
 
     <!-- Loading -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
         <h2>Procesando...</h2>
     </div>
@@ -2119,7 +2123,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN JSONBIN.IO - CORREGIDA
+        // CONFIGURACIÓN JSONBIN.IO - OPTIMIZADA
         // ==========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
@@ -2135,8 +2139,6 @@
         let currentCategory = 'todos';
         let currentSubcategory = null;
         let pedidoActual = [];
-        let syncInterval = null;
-        let syncRetryCount = 0;
         let isInRestaurant = false;
         let tableNumber = null;
         let selectedDate = null;
@@ -2147,6 +2149,17 @@
         let searchTerm = '';
         let isLoading = false;
         let isInitialized = false;
+
+        // ==========================================
+        // VARIABLES DE SINCRONIZACIÓN INTELIGENTE
+        // ==========================================
+        let lastETag = localStorage.getItem('sakiLastETag') || null;
+        let syncBackoffDelay = 2000; // Empieza en 2 segundos
+        let consecutiveFailures = 0;
+        let isPageActive = true;
+        let syncTimeoutId = null;
+        let pendingOrders = JSON.parse(localStorage.getItem('sakiPendingOrders') || '[]');
+        let syncIntervalClean = null;
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2268,105 +2281,150 @@
         }
 
         // ==========================================
-        // INICIALIZACIÓN
+        // INICIALIZACIÓN CON CACHÉ LOCAL
         // ==========================================
         async function initApp() {
             if (isInitialized) return;
             isInitialized = true;
             
             showLoading();
+            
             try {
-                await cargarDatos();
-                renderSidebar();
-                renderMenu();
+                // 1. Cargar desde caché local inmediatamente
+                const cachedData = localStorage.getItem('sakiMenuCache');
+                const cacheTimestamp = localStorage.getItem('sakiCacheTimestamp');
                 
-                // Iniciar polling de notificaciones
+                if (cachedData && cacheTimestamp) {
+                    const edadCache = Date.now() - parseInt(cacheTimestamp);
+                    sistemaData = JSON.parse(cachedData);
+                    console.log(`📦 Cargando menú desde caché (${Math.round(edadCache / 1000)}s de antigüedad)`);
+                    sincronizarMenuLocal();
+                    renderSidebar();
+                    renderMenu();
+                }
+                
+                // 2. Intentar sincronizar con el servidor en segundo plano
+                setTimeout(() => {
+                    cargarDatos(true);
+                }, 100);
+                
+                // 3. Iniciar sistema inteligente de sincronización
+                iniciarSyncInteligente();
+                
+                // 4. Iniciar polling de notificaciones (cada 30 segundos)
                 iniciarPollingNotificaciones();
                 
-                // Auto-refresh cada 30 segundos
-                syncInterval = setInterval(async () => {
-                    try {
-                        await cargarDatos();
-                        renderMenu();
-                        updateOrderSummary();
-                    } catch (e) {
-                        console.error('Error en sync:', e);
-                        // Intentar reconectar
-                        actualizarEstadoSync('syncing');
-                        setTimeout(async () => {
-                            try {
-                                await cargarDatos(true);
-                            } catch (retryError) {
-                                console.error('Error en reintento:', retryError);
-                            }
-                        }, 5000);
-                    }
-                }, 30000);
+                // 5. Procesar pedidos pendientes
+                if (pendingOrders.length > 0) {
+                    console.log(`📤 ${pendingOrders.length} pedido(s) pendiente(s) de envío`);
+                    programarReintentosPendientes();
+                }
+                
             } catch (error) {
                 console.error('Error inicializando app:', error);
-                showToast('Error al cargar. Verifica tu conexión.', 'error');
+                
+                // Si no hay caché, mostrar error
+                if (!sistemaData) {
+                    showToast('Error al cargar. Verifica tu conexión.', 'error');
+                }
+                
                 actualizarEstadoSync('offline');
             } finally {
                 hideLoading();
             }
         }
 
+        // ==========================================
+        // SISTEMA DE SINCRONIZACIÓN CON ETAG Y BACKOFF
+        // ==========================================
         async function cargarDatos(force = false) {
             if (isLoading && !force) return;
             isLoading = true;
             actualizarEstadoSync('syncing');
             
             try {
+                const headers = {
+                    'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+                    'X-Bin-Meta': 'false'
+                };
+                
+                // Solo enviar If-None-Match si tenemos un ETag y no es forced
+                if (lastETag && !force) {
+                    headers['If-None-Match'] = lastETag;
+                }
+                
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
                     method: 'GET',
-                    headers: {
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
-                        'X-Bin-Meta': 'false'
-                    }
+                    headers: headers
                 });
+                
+                // 304 = No hay cambios, usar caché local
+                if (response.status === 304) {
+                    console.log('✅ Sin cambios en el servidor, usando caché local');
+                    actualizarEstadoSync('online');
+                    
+                    // Resetear contadores
+                    consecutiveFailures = 0;
+                    syncBackoffDelay = 2000;
+                    
+                    isLoading = false;
+                    return;
+                }
                 
                 if (!response.ok) {
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
                 
+                // Obtener nuevo ETag
+                const newETag = response.headers.get('ETag');
+                if (newETag) {
+                    lastETag = newETag;
+                    localStorage.setItem('sakiLastETag', newETag);
+                }
+                
                 const data = await response.json();
                 
-                // Validar que la estructura de datos sea correcta
-                if (!data || typeof data !== 'object') {
-                    throw new Error('Datos inválidos recibidos');
-                }
-                
-                // Asegurar que las estructuras existan
-                if (!data.menu) data.menu = [];
-                if (!data.inventario) data.inventario = {};
-                if (!data.pedidos) data.pedidos = [];
-                if (!data.config) data.config = { tasaCambio: 400 };
+                // Guardar en caché local
+                localStorage.setItem('sakiMenuCache', JSON.stringify(data));
+                localStorage.setItem('sakiCacheTimestamp', Date.now().toString());
                 
                 sistemaData = data;
-                
                 sincronizarMenuLocal();
+                renderMenu();
+                renderSidebar();
+                
                 actualizarEstadoSync('online');
-                syncRetryCount = 0;
+                
+                // Resetear contadores
+                consecutiveFailures = 0;
+                syncBackoffDelay = 2000;
+                
+                console.log('✅ Datos sincronizados con el servidor');
                 
             } catch (error) {
-                console.error('Error cargando datos:', error);
+                console.error('❌ Error cargando datos:', error);
+                
+                consecutiveFailures++;
+                
+                // Calcular backoff exponencial (máx 2 minutos)
+                syncBackoffDelay = Math.min(
+                    2000 * Math.pow(2, consecutiveFailures - 1),
+                    120000
+                );
+                
                 actualizarEstadoSync('offline');
                 
-                // Si hay datos en caché, usarlos
+                // Si no hay datos en memoria pero hay caché, usarlo
                 if (!sistemaData) {
-                    sistemaData = { 
-                        menu: [], 
-                        inventario: {}, 
-                        pedidos: [], 
-                        config: { tasaCambio: 400 } 
-                    };
+                    const cachedData = localStorage.getItem('sakiMenuCache');
+                    if (cachedData) {
+                        sistemaData = JSON.parse(cachedData);
+                        sincronizarMenuLocal();
+                        renderMenu();
+                        renderSidebar();
+                    }
                 }
                 
-                // Reintentar después de un delay
-                syncRetryCount++;
-                if (syncRetryCount < 3) {
-                    setTimeout(() => cargarDatos(true), 5000);
-                }
             } finally {
                 isLoading = false;
             }
@@ -2404,22 +2462,340 @@
         }
 
         // ==========================================
+        // POLLING INTELIGENTE CON PAGE VISIBILITY
+        // ==========================================
+        function iniciarSyncInteligente() {
+            // Escuchar cambios de visibilidad de la pestaña
+            document.addEventListener('visibilitychange', () => {
+                isPageActive = !document.hidden;
+                
+                if (isPageActive) {
+                    // Al volver a la pestaña, sincronizar inmediatamente
+                    console.log('👁️ Pestaña activa, sincronizando...');
+                    cargarDatos(true);
+                    programarSiguienteSync();
+                } else {
+                    // Pestaña inactiva, cancelar próximo sync
+                    console.log('💤 Pestaña inactiva, pausando sincronización');
+                    if (syncTimeoutId) {
+                        clearTimeout(syncTimeoutId);
+                        syncTimeoutId = null;
+                    }
+                }
+            });
+            
+            // Escuchar cambios de conectividad
+            window.addEventListener('online', () => {
+                console.log('🌐 Conexión restablecida');
+                cargarDatos(true);
+                programarReintentosPendientes();
+            });
+            
+            window.addEventListener('offline', () => {
+                console.log('📴 Sin conexión');
+                actualizarEstadoSync('offline');
+            });
+            
+            // Programar el primer sync
+            programarSiguienteSync();
+        }
+
+        function programarSiguienteSync() {
+            if (!isPageActive) return;
+            
+            if (syncTimeoutId) {
+                clearTimeout(syncTimeoutId);
+            }
+            
+            // Determinar intervalo basado en estado de conexión
+            let intervalo;
+            
+            if (!navigator.onLine) {
+                intervalo = 60000; // 1 minuto esperando conexión
+            } else if (consecutiveFailures > 0) {
+                intervalo = syncBackoffDelay; // Backoff exponencial
+            } else {
+                intervalo = 120000; // 2 minutos en modo normal
+            }
+            
+            syncTimeoutId = setTimeout(async () => {
+                await cargarDatos();
+                programarSiguienteSync();
+            }, intervalo);
+        }
+
+        // ==========================================
+        // SISTEMA DE COLA LOCAL DE PEDIDOS
+        // ==========================================
+        async function guardarPedido(pedido) {
+            try {
+                showLoading();
+                
+                // Agregar a cola local inmediatamente
+                pedido.localId = Date.now() + '-' + Math.random().toString(36).substring(2, 8);
+                pedido.syncStatus = 'pending';
+                pedido.syncAttempts = 0;
+                pedido.fechaCreacion = new Date().toISOString();
+                
+                pendingOrders.push(pedido);
+                localStorage.setItem('sakiPendingOrders', JSON.stringify(pendingOrders));
+                
+                // Intentar enviar inmediatamente si hay conexión
+                if (navigator.onLine) {
+                    const success = await enviarPedidoConRetry(pedido);
+                    
+                    if (success) {
+                        // Remover de cola local
+                        pendingOrders = pendingOrders.filter(p => p.localId !== pedido.localId);
+                        localStorage.setItem('sakiPendingOrders', JSON.stringify(pendingOrders));
+                        
+                        hideLoading();
+                        
+                        // Agregar a pedidos del cliente
+                        pedidosCliente.push({
+                            id: pedido.id,
+                            estado: 'pendiente',
+                            timestamp: pedido.timestamp
+                        });
+                        
+                        // Limpiar formulario según tipo
+                        if (pedido.tipo === 'delivery') {
+                            limpiarFormularioDelivery();
+                        } else if (pedido.tipo === 'reserva') {
+                            limpiarFormularioReserva();
+                        } else {
+                            limpiarPedido();
+                        }
+                        
+                        // Mostrar mensaje de éxito
+                        document.getElementById('thankYouMessage').classList.add('show');
+                        if (pedido.tipo === 'mesa') {
+                            document.getElementById('restaurantOrderSection').classList.remove('show');
+                        } else {
+                            document.getElementById('onlineOrderOptions').classList.remove('show');
+                        }
+                        
+                        // Iniciar timer
+                        iniciarTimerPago();
+                        
+                        // Notificación
+                        agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 
+                            pedido.tipo === 'delivery' ? 'Tu pedido de delivery está pendiente de confirmación.' : 
+                            pedido.tipo === 'reserva' ? 'Tu reserva está pendiente de confirmación.' : 
+                            'Tu pedido está pendiente de confirmación por el cajero.');
+                        
+                        showToast('¡Pedido enviado exitosamente!', 'success');
+                        
+                        return true;
+                    }
+                }
+                
+                // Si no se pudo enviar, queda en cola
+                hideLoading();
+                
+                // Mostrar mensaje al usuario
+                showToast('Tu pedido se enviará automáticamente cuando haya conexión', 'info');
+                
+                // Programar reintentos
+                programarReintentosPendientes();
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Error en cola de pedidos:', error);
+                hideLoading();
+                showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
+                return false;
+            }
+        }
+
+        async function enviarPedidoConRetry(pedido, attempt = 1) {
+            try {
+                // Primero obtener el bin actual
+                const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+                
+                if (!getResponse.ok) throw new Error('No se pudo obtener el bin');
+                
+                const currentData = await getResponse.json();
+                
+                // Asegurar que existe el array de pedidos
+                if (!currentData.pedidos) currentData.pedidos = [];
+                
+                // Agregar NUEVO pedido, no reemplazar todo
+                currentData.pedidos.push(pedido);
+                
+                // Actualizar solo el array de pedidos (cambio mínimo)
+                const putResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(currentData)
+                });
+                
+                if (!putResponse.ok) throw new Error('Error al actualizar');
+                
+                console.log('✅ Pedido enviado exitosamente:', pedido.id);
+                
+                // Actualizar ETag después de PUT
+                const newETag = putResponse.headers.get('ETag');
+                if (newETag) {
+                    lastETag = newETag;
+                    localStorage.setItem('sakiLastETag', newETag);
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error(`❌ Intento ${attempt} fallido:`, error);
+                
+                if (attempt < 3) {
+                    // Esperar 2^attempt segundos antes de reintentar
+                    await new Promise(resolve => setTimeout(resolve, 2000 * Math.pow(2, attempt)));
+                    return enviarPedidoConRetry(pedido, attempt + 1);
+                }
+                
+                return false;
+            }
+        }
+
+        function programarReintentosPendientes() {
+            // Intentar enviar pedidos pendientes cada 2 minutos
+            if (syncIntervalClean) clearInterval(syncIntervalClean);
+            
+            syncIntervalClean = setInterval(async () => {
+                if (navigator.onLine && pendingOrders.length > 0) {
+                    console.log(`🔄 Reintentando ${pendingOrders.length} pedido(s) pendiente(s)...`);
+                    
+                    for (const pedido of [...pendingOrders]) {
+                        if (pedido.syncStatus === 'pending' && pedido.syncAttempts < 5) {
+                            pedido.syncAttempts++;
+                            const success = await enviarPedidoConRetry(pedido);
+                            
+                            if (success) {
+                                pendingOrders = pendingOrders.filter(p => p.localId !== pedido.localId);
+                                pedido.syncStatus = 'synced';
+                                
+                                // Agregar a pedidos del cliente
+                                pedidosCliente.push({
+                                    id: pedido.id,
+                                    estado: 'pendiente',
+                                    timestamp: pedido.timestamp
+                                });
+                                
+                                // Notificación
+                                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 
+                                    'Tu pedido pendiente ha sido enviado exitosamente.');
+                            }
+                        }
+                    }
+                    
+                    localStorage.setItem('sakiPendingOrders', JSON.stringify(pendingOrders));
+                    actualizarEstadoSync(pendingOrders.length > 0 ? 'offline' : 'online');
+                }
+            }, 120000); // Cada 2 minutos
+        }
+
+        function limpiarFormularioDelivery() {
+            const direccion = document.getElementById('deliveryDireccion');
+            if (direccion) direccion.value = '';
+            
+            const telefono = document.getElementById('deliveryTelefono');
+            if (telefono) telefono.value = '';
+            
+            const refContainer = document.getElementById('deliveryReferenceContainer');
+            if (refContainer) {
+                refContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
+            }
+            
+            const comprobante = document.getElementById('deliveryComprobante');
+            if (comprobante) comprobante.value = '';
+            
+            const fileLabel = document.getElementById('deliveryFileLabel');
+            if (fileLabel) {
+                fileLabel.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+                    Haz clic para subir el comprobante de pago
+                `;
+                fileLabel.classList.remove('has-file');
+            }
+        }
+
+        function limpiarFormularioReserva() {
+            const nombre = document.getElementById('reservaNombre');
+            if (nombre) nombre.value = '';
+            
+            const fecha = document.getElementById('reservaFecha');
+            if (fecha) fecha.value = '';
+            
+            const refContainer = document.getElementById('reservaReferenceContainer');
+            if (refContainer) {
+                refContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
+            }
+            
+            const comprobante = document.getElementById('reservaComprobante');
+            if (comprobante) comprobante.value = '';
+            
+            const fileLabel = document.getElementById('reservaFileLabel');
+            if (fileLabel) {
+                fileLabel.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+                    Haz clic para subir el comprobante de pago
+                `;
+                fileLabel.classList.remove('has-file');
+            }
+            
+            selectedDate = null;
+        }
+
+        function iniciarTimerPago() {
+            let minutes = 20;
+            let seconds = 0;
+            
+            if (paymentTimer) clearInterval(paymentTimer);
+            
+            paymentTimer = setInterval(() => {
+                if (seconds === 0) {
+                    if (minutes === 0) {
+                        clearInterval(paymentTimer);
+                        return;
+                    }
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    seconds--;
+                }
+                
+                const timerDisplay = document.getElementById('paymentTimer');
+                if (timerDisplay) {
+                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // ==========================================
         // SISTEMA DE NOTIFICACIONES
         // ==========================================
         function iniciarPollingNotificaciones() {
             // Verificar inmediatamente
             verificarNotificaciones();
             
-            // Y cada 10 segundos
+            // Y cada 30 segundos (menos frecuente que el menú)
             if (notificacionesInterval) clearInterval(notificacionesInterval);
-            notificacionesInterval = setInterval(verificarNotificaciones, 10000);
+            notificacionesInterval = setInterval(verificarNotificaciones, 30000);
         }
 
         async function verificarNotificaciones() {
             if (!sessionId || pedidosCliente.length === 0) return;
             
             try {
-                await cargarDatos(true);
+                // Usar datos actuales si están disponibles
+                if (!sistemaData) return;
                 
                 let hayCambios = false;
                 
@@ -2430,7 +2806,6 @@
                         // Actualizar estado local
                         pedidoCliente.estado = pedidoActualizado.estado;
                         pedidoCliente.razonRechazo = pedidoActualizado.razonRechazo;
-                        pedidoCliente.metodoPago = pedidoActualizado.metodoPago;
                         
                         // Mostrar notificación
                         if (pedidoActualizado.estado === 'cobrado') {
@@ -2467,7 +2842,7 @@
 
         function agregarNotificacion(pedidoId, tipo, titulo, mensaje) {
             const notificacion = {
-                id: Date.now(),
+                id: Date.now() + Math.random(),
                 pedidoId: pedidoId,
                 tipo: tipo,
                 titulo: titulo,
@@ -2479,6 +2854,12 @@
             // Guardar en localStorage
             let notificaciones = JSON.parse(localStorage.getItem('sakiNotificaciones') || '[]');
             notificaciones.unshift(notificacion);
+            
+            // Limitar a 50 notificaciones
+            if (notificaciones.length > 50) {
+                notificaciones = notificaciones.slice(0, 50);
+            }
+            
             localStorage.setItem('sakiNotificaciones', JSON.stringify(notificaciones));
             
             // Actualizar UI
@@ -2497,7 +2878,7 @@
             const badgeElement = document.getElementById('notificationBadge');
             
             if (noLeidas > 0) {
-                badge.textContent = noLeidas;
+                badge.textContent = noLeidas > 9 ? '9+' : noLeidas;
                 badge.style.display = 'flex';
                 badgeElement.classList.add('has-unread');
             } else {
@@ -2521,9 +2902,9 @@
             }
             
             container.innerHTML = notificaciones.map(notif => `
-                <div class="notification-item ${notif.tipo} ${notif.leida ? '' : 'unread'}" 
-                     style="${notif.leida ? 'opacity: 0.7;' : 'font-weight: 600;'}"
-                     onclick="marcarNotificacionLeida(${notif.id})">
+                <div class="notification-item ${notif.tipo}" 
+                     onclick="marcarNotificacionLeida(${notif.id})"
+                     style="${notif.leida ? 'opacity: 0.7;' : 'font-weight: 600; border-left-width: 6px;'}">
                     <div>
                         <div class="notification-status ${notif.tipo}">
                             <i class="fas fa-${notif.tipo === 'approved' ? 'check-circle' : notif.tipo === 'rejected' ? 'times-circle' : 'clock'}"></i>
@@ -2531,7 +2912,12 @@
                         </div>
                         <div style="font-size: 0.875rem; margin-top: 4px;">${notif.mensaje}</div>
                         <div class="notification-time">
-                            ${new Date(notif.timestamp).toLocaleString()}
+                            ${new Date(notif.timestamp).toLocaleString('es-VE', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
                         </div>
                     </div>
                 </div>
@@ -2637,7 +3023,6 @@
             currentSubcategory = null;
             closeSidebar();
             renderMenu();
-            updateActiveCategory();
         }
 
         function selectSubcategory(catId, subId) {
@@ -2645,12 +3030,6 @@
             currentSubcategory = subId;
             closeSidebar();
             renderMenu();
-        }
-
-        function updateActiveCategory() {
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
         }
 
         // ==========================================
@@ -2811,7 +3190,9 @@
             });
         }
 
-        // Verificar si hay ingredientes principales disponibles
+        // ==========================================
+        // INTERACCIÓN CON INGREDIENTES
+        // ==========================================
         function verificarIngredientesPrincipales(item) {
             if (!item.ingredients || Object.keys(item.ingredients).length === 0) {
                 return { disponible: true, faltantes: [] };
@@ -2821,7 +3202,7 @@
             let disponible = true;
             
             Object.entries(item.ingredients).forEach(([key, ingData]) => {
-                if (!ingData.obligatorio) {
+                if (ingData.obligatorio) {
                     const stockIng = sistemaData?.inventario?.[key]?.stock || 0;
                     const reservado = calcularReservado(key);
                     const stockReal = stockIng - reservado;
@@ -2836,7 +3217,6 @@
             return { disponible, faltantes };
         }
 
-        // Calcular cuánto de un ingrediente está reservado en el pedido actual
         function calcularReservado(ingredienteId) {
             let total = 0;
             menuItems.forEach(item => {
@@ -2902,15 +3282,11 @@
             updateConfirmButton(itemId);
         }
 
-        // ==========================================
-        // INTERACCIÓN
-        // ==========================================
         function selectComplete(itemId) {
             const item = menuItems.find(i => i.id === itemId);
             if (!item) return;
             item.selectionType = "completo";
             item.currentSelections.clear();
-            
             generateIngredientOptions(itemId);
         }
 
@@ -2981,15 +3357,6 @@
                         item.selectionType = "completo";
                         item.currentSelections.clear();
                         generateIngredientOptions(itemId);
-                    } else if (change < 0 && item.instances.length > 0) {
-                        const instanciaPendiente = item.instances.findIndex(inst => !inst.confirmada);
-                        if (instanciaPendiente >= 0) {
-                            item.instances.splice(instanciaPendiente, 1);
-                            item.totalOrdered = (item.totalOrdered || 0) - 1;
-                        } else if (item.instances.length > 0) {
-                            item.instances.pop();
-                            item.totalOrdered = (item.totalOrdered || 0) - 1;
-                        }
                     }
                 } else {
                     ingredientsSection.classList.add('hidden');
@@ -3193,7 +3560,7 @@
                             instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + 
                             ')';
                         if (instance.descuentoPorIngredientes > 0) {
-                            modifiers += `<br><small style="color: var(--success);">Descuento: -Bs. ${instance.descuentoPorIngredientes.toFixed(2)}</small>`;
+                            modifiers += `<br><small style="color: var(--success);">Descuento: -Bs. ${instance.descuentoPorIngredientes.toFixed(2).replace('.', ',')}</small>`;
                         }
                     } else {
                         modifiers = 'Completo';
@@ -3238,8 +3605,11 @@
                 onlineOptions.classList.add('show');
             }
             
-            document.getElementById('deliveryMonto').textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
-            document.getElementById('reservaMonto').textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
+            const deliveryMonto = document.getElementById('deliveryMonto');
+            if (deliveryMonto) deliveryMonto.textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
+            
+            const reservaMonto = document.getElementById('reservaMonto');
+            if (reservaMonto) reservaMonto.textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
         }
 
         function deleteItem(itemId, instanceId) {
@@ -3255,6 +3625,18 @@
             updateOrderSummary();
             renderMenu();
             showToast('Platillo eliminado del pedido', 'success');
+        }
+
+        function limpiarPedido() {
+            menuItems.forEach(item => {
+                if (item.instances) item.instances = [];
+                item.quantity = 0;
+                if (item.currentSelections) item.currentSelections.clear();
+                item.selectionType = "completo";
+                item.totalOrdered = 0;
+            });
+            updateOrderSummary();
+            renderMenu();
         }
 
         // ==========================================
@@ -3280,7 +3662,7 @@
                         if (instance.removedIngredients && instance.removedIngredients.length > 0) {
                             modifiers = ' (sin: ' + instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + ')';
                             if (instance.descuentoPorIngredientes > 0) {
-                                modifiers += `<br><small style="color: var(--success);">Descuento por ingredientes: -Bs. ${instance.descuentoPorIngredientes.toFixed(2)}</small>`;
+                                modifiers += `<br><small style="color: var(--success);">Descuento: -Bs. ${instance.descuentoPorIngredientes.toFixed(2).replace('.', ',')}</small>`;
                             }
                         } else {
                             modifiers = ' (completo)';
@@ -3309,51 +3691,13 @@
 
         async function finalConfirmOrder() {
             closeModal('confirmationModal');
-            showLoading();
             
             const pedido = crearPedidoBase();
             pedido.tipo = 'mesa';
             pedido.mesa = tableNumber;
             pedido.clienteNombre = document.getElementById('customerName').value || null;
             
-            const exito = await guardarPedido(pedido);
-            
-            hideLoading();
-            
-            if (exito) {
-                pedidosCliente.push({
-                    id: pedido.id,
-                    estado: 'pendiente',
-                    timestamp: pedido.timestamp
-                });
-                
-                document.getElementById('thankYouMessage').classList.add('show');
-                document.getElementById('restaurantOrderSection').classList.remove('show');
-                
-                let minutes = 20;
-                let seconds = 0;
-                if (paymentTimer) clearInterval(paymentTimer);
-                paymentTimer = setInterval(() => {
-                    if (seconds === 0) {
-                        if (minutes === 0) {
-                            clearInterval(paymentTimer);
-                            return;
-                        }
-                        minutes--;
-                        seconds = 59;
-                    } else {
-                        seconds--;
-                    }
-                    document.getElementById('paymentTimer').textContent = 
-                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }, 1000);
-                
-                limpiarPedido();
-                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido está pendiente de confirmación por el cajero.');
-                showToast('¡Pedido enviado exitosamente!', 'success');
-            } else {
-                showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
-            }
+            await guardarPedido(pedido);
         }
 
         // ==========================================
@@ -3470,52 +3814,7 @@
             }
             
             closeModal('deliveryModal');
-            showLoading();
-            
-            const exito = await guardarPedido(pedido);
-            
-            hideLoading();
-            
-            if (exito) {
-                const deliveryDireccion = document.getElementById('deliveryDireccion');
-                if (deliveryDireccion) deliveryDireccion.value = '';
-                
-                const deliveryTelefono = document.getElementById('deliveryTelefono');
-                if (deliveryTelefono) deliveryTelefono.value = '';
-                
-                const deliveryRefContainer = document.getElementById('deliveryReferenceContainer');
-                if (deliveryRefContainer) {
-                    deliveryRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
-                }
-                
-                const deliveryComprobante = document.getElementById('deliveryComprobante');
-                if (deliveryComprobante) deliveryComprobante.value = '';
-                
-                const deliveryFileLabel = document.getElementById('deliveryFileLabel');
-                if (deliveryFileLabel) {
-                    deliveryFileLabel.innerHTML = `
-                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
-                        Haz clic para subir el comprobante de pago
-                    `;
-                    deliveryFileLabel.classList.remove('has-file');
-                }
-                
-                pedidosCliente.push({
-                    id: pedido.id,
-                    estado: 'pendiente',
-                    timestamp: pedido.timestamp
-                });
-                
-                limpiarPedido();
-                
-                document.getElementById('thankYouMessage').classList.add('show');
-                document.getElementById('onlineOrderOptions').classList.remove('show');
-                
-                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
-                showToast('¡Pedido de delivery enviado exitosamente!', 'success');
-            } else {
-                showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
-            }
+            await guardarPedido(pedido);
         }
 
         // ==========================================
@@ -3574,53 +3873,7 @@
             }
             
             closeModal('reservaModal');
-            showLoading();
-            
-            const exito = await guardarPedido(pedido);
-            
-            hideLoading();
-            
-            if (exito) {
-                const reservaNombre = document.getElementById('reservaNombre');
-                if (reservaNombre) reservaNombre.value = '';
-                
-                const reservaFecha = document.getElementById('reservaFecha');
-                if (reservaFecha) reservaFecha.value = '';
-                
-                const reservaRefContainer = document.getElementById('reservaReferenceContainer');
-                if (reservaRefContainer) {
-                    reservaRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
-                }
-                
-                const reservaComprobante = document.getElementById('reservaComprobante');
-                if (reservaComprobante) reservaComprobante.value = '';
-                
-                const reservaFileLabel = document.getElementById('reservaFileLabel');
-                if (reservaFileLabel) {
-                    reservaFileLabel.innerHTML = `
-                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
-                        Haz clic para subir el comprobante de pago
-                    `;
-                    reservaFileLabel.classList.remove('has-file');
-                }
-                selectedDate = null;
-                
-                pedidosCliente.push({
-                    id: pedido.id,
-                    estado: 'pendiente',
-                    timestamp: pedido.timestamp
-                });
-                
-                limpiarPedido();
-                
-                document.getElementById('thankYouMessage').classList.add('show');
-                document.getElementById('onlineOrderOptions').classList.remove('show');
-                
-                agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
-                showToast('¡Reserva enviada exitosamente!', 'success');
-            } else {
-                showToast('Error al procesar la reserva. Intenta nuevamente.', 'error');
-            }
+            await guardarPedido(pedido);
         }
 
         // ==========================================
@@ -3628,15 +3881,14 @@
         // ==========================================
         function crearPedidoBase() {
             const pedido = {
-                id: 'PED-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
+                id: 'PED-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
                 timestamp: new Date().toISOString(),
                 estado: 'pendiente',
                 items: [],
                 total: 0,
                 metodoPago: 'pago_movil',
-                cajero: null,
-                tiempoPreparacion: null,
-                origen: 'cliente_web'
+                origen: 'cliente_web',
+                sessionId: sessionId
             };
             
             const tasaEfectiva = obtenerTasaEfectiva();
@@ -3662,61 +3914,6 @@
             return pedido;
         }
 
-        async function guardarPedido(pedido) {
-            try {
-                if (!sistemaData) {
-                    sistemaData = { 
-                        menu: [], 
-                        inventario: {}, 
-                        pedidos: [], 
-                        config: { tasaCambio: 400 } 
-                    };
-                }
-                if (!sistemaData.pedidos) sistemaData.pedidos = [];
-                
-                sistemaData.pedidos.push(pedido);
-                
-                // Usar la URL correcta para PUT
-                const url = `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`;
-                
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
-                        'X-Bin-Versioning': 'false'
-                    },
-                    body: JSON.stringify(sistemaData)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
-                }
-                
-                const result = await response.json();
-                console.log('Pedido guardado exitosamente:', result);
-                
-                return true;
-            } catch (error) {
-                console.error('Error detallado al guardar pedido:', error);
-                showToast('Error de conexión. Verifica tu internet y reintenta.', 'error');
-                return false;
-            }
-        }
-
-        function limpiarPedido() {
-            menuItems.forEach(item => {
-                if (item.instances) item.instances = [];
-                item.quantity = 0;
-                if (item.currentSelections) item.currentSelections.clear();
-                item.selectionType = "completo";
-                item.totalOrdered = 0;
-            });
-            updateOrderSummary();
-            renderMenu();
-        }
-
         function formatearPrecioBs(dolares) {
             const precioBs = (dolares || 0) * obtenerTasaEfectiva();
             return `Bs. ${precioBs.toFixed(2).replace('.', ',')}`;
@@ -3733,25 +3930,36 @@
             const statusEl = document.getElementById('syncStatus');
             if (!statusEl) return;
             
+            // Detectar estado real de conexión
+            let estadoFinal = estado;
+            
+            if (!navigator.onLine) {
+                estadoFinal = 'offline';
+            }
+            
             const iconEl = statusEl.querySelector('i');
             const textEl = statusEl.querySelector('span');
             
-            statusEl.className = `sync-status ${estado}`;
+            statusEl.className = `sync-status ${estadoFinal}`;
             
-            switch(estado) {
+            switch(estadoFinal) {
                 case 'online':
-                    if (iconEl) iconEl.className = 'fas fa-check-circle';
-                    if (textEl) textEl.textContent = 'Sincronizado';
+                    iconEl.className = 'fas fa-check-circle';
+                    textEl.textContent = 'Conectado';
                     break;
                 case 'syncing':
-                    if (iconEl) iconEl.className = 'fas fa-sync-alt fa-spin';
-                    if (textEl) textEl.textContent = 'Sincronizando...';
+                    iconEl.className = 'fas fa-sync-alt fa-spin';
+                    textEl.textContent = 'Sincronizando...';
                     break;
                 case 'offline':
-                    if (iconEl) iconEl.className = 'fas fa-exclamation-triangle';
-                    if (textEl) textEl.textContent = 'Modo offline';
+                    iconEl.className = 'fas fa-exclamation-triangle';
+                    textEl.textContent = pendingOrders.length > 0 
+                        ? `${pendingOrders.length} pedido(s) pendiente(s)` 
+                        : 'Sin conexión';
                     break;
             }
+            
+            return estadoFinal;
         }
 
         function showLoading() {
@@ -3782,9 +3990,10 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            if (syncInterval) clearInterval(syncInterval);
+            if (syncTimeoutId) clearTimeout(syncTimeoutId);
             if (paymentTimer) clearInterval(paymentTimer);
             if (notificacionesInterval) clearInterval(notificacionesInterval);
+            if (syncIntervalClean) clearInterval(syncIntervalClean);
         });
     </script>
 </body>
