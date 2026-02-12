@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍣 Panel del Cajero - Saki Sushi</title>
+    <title>🧾 Panel del Cajero - Saki Sushi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -493,6 +493,47 @@
             .payment-mix-input { width: 100%; }
             .keyboard-hint { flex-direction: column; gap: 5px; text-align: center; }
         }
+
+        /* Detalles de estadísticas */
+        .detalle-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .detalle-stat-item:last-child {
+            border-bottom: none;
+        }
+        .detalle-stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .detalle-stat-id {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        .detalle-stat-meta {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .detalle-stat-total {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .detalle-stat-metodo {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #E8F5E9;
+            color: var(--success);
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -558,7 +599,7 @@
         </div>
     </div>
 
-    <!-- Modal de Detalle de Estadísticas -->
+    <!-- Modal de Detalle de Estadísticas - Mejorado con datos coherentes -->
     <div class="modal-overlay stats-detail-modal" id="statsDetailModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -579,32 +620,24 @@
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header"><h2><i class="fas fa-cash-register"></i> Procesar Cobro - Pago Mixto</h2><button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
-                <!-- Resumen del pedido con descuentos por ingredientes -->
                 <div id="cobroSummary" style="margin-bottom: 20px;"></div>
                 
-                <!-- Total a pagar -->
                 <div class="payment-mix-total">
                     <span class="payment-mix-total-label">TOTAL A PAGAR:</span>
                     <span class="payment-mix-total-value" id="totalPagarDisplay">Bs. 0.00</span>
                 </div>
                 
-                <!-- Monto restante por pagar -->
                 <div class="payment-mix-remaining" id="remainingDisplay">
                     <span>Pendiente por pagar:</span>
                     <span style="font-size: 1.5rem; font-weight: 700;" id="remainingAmount">Bs. 0.00</span>
                 </div>
                 
-                <!-- Lista de pagos -->
-                <div class="payment-mix-container" id="paymentMixContainer">
-                    <!-- Los pagos se agregan dinámicamente -->
-                </div>
+                <div class="payment-mix-container" id="paymentMixContainer"></div>
                 
-                <!-- Botón para agregar método de pago -->
                 <button class="payment-mix-add" id="btnAddPayment" onclick="agregarMetodoPago()">
                     <i class="fas fa-plus-circle"></i> Agregar Método de Pago
                 </button>
                 
-                <!-- Resumen de pagos -->
                 <div class="payment-mix-summary" id="paymentSummary" style="display: none;">
                     <div class="payment-mix-summary-item">
                         <span>Total recibido:</span>
@@ -620,7 +653,6 @@
                     </div>
                 </div>
                 
-                <!-- Opciones especiales para faltante -->
                 <div class="special-options" id="specialOptions" style="display: none;">
                     <h3><i class="fas fa-exclamation-circle"></i> Opciones de Diferencia</h3>
                     <div class="special-option"><input type="radio" name="specialOption" id="optNormal" value="normal" checked onchange="toggleSpecialInput()"><label for="optNormal">Cobro exacto</label></div>
@@ -673,7 +705,7 @@
             <div class="section active" id="section-pedidos">
                 <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Pedidos del Día</h2>
                 
-                <!-- Estadísticas Interactivas -->
+                <!-- Estadísticas Interactivas - AHORA CON ENLACES COHERENTES -->
                 <div class="stats-grid">
                     <div class="stat-card" onclick="verDetalleEstadistica('pendientes')">
                         <div class="stat-icon pendientes"><i class="fas fa-fire"></i></div>
@@ -767,7 +799,6 @@
         let operationQueue = [];
         let processingTimeout = null;
         
-        // Función para ejecutar operaciones secuencialmente
         async function executeNextOperation() {
             if (isProcessing || operationQueue.length === 0) return;
             
@@ -950,7 +981,7 @@
         }
 
         // ==========================================
-        // ESTADÍSTICAS INTERACTIVAS (NUEVO)
+        // ESTADÍSTICAS INTERACTIVAS - CORREGIDO CON DATOS COHERENTES
         // ==========================================
         function verDetalleEstadistica(tipo) {
             if (!sistemaData || !sistemaData.pedidos) return;
@@ -963,6 +994,7 @@
             let icono = '';
             
             switch(tipo) {
+                // ========== PEDIDOS EN PREPARACIÓN ==========
                 case 'pendientes':
                     titulo = 'Pedidos en Preparación';
                     icono = 'fa-fire';
@@ -990,20 +1022,17 @@
                             else if (p.estado === 'reserva_atendida') { estadoTexto = '✅ Cliente Atendido'; estadoColor = '#ff5722'; }
                             
                             contenido += `
-                                <div class="stats-detail-item">
-                                    <div>
-                                        <div class="pedido-id">${p.id}</div>
-                                        <div style="display: flex; gap: 10px; margin-top: 5px;">
-                                            <span style="color: ${estadoColor}; font-size: 0.85rem;">${estadoTexto}</span>
-                                            ${p.mesa ? `<span style="color: var(--info); font-size: 0.85rem;"><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>` : ''}
-                                            ${p.telefono ? `<span style="color: var(--success); font-size: 0.85rem;"><i class="fas fa-phone"></i> ${p.telefono}</span>` : ''}
+                                <div class="detalle-stat-item">
+                                    <div class="detalle-stat-info">
+                                        <div class="detalle-stat-id">${p.id}</div>
+                                        <div class="detalle-stat-meta">
+                                            <span style="color: ${estadoColor};">${estadoTexto}</span>
+                                            ${p.mesa ? `<span style="color: var(--info);"><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>` : ''}
+                                            ${p.telefono ? `<span style="color: var(--success);"><i class="fas fa-phone"></i> ${p.telefono}</span>` : ''}
                                         </div>
-                                        <div class="pedido-hora" style="margin-top: 5px;">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                        <div style="font-size: 0.75rem; color: #999;">${new Date(p.timestamp).toLocaleTimeString()}</div>
                                     </div>
-                                    <div style="text-align: right;">
-                                        <div class="pedido-monto">Bs. ${(p.total || 0).toFixed(2)}</div>
-                                        <div style="font-size: 0.8rem; color: #999;">${p.items?.length || 0} items</div>
-                                    </div>
+                                    <div class="detalle-stat-total">Bs. ${(p.total || 0).toFixed(2)}</div>
                                 </div>
                             `;
                         });
@@ -1011,11 +1040,20 @@
                     }
                     break;
                     
+                // ========== PEDIDOS COBRADOS HOY ==========
                 case 'cobrados':
                     titulo = 'Pedidos Cobrados Hoy';
                     icono = 'fa-check-circle';
                     
-                    const cobrados = pedidosHoy.filter(p => p.estado === 'cobrado' || p.estado === 'en_cocina' || p.estado === 'en_camino' || p.estado === 'reserva_pendiente' || p.estado === 'entregado' || p.estado === 'enviado' || p.estado === 'reserva_completada');
+                    const cobrados = pedidosHoy.filter(p => 
+                        p.estado === 'cobrado' || 
+                        p.estado === 'en_cocina' || 
+                        p.estado === 'en_camino' || 
+                        p.estado === 'reserva_pendiente' || 
+                        p.estado === 'entregado' || 
+                        p.estado === 'enviado' || 
+                        p.estado === 'reserva_completada'
+                    );
                     
                     const totalCobrado = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
                     
@@ -1026,21 +1064,24 @@
                     } else {
                         contenido += '<div class="stats-detail-list">';
                         cobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
+                            let tipoPedido = '';
+                            let colorTipo = '';
+                            
+                            if (p.tipo === 'mesa') { tipoPedido = 'Mesa'; colorTipo = 'var(--info)'; }
+                            else if (p.tipo === 'delivery') { tipoPedido = 'Delivery'; colorTipo = 'var(--success)'; }
+                            else if (p.tipo === 'reserva') { tipoPedido = 'Reserva'; colorTipo = '#9c27b0'; }
+                            
                             contenido += `
-                                <div class="stats-detail-item">
-                                    <div>
-                                        <div class="pedido-id">${p.id}</div>
-                                        <div style="display: flex; gap: 10px; margin-top: 5px;">
-                                            ${p.mesa ? `<span style="color: var(--info);"><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>` : ''}
-                                            ${p.tipo === 'delivery' ? '<span style="color: var(--success);"><i class="fas fa-motorcycle"></i> Delivery</span>' : ''}
-                                            ${p.tipo === 'reserva' ? '<span style="color: #9c27b0;"><i class="fas fa-calendar-check"></i> Reserva</span>' : ''}
+                                <div class="detalle-stat-item">
+                                    <div class="detalle-stat-info">
+                                        <div class="detalle-stat-id">${p.id}</div>
+                                        <div class="detalle-stat-meta">
+                                            <span style="color: ${colorTipo};"><i class="fas fa-${p.tipo === 'mesa' ? 'chair' : p.tipo === 'delivery' ? 'motorcycle' : 'calendar-check'}"></i> ${tipoPedido}</span>
+                                            <span class="detalle-stat-metodo">${p.metodoPago || 'Pago Móvil'}</span>
                                         </div>
-                                        <div class="pedido-hora">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                        <div style="font-size: 0.75rem; color: #999;">${new Date(p.timestamp).toLocaleTimeString()}</div>
                                     </div>
-                                    <div style="text-align: right;">
-                                        <div class="pedido-monto">Bs. ${(p.total || 0).toFixed(2)}</div>
-                                        <div style="font-size: 0.8rem; color: #666;">${p.metodoPago || 'Pago Móvil'}</div>
-                                    </div>
+                                    <div class="detalle-stat-total">Bs. ${(p.total || 0).toFixed(2)}</div>
                                 </div>
                             `;
                         });
@@ -1048,12 +1089,19 @@
                     }
                     break;
                     
+                // ========== VENTAS TOTALES ==========
                 case 'ventas':
                     titulo = 'Ventas Totales';
                     icono = 'fa-dollar-sign';
                     
-                    const ventasDia = pedidosHoy.filter(p => p.estado !== 'pendiente' && p.estado !== 'rechazado');
+                    const ventasDia = pedidosHoy.filter(p => 
+                        p.estado !== 'pendiente' && 
+                        p.estado !== 'rechazado' && 
+                        p.estado !== 'cancelado_timeout'
+                    );
+                    
                     const totalVentas = ventasDia.reduce((sum, p) => sum + (p.total || 0), 0);
+                    const totalItemsVendidos = ventasDia.reduce((sum, p) => sum + (p.items?.length || 0), 0);
                     
                     let porEfectivo = 0, porPM = 0, porPV = 0;
                     ventasDia.forEach(p => {
@@ -1072,7 +1120,10 @@
                     });
                     
                     contenido = `
-                        <p style="color: #666; margin-bottom: 15px;">Ventas totales del día: <strong style="color: var(--primary); font-size: 1.5rem;">Bs. ${totalVentas.toFixed(2)}</strong></p>
+                        <p style="color: #666; margin-bottom: 15px;">
+                            Ventas totales del día: <strong style="color: var(--primary); font-size: 1.5rem;">Bs. ${totalVentas.toFixed(2)}</strong><br>
+                            <span style="font-size: 0.9rem;">${totalItemsVendidos} productos vendidos</span>
+                        </p>
                         
                         <div style="background: #f8f8f8; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                             <h4 style="margin-bottom: 15px; color: var(--secondary);"><i class="fas fa-chart-pie"></i> Desglose por método de pago:</h4>
@@ -1100,11 +1151,20 @@
                     `;
                     
                     ventasDia.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).forEach(p => {
+                        let estadoIcon = '';
+                        if (p.estado === 'cobrado') estadoIcon = '✅';
+                        else if (p.estado === 'en_cocina') estadoIcon = '👨‍🍳';
+                        else if (p.estado === 'en_camino') estadoIcon = '🛵';
+                        else if (p.estado === 'entregado') estadoIcon = '🍽️';
+                        
                         contenido += `
                             <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
                                 <div>
-                                    <div style="font-weight: 600;">${p.id}</div>
-                                    <div style="font-size: 0.8rem; color: #666;">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                    <div style="font-weight: 600;">${p.id} ${estadoIcon}</div>
+                                    <div style="font-size: 0.75rem; color: #666;">
+                                        ${new Date(p.timestamp).toLocaleTimeString()} 
+                                        ${p.mesa ? `• Mesa #${p.mesa}` : ''}
+                                    </div>
                                 </div>
                                 <div style="font-weight: 700; color: var(--primary);">Bs. ${(p.total || 0).toFixed(2)}</div>
                             </div>
@@ -1113,16 +1173,21 @@
                     contenido += '</div>';
                     break;
                     
+                // ========== PLATILLOS MÁS VENDIDOS ==========
                 case 'platillos':
                     titulo = 'Platillos Más Vendidos';
                     icono = 'fa-utensils';
                     
-                    const ventas = pedidosHoy.filter(p => p.estado !== 'pendiente' && p.estado !== 'rechazado');
+                    const ventasPlatillos = pedidosHoy.filter(p => 
+                        p.estado !== 'pendiente' && 
+                        p.estado !== 'rechazado' && 
+                        p.estado !== 'cancelado_timeout'
+                    );
                     
                     const conteoPlatillos = {};
                     let totalPlatillosVendidos = 0;
                     
-                    ventas.forEach(p => {
+                    ventasPlatillos.forEach(p => {
                         p.items?.forEach(item => {
                             const cantidad = item.cantidad || 1;
                             conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + cantidad;
@@ -1192,7 +1257,7 @@
             const totalVentas = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
                 .reduce((sum, p) => sum + (p.total || 0), 0);
-            document.getElementById('statVentas').textContent = `Bs. ${(totalVentas).toFixed(2)}`;
+            document.getElementById('statVentas').textContent = `Bs. ${totalVentas.toFixed(2)}`;
             
             const totalPlatillos = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
@@ -1235,8 +1300,8 @@
             const minutosTranscurridos = Math.floor((new Date() - fecha) / 60000);
             
             let timerText = '';
-            if (pedido.tipo === 'delivery') {
-                const minutosRestantes = 25 - minutosTranscurridos;
+            if (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') {
+                const minutosRestantes = 20 - minutosTranscurridos;
                 timerText = minutosRestantes > 0 ? `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
@@ -1281,7 +1346,7 @@
                     <div><i class="fas fa-user"></i> ${pedido.clienteNombre || 'No especificado'}</div>
                     <div><i class="fas fa-calendar"></i> ${pedido.fechaReserva ? new Date(pedido.fechaReserva).toLocaleDateString() : 'No especificada'}</div>
                     ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
-                </div>`;
+                </div>${timerText}`;
                 
                 if (pedido.tieneComprobante) {
                     extraInfo += `
@@ -1478,7 +1543,7 @@
         }
 
         // ==========================================
-        // CONFIRMACIÓN DE ENTREGA/ENVÍO/RESERVA - CON MENSAJES AL CLIENTE
+        // CONFIRMACIÓN DE ENTREGA/ENVÍO/RESERVA
         // ==========================================
         function mostrarConfirmacionEntrega(pedidoId, tipo) {
             if (isProcessing) return;
@@ -1516,7 +1581,7 @@
                     icono = 'fa-motorcycle';
                     header.className = 'modal-header envio';
                     notificacionCliente = {
-                        titulo: '🛵 ¡Tu delivery va en camino!',
+                        titulo: 'Tu delivery va en camino!',
                         texto: 'El repartidor ya salió con tu pedido. Prepárate para disfrutar de tu comida.'
                     };
                     break;
@@ -1610,7 +1675,7 @@
                             pedidoActual.estado = 'enviado';
                             pedidoActual.fechaEnvio = new Date().toISOString();
                             mensajeNotificacion = {
-                                titulo: '🛵 ¡Tu delivery va en camino!',
+                                titulo: 'Tu delivery va en camino!',
                                 texto: 'El repartidor ya salió con tu pedido. Prepárate para disfrutar de tu comida.',
                                 tipo: 'approved'
                             };
@@ -1679,7 +1744,7 @@
                 notificaciones.unshift(notificacion);
                 localStorage.setItem('sakiNotificaciones', JSON.stringify(notificaciones));
                 
-                console.log('📨 Notificación enviada al cliente:', notificacion);
+                console.log('📬 Notificación enviada al cliente:', notificacion);
             } catch (e) {
                 console.error('Error guardando notificación:', e);
             }
@@ -2005,7 +2070,7 @@
         }
 
         // ==========================================
-        // CONFIRMAR COBRO - DESCUENTA STOCK Y ACTUALIZA ESTADÍSTICAS
+        // CONFIRMAR COBRO - DESCUENTA STOCK REAL (¡CORREGIDO!)
         // ==========================================
         async function confirmarCobro() {
             if (isProcessing || !currentPedido || pagosMixtos.length === 0) return;
@@ -2036,12 +2101,13 @@
                         return;
                     }
                     
-                    // 🟢 PASO 1: DESCONTAR STOCK DEL INVENTARIO REAL (¡CRÍTICO!)
+                    // ✅ PASO 1: DESCONTAR STOCK DEL INVENTARIO REAL (SOLO AHORA, AL COBRAR)
                     if (pedidoActual.items) {
                         pedidoActual.items.forEach(item => {
                             const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
                             if (platillo && platillo.ingredientes) {
                                 Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
+                                    // SOLO descontar si el ingrediente NO fue removido
                                     if (!item.personalizacion?.includes(ingKey)) {
                                         if (sistemaData.inventario[ingKey]) {
                                             const cantidadNecesaria = convertirUnidad(
@@ -2053,7 +2119,7 @@
                                                 0, 
                                                 (sistemaData.inventario[ingKey].stock || 0) - cantidadNecesaria
                                             );
-                                            console.log(`🔴 Descontando ${cantidadNecesaria.toFixed(3)} de ${sistemaData.inventario[ingKey].nombre}. Stock restante: ${sistemaData.inventario[ingKey].stock.toFixed(3)}`);
+                                            console.log(`🔄 Descontando ${cantidadNecesaria.toFixed(3)} de ${sistemaData.inventario[ingKey].nombre}. Stock restante: ${sistemaData.inventario[ingKey].stock.toFixed(3)}`);
                                         }
                                     }
                                 });
@@ -2061,7 +2127,7 @@
                         });
                     }
                     
-                    // 🟢 PASO 2: DESCONTAR STOCK DE PLATILLOS
+                    // ✅ PASO 2: DESCONTAR STOCK DE PLATILLOS
                     pedidoActual.items?.forEach(item => {
                         const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
                         if (platillo) {
@@ -2071,7 +2137,7 @@
                         }
                     });
                     
-                    // 🟢 PASO 3: ACTUALIZAR ESTADO DEL PEDIDO
+                    // ✅ PASO 3: ACTUALIZAR ESTADO DEL PEDIDO
                     if (pedidoActual.tipo === 'delivery') {
                         pedidoActual.estado = 'en_camino';
                     } else if (pedidoActual.tipo === 'reserva') {
@@ -2102,7 +2168,7 @@
                         pedidoActual.cambio = diferencia;
                     }
                     
-                    // 🟢 PASO 4: ENVIAR NOTIFICACIÓN AL CLIENTE
+                    // ✅ PASO 4: ENVIAR NOTIFICACIÓN AL CLIENTE
                     let mensajeNotificacion = {
                         titulo: '🎉 ¡Pago confirmado!',
                         texto: '',
@@ -2187,7 +2253,7 @@
                     agregarNotificacionCliente(
                         pedidoActual.id,
                         'rejected',
-                        '❌ Pedido rechazado',
+                        '⚠️ Pedido rechazado',
                         `Motivo: ${traducirRazon(razon)}. Por favor, contacta al restaurante para más información.`
                     );
                     
