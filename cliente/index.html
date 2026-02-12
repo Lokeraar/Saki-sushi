@@ -2431,176 +2431,199 @@
             return pedido;
         }
 
-			async function guardarPedido(pedido) {
+		async function guardarPedido(pedido) {
+			try {
+				// SEPARAR EL COMPROBANTE DEL PEDIDO
+				// El comprobante en base64 es muy grande, lo guardamos aparte
+				const comprobanteBase64 = pedido.comprobanteBase64;
+				const comprobanteNombre = pedido.comprobanteNombre;
+				
+				// Crear versión del pedido SIN el comprobante para JSONbin
+				const pedidoParaJSONbin = {
+					id: pedido.id,
+					timestamp: pedido.timestamp,
+					estado: pedido.estado,
+					tipo: pedido.tipo,
+					items: pedido.items.map(item => ({
+						platilloId: item.platilloId,
+						nombre: item.nombre,
+						cantidad: item.cantidad,
+						personalizacion: item.personalizacion,
+						precioUnitarioUSD: Number(item.precioUnitarioUSD.toFixed(2)),
+						precioEnBs: Number(item.precioEnBs.toFixed(2)),
+						subtotal: Number(item.subtotal.toFixed(2)),
+						descuentoPorIngredientes: Number((item.descuentoPorIngredientes || 0).toFixed(2)),
+						tasaCambioAplicada: item.tasaCambioAplicada
+					})),
+					total: Number(pedido.total.toFixed(2)),
+					metodoPago: pedido.metodoPago || 'pago_movil',
+					cajero: pedido.cajero || null,
+					tiempoPreparacion: pedido.tiempoPreparacion || null,
+					origen: pedido.origen || 'cliente_web',
+					// Datos específicos según tipo
+					mesa: pedido.mesa || null,
+					direccion: pedido.direccion || null,
+					telefono: pedido.telefono || null,
+					referencia: pedido.referencia || null,
+					fechaReserva: pedido.fechaReserva || null,
+					clienteNombre: pedido.clienteNombre || null,
+					// IMPORTANTE: Solo indicamos que existe comprobante, no el contenido
+					tieneComprobante: !!comprobanteBase64,
+					comprobanteNombre: comprobanteNombre || null
+				};
+
+				console.log('📤 Preparando pedido para JSONbin:', pedidoParaJSONbin.id);
+				console.log('📎 Tiene comprobante:', pedidoParaJSONbin.tieneComprobante);
+
+				// Obtener datos actuales de JSONbin
+				let dataActual;
 				try {
-					// IMPORTANTE: Crear una copia del pedido sin el comprobanteBase64 para el JSONbin
-					// El comprobante lo manejaremos de otra forma (almacenamiento local por ahora)
-					const pedidoParaGuardar = {
-						...pedido,
-						// NO incluir comprobanteBase64 en JSONbin - es muy grande
-						comprobanteBase64: undefined,
-						tieneComprobante: !!pedido.comprobanteBase64 // Solo indicar que existe
-					};
-
-					// Redondear todos los valores numéricos
-					pedidoParaGuardar.total = Number(pedidoParaGuardar.total.toFixed(2));
-					pedidoParaGuardar.items.forEach(item => {
-						item.precioEnBs = Number(item.precioEnBs.toFixed(2));
-						item.subtotal = Number(item.subtotal.toFixed(2));
-						item.descuentoPorIngredientes = Number(item.descuentoPorIngredientes.toFixed(2));
-					});
-
-					// Obtener datos actuales de JSONbin
-					let dataActual;
-					try {
-						const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
-							method: 'GET',
-							headers: {
-								'X-Master-Key': JSONBIN_CONFIG.API_KEY,
-								'X-Bin-Meta': 'false'
-							}
-						});
-						
-						if (getResponse.ok) {
-							dataActual = await getResponse.json();
-							console.log('✅ Datos obtenidos de JSONbin:', {
-								menuCount: dataActual.menu?.length || 0,
-								pedidosCount: dataActual.pedidos?.length || 0
-							});
-						} else {
-							console.warn('⚠️ No se pudo obtener datos, usando caché local');
-							dataActual = sistemaData || {
-								menu: [],
-								inventario: {},
-								pedidos: [],
-								config: { tasaCambio: 400 }
-							};
-						}
-					} catch (e) {
-						console.warn('⚠️ Error GET, usando caché local:', e.message);
-						dataActual = sistemaData || {
-							menu: [],
-							inventario: {},
-							pedidos: [],
-							config: { tasaCambio: 400 }
-						};
-					}
-
-					// Preparar datos para guardar
-					const dataToSave = {
-						menu: dataActual.menu || [],
-						inventario: dataActual.inventario || {},
-						pedidos: [...(dataActual.pedidos || []), pedidoParaGuardar],
-						config: dataActual.config || { 
-							tasaCambio: 400,
-							aumentoDiario: 0,
-							aumentoActivo: false 
-						}
-					};
-
-					// Calcular tamaño aproximado
-					const payloadSize = JSON.stringify(dataToSave).length;
-					console.log('📊 Tamaño del payload:', payloadSize, 'bytes (', (payloadSize/1024).toFixed(2), 'KB)');
-					
-					if (payloadSize > 900000) { // 900KB límite de seguridad
-						throw new Error('PAYLOAD_TOO_LARGE');
-					}
-
-					console.log('📤 Enviando pedido:', pedidoParaGuardar.id);
-
-					const url = `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`;
-					console.log('🌐 URL:', url);
-
-					const response = await fetch(url, {
-						method: 'PUT',
+					const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+						method: 'GET',
 						headers: {
-							'Content-Type': 'application/json',
-							'X-Master-Key': JSONBIN_CONFIG.API_KEY
-						},
-						body: JSON.stringify(dataToSave)
+							'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+							'X-Bin-Meta': 'false'
+						}
 					});
-
-					console.log('📥 Respuesta status:', response.status);
-
-					if (!response.ok) {
-						const errorText = await response.text();
-						console.error('❌ Error HTTP:', response.status, errorText);
-						
-						// Intentar parsear el error
-						let errorDetail = errorText;
-						try {
-							const errorJson = JSON.parse(errorText);
-							errorDetail = errorJson.message || errorJson.error || errorText;
-						} catch(e) {}
-						
-						if (response.status === 404) {
-							throw new Error('BIN_NOT_FOUND');
-						} else if (response.status === 429) {
-							throw new Error('RATE_LIMIT');
-						} else if (response.status === 401 || response.status === 403) {
-							throw new Error('AUTH_ERROR');
-						} else if (response.status === 422) {
-							throw new Error('INVALID_DATA: ' + errorDetail);
-						} else if (response.status === 413 || payloadSize > 1000000) {
-							throw new Error('PAYLOAD_TOO_LARGE');
-						} else {
-							throw new Error(`HTTP_${response.status}: ${errorDetail}`);
-						}
-					}
-
-					const result = await response.json();
-					console.log('✅ Pedido guardado:', result);
-
-					// Si tenía comprobante, guardarlo en localStorage separadamente
-					if (pedido.comprobanteBase64) {
-						try {
-							const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
-							comprobantes[pedido.id] = {
-								base64: pedido.comprobanteBase64,
-								nombre: pedido.comprobanteNombre,
-								timestamp: new Date().toISOString()
-							};
-							localStorage.setItem('sakiComprobantes', JSON.stringify(comprobantes));
-							console.log('💾 Comprobante guardado en localStorage');
-						} catch (e) {
-							console.warn('⚠️ No se pudo guardar comprobante en localStorage:', e);
-						}
-					}
 					
-					// Actualizar caché
-					sistemaData = dataToSave;
-					localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
-					lastSyncTime = Date.now();
-					
-					return true;
-					
-				} catch (error) {
-					console.error('❌ Error completo:', error);
-					
-					let mensajeError = 'Error al procesar el pedido. ';
-					
-					if (error.message === 'BIN_NOT_FOUND') {
-						mensajeError += 'El bin no existe. Verifica el ID: ' + JSONBIN_CONFIG.BIN_ID;
-					} else if (error.message === 'RATE_LIMIT') {
-						mensajeError += 'Límite de solicitudes alcanzado (10000/día).';
-					} else if (error.message === 'AUTH_ERROR') {
-						mensajeError += 'API Key inválida.';
-					} else if (error.message === 'PAYLOAD_TOO_LARGE') {
-						mensajeError += 'El pedido es muy grande. Intenta con menos items o sin comprobante.';
-					} else if (error.message.includes('INVALID_DATA')) {
-						mensajeError += 'Datos inválidos: ' + error.message.replace('INVALID_DATA: ', '');
-					} else if (error.message.includes('HTTP_')) {
-						mensajeError += 'Error del servidor: ' + error.message;
-					} else if (error.message.includes('fetch') || error.message.includes('network')) {
-						mensajeError += 'Sin conexión a internet.';
+					if (getResponse.ok) {
+						dataActual = await getResponse.json();
 					} else {
-						mensajeError += error.message || 'Error desconocido.';
+						dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
 					}
-					
-					showToast(mensajeError, 'error');
-					return false;
+				} catch (e) {
+					dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
 				}
+
+				// Preparar datos para guardar
+				const dataToSave = {
+					menu: dataActual.menu || [],
+					inventario: dataActual.inventario || {},
+					pedidos: [...(dataActual.pedidos || []), pedidoParaJSONbin],
+					config: dataActual.config || { tasaCambio: 400, aumentoDiario: 0, aumentoActivo: false }
+				};
+
+				// Verificar tamaño
+				const payloadSize = JSON.stringify(dataToSave).length;
+				console.log('📊 Tamaño payload:', (payloadSize/1024).toFixed(2), 'KB');
+
+				if (payloadSize > 900000) {
+					throw new Error('PAYLOAD_TOO_LARGE: El pedido excede 900KB. Reduce items o contacta soporte.');
+				}
+
+				// Guardar en JSONbin
+				const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-Master-Key': JSONBIN_CONFIG.API_KEY
+					},
+					body: JSON.stringify(dataToSave)
+				});
+
+				if (!response.ok) {
+					const errorText = await response.text();
+					console.error('❌ Error HTTP:', response.status, errorText);
+					
+					if (response.status === 413 || payloadSize > 1000000) {
+						throw new Error('PAYLOAD_TOO_LARGE: La imagen o el pedido es muy grande para JSONbin.');
+					} else if (response.status === 404) {
+						throw new Error('BIN_NOT_FOUND');
+					} else if (response.status === 429) {
+						throw new Error('RATE_LIMIT');
+					} else if (response.status === 401 || response.status === 403) {
+						throw new Error('AUTH_ERROR');
+					} else {
+						throw new Error(`HTTP_${response.status}: ${errorText}`);
+					}
+				}
+
+				const result = await response.json();
+				console.log('✅ Pedido guardado en JSONbin:', result);
+
+				// GUARDAR COMPROBANTE EN LOCALSTORAGE (del cliente)
+				if (comprobanteBase64 && pedidoParaJSONbin.tieneComprobante) {
+					try {
+						const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
+						
+						// Verificar tamaño del comprobante
+						const comprobanteSize = comprobanteBase64.length;
+						console.log('📎 Tamaño comprobante:', (comprobanteSize/1024).toFixed(2), 'KB');
+						
+						if (comprobanteSize > 5000000) { // 5MB límite para localStorage
+							console.warn('⚠️ Comprobante muy grande para localStorage');
+							// Guardar solo metadatos
+							comprobantes[pedido.id] = {
+								nombre: comprobanteNombre,
+								timestamp: new Date().toISOString(),
+								error: 'Archivo muy grande (>5MB)',
+								disponible: false
+							};
+						} else {
+							comprobantes[pedido.id] = {
+								base64: comprobanteBase64,
+								nombre: comprobanteNombre,
+								timestamp: new Date().toISOString(),
+								disponible: true
+							};
+						}
+						
+						localStorage.setItem('sakiComprobantes', JSON.stringify(comprobantes));
+						console.log('💾 Comprobante guardado en localStorage del cliente');
+						
+					} catch (e) {
+						console.error('❌ Error guardando comprobante:', e);
+					}
+				}
+				
+				// Actualizar caché del sistema
+				sistemaData = dataToSave;
+				localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
+				lastSyncTime = Date.now();
+				
+				return true;
+				
+			} catch (error) {
+				console.error('❌ Error en guardarPedido:', error);
+				
+				let mensajeError = 'Error al procesar el pedido. ';
+				
+				if (error.message.includes('PAYLOAD_TOO_LARGE')) {
+					mensajeError = '⚠️ La imagen es muy grande. Intenta con una foto más pequeña (máx 500KB) o sin comprobante.';
+				} else if (error.message === 'BIN_NOT_FOUND') {
+					mensajeError += 'El bin no existe.';
+				} else if (error.message === 'RATE_LIMIT') {
+					mensajeError += 'Límite de 10000 solicitudes/día alcanzado.';
+				} else if (error.message === 'AUTH_ERROR') {
+					mensajeError += 'API Key inválida.';
+				} else if (error.message.includes('Failed to fetch')) {
+					mensajeError += 'Sin conexión a internet.';
+				} else {
+					mensajeError += error.message || 'Error desconocido.';
+				}
+				
+				showToast(mensajeError, 'error');
+				return false;
 			}
+		}
+
+		// Función para que el cajero/admin solicite el comprobante
+		function solicitarComprobante(pedidoId) {
+			const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
+			const comprobante = comprobantes[pedidoId];
+			
+			if (!comprobante) {
+				showToast('No se encontró comprobante para este pedido', 'error');
+				return null;
+			}
+			
+			if (!comprobante.disponible) {
+				showToast('El comprobante era muy grande y no se guardó. Solicitar por WhatsApp.', 'warning');
+				return null;
+			}
+			
+			return comprobante;
+		}
 
         // ==========================================
         // SISTEMA DE NOTIFICACIONES
