@@ -388,18 +388,7 @@
         </div>
     </div>
 
-    <!-- Modal Password para desbloquear stock -->
-    <div id="modal-password" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header"><h3>Desbloquear Stock</h3><button class="close-btn" onclick="cerrarModal('modal-password')">&times;</button></div>
-            <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contraseña de administrador:</p>
-                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña" onkeypress="handlePasswordModalKeypress(event)"></div>
-                <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contraseña incorrecta</div>
-            </div>
-            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn-header btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
-        </div>
-    </div>
+    
 
     <!-- Modal QR Ampliado -->
     <div id="modal-qr-ampliado" class="modal">
@@ -478,8 +467,12 @@
                 
                 <div class="form-group password-field">
                     <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
-                    <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
-                    <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()"><span><i class="fas fa-lock"></i> Click para desbloquear</span></div>
+                    <div style="position: relative;">
+                        <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
+                        <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; cursor: pointer; border: 1px dashed var(--border); font-size: 0.875rem; z-index: 10;">
+                            <span><i class="fas fa-lock"></i> Click para desbloquear</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1398,26 +1391,17 @@
         }
 
         function desbloquearStock() {
-            document.getElementById('modal-password').classList.add('active');
-            document.getElementById('admin-password').value = '';
-            document.getElementById('password-error').style.display = 'none';
-            document.getElementById('admin-password').focus();
-        }
-
-        function handlePasswordModalKeypress(e) {
-            if (e.key === 'Enter') verificarPassword();
-            else if (e.key === 'Escape') cerrarModal('modal-password');
-        }
-
-        function verificarPassword() {
-            if (document.getElementById('admin-password').value === datos.config.adminPassword) {
+            const password = prompt('Introduce la contraseña de administrador para desbloquear el stock:');
+            if (password === null) return; // Cancelar
+            
+            if (password === datos.config.adminPassword) {
                 stockDesbloqueado = true;
                 document.getElementById('ingrediente-stock').disabled = false;
                 document.getElementById('stock-overlay').style.display = 'none';
-                cerrarModal('modal-password');
                 document.getElementById('ingrediente-stock').focus();
+                mostrarNotificacion('Stock desbloqueado', 'success');
             } else {
-                document.getElementById('password-error').style.display = 'block';
+                alert('Contraseña incorrecta');
             }
         }
 
