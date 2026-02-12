@@ -2119,7 +2119,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN JSONBIN.IO
+        // CONFIGURACIÓN JSONBIN.IO - CORREGIDA
         // ==========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
@@ -2136,6 +2136,7 @@
         let currentSubcategory = null;
         let pedidoActual = [];
         let syncInterval = null;
+        let syncRetryCount = 0;
         let isInRestaurant = false;
         let tableNumber = null;
         let selectedDate = null;
@@ -2290,21 +2291,28 @@
                         updateOrderSummary();
                     } catch (e) {
                         console.error('Error en sync:', e);
+                        // Intentar reconectar
+                        actualizarEstadoSync('syncing');
+                        setTimeout(async () => {
+                            try {
+                                await cargarDatos(true);
+                            } catch (retryError) {
+                                console.error('Error en reintento:', retryError);
+                            }
+                        }, 5000);
                     }
                 }, 30000);
             } catch (error) {
                 console.error('Error inicializando app:', error);
-                // No mostrar error si ya se cargaron datos
-                if (!sistemaData) {
-                    showToast('Error al cargar. Intenta recargar la página.', 'error');
-                }
+                showToast('Error al cargar. Verifica tu conexión.', 'error');
+                actualizarEstadoSync('offline');
             } finally {
                 hideLoading();
             }
         }
 
-        async function cargarDatos() {
-            if (isLoading) return;
+        async function cargarDatos(force = false) {
+            if (isLoading && !force) return;
             isLoading = true;
             actualizarEstadoSync('syncing');
             
@@ -2317,20 +2325,47 @@
                     }
                 });
                 
-                if (!response.ok) throw new Error('Error al cargar datos');
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
                 
                 const data = await response.json();
-                sistemaData = data.record || data;
+                
+                // Validar que la estructura de datos sea correcta
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Datos inválidos recibidos');
+                }
+                
+                // Asegurar que las estructuras existan
+                if (!data.menu) data.menu = [];
+                if (!data.inventario) data.inventario = {};
+                if (!data.pedidos) data.pedidos = [];
+                if (!data.config) data.config = { tasaCambio: 400 };
+                
+                sistemaData = data;
                 
                 sincronizarMenuLocal();
                 actualizarEstadoSync('online');
+                syncRetryCount = 0;
                 
             } catch (error) {
                 console.error('Error cargando datos:', error);
                 actualizarEstadoSync('offline');
+                
                 // Si hay datos en caché, usarlos
                 if (!sistemaData) {
-                    sistemaData = { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
+                    sistemaData = { 
+                        menu: [], 
+                        inventario: {}, 
+                        pedidos: [], 
+                        config: { tasaCambio: 400 } 
+                    };
+                }
+                
+                // Reintentar después de un delay
+                syncRetryCount++;
+                if (syncRetryCount < 3) {
+                    setTimeout(() => cargarDatos(true), 5000);
                 }
             } finally {
                 isLoading = false;
@@ -2357,14 +2392,12 @@
                     ingredients: item.ingredientes || {},
                     stock: item.stock || 0,
                     stockMaximo: item.stockMaximo || item.stock || 0,
-                    disponible: item.disponible,
+                    disponible: item.disponible === true,
                     imagen: item.imagen || null,
-                    // Restaurar cantidad e instancias si existían en el pedido
                     quantity: itemEnPedido ? itemEnPedido.quantity : 0,
                     instances: itemEnPedido ? itemEnPedido.instances : [],
                     totalOrdered: itemEnPedido ? itemEnPedido.totalOrdered : 0,
                     currentSelections: itemEnPedido ? new Set(itemEnPedido.currentSelections) : new Set(),
-                    order: menuItems.length + 1,
                     selectionType: itemEnPedido ? itemEnPedido.selectionType : "completo"
                 };
             });
@@ -2378,6 +2411,7 @@
             verificarNotificaciones();
             
             // Y cada 10 segundos
+            if (notificacionesInterval) clearInterval(notificacionesInterval);
             notificacionesInterval = setInterval(verificarNotificaciones, 10000);
         }
 
@@ -2385,12 +2419,12 @@
             if (!sessionId || pedidosCliente.length === 0) return;
             
             try {
-                await cargarDatos();
+                await cargarDatos(true);
                 
                 let hayCambios = false;
                 
                 pedidosCliente.forEach(pedidoCliente => {
-                    const pedidoActualizado = sistemaData.pedidos.find(p => p.id === pedidoCliente.id);
+                    const pedidoActualizado = sistemaData.pedidos?.find(p => p.id === pedidoCliente.id);
                     
                     if (pedidoActualizado && pedidoActualizado.estado !== pedidoCliente.estado) {
                         // Actualizar estado local
@@ -2633,6 +2667,16 @@
         function renderMenu() {
             const menuGrid = document.getElementById('menuGrid');
             
+            if (!menuItems || menuItems.length === 0) {
+                menuGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #888;">
+                        <i class="fas fa-utensils" style="font-size: 4em; margin-bottom: 20px; color: var(--primary);"></i>
+                        <p style="font-size: 1.4em;">Cargando menú...</p>
+                    </div>
+                `;
+                return;
+            }
+            
             let filteredItems = [...menuItems];
             
             // Filtrar por categoría
@@ -2649,11 +2693,10 @@
                 }
             }
             
-            // Filtrar por búsqueda (por palabra completa, no por letra)
+            // Filtrar por búsqueda
             if (searchTerm) {
                 filteredItems = filteredItems.filter(item => {
                     const nombre = item.name.toLowerCase();
-                    // Buscar coincidencia de palabra completa
                     const palabras = nombre.split(/\s+/);
                     return palabras.some(palabra => palabra.includes(searchTerm)) || 
                            nombre.includes(searchTerm);
@@ -2674,20 +2717,16 @@
             menuGrid.innerHTML = filteredItems.map(item => {
                 const precioBs = formatearPrecioBs(item.basePrice);
                 
-                // Verificar si hay ingredientes principales disponibles
                 const ingredientesPrincipales = verificarIngredientesPrincipales(item);
                 const hayIngredientes = ingredientesPrincipales.disponible;
                 const esAgotado = !hayIngredientes && item.instances.length === 0;
-                
-                // Si está agotado por falta de ingredientes principales
                 const claseAgotado = esAgotado ? 'agotado' : '';
                 const estaEnPedido = item.instances.length > 0;
                 
-                // Calcular stock disponible real (restando lo ya pedido)
                 const stockReal = Math.max(0, item.stock - item.totalOrdered);
                 const disponible = item.disponible && stockReal > 0 && hayIngredientes;
                 
-                // Renderizar imagen: si hay URL, mostrar <img>, si no, placeholder
+                // Renderizar imagen
                 let imagenHtml = '';
                 if (item.imagen && item.imagen.trim() !== '') {
                     imagenHtml = `<img src="${item.imagen}" class="item-image" alt="${item.name}" onerror="this.style.display='none'; this.parentNode.classList.add('image-error'); this.parentNode.innerHTML += '<div class=\\'item-image-placeholder\\'><i class=\\'fas fa-image\\'></i><span style=\\'font-size: 0.8rem; margin-top: 10px;\\'>Sin imagen</span></div>';">`;
@@ -2705,7 +2744,7 @@
                                 <span>${item.name}</span>
                                 <span class="item-price">${precioBs}</span>
                             </div>
-                            <div class="item-description">${item.description}</div>
+                            <div class="item-description">${item.description || ''}</div>
                             ${!hayIngredientes ? '<div style="color: #ff6b6b; font-size: 0.9em; margin-top: 5px;"><i class="fas fa-exclamation-circle"></i> Sin ingredientes principales</div>' : ''}
                         </div>
                         <div class="item-content">
@@ -2721,7 +2760,7 @@
                                     <button class="qty-btn" onclick="changeQuantity('${item.id}', -1)" id="btn-minus-${item.id}">
                                         <i class="fas fa-minus"></i>
                                     </button>
-                                    <div class="item-quantity" id="qty-${item.id}">${item.quantity}</div>
+                                    <div class="item-quantity" id="qty-${item.id}">${item.quantity || 0}</div>
                                     <button class="qty-btn" onclick="changeQuantity('${item.id}', 1)" 
                                             ${!disponible ? 'disabled' : ''}>
                                         <i class="fas fa-plus"></i>
@@ -2729,7 +2768,7 @@
                                 </div>
                                 <div class="item-stock ${getStockClass(stockReal, hayIngredientes)}">
                                     <i class="fas fa-box"></i> 
-                                    ${!hayIngredientes ? 'Agotado' : `Disponibles: ${stockReal} de ${item.stockMaximo}`}
+                                    ${!hayIngredientes ? 'Agotado' : `Disponibles: ${stockReal} de ${item.stockMaximo || 0}`}
                                 </div>
                             </div>
                             
@@ -2766,7 +2805,7 @@
                 }
             });
             
-            // Actualizar estado de los botones "-" según la cantidad actual
+            // Actualizar estado de los botones "-"
             filteredItems.forEach(item => {
                 actualizarBotonMinus(item.id, item.quantity);
             });
@@ -2782,15 +2821,13 @@
             let disponible = true;
             
             Object.entries(item.ingredients).forEach(([key, ingData]) => {
-                // Solo verificar ingredientes no obligatorios (los principales son removibles)
                 if (!ingData.obligatorio) {
-                    const stockIng = sistemaData.inventario[key]?.stock || 0;
-                    // Considerar también lo ya reservado en el pedido actual
+                    const stockIng = sistemaData?.inventario?.[key]?.stock || 0;
                     const reservado = calcularReservado(key);
                     const stockReal = stockIng - reservado;
                     
                     if (stockReal <= 0) {
-                        faltantes.push(sistemaData.inventario[key]?.nombre || key);
+                        faltantes.push(sistemaData?.inventario?.[key]?.nombre || key);
                         disponible = false;
                     }
                 }
@@ -2805,9 +2842,8 @@
             menuItems.forEach(item => {
                 if (item.instances && item.ingredients && item.ingredients[ingredienteId]) {
                     item.instances.forEach(inst => {
-                        // Solo contar si el ingrediente NO fue removido
                         if (!inst.removedIngredients.includes(ingredienteId)) {
-                            total += item.ingredients[ingredienteId].cantidad;
+                            total += item.ingredients[ingredienteId].cantidad || 0;
                         }
                     });
                 }
@@ -2818,13 +2854,11 @@
         function generateIngredientOptions(itemId) {
             const item = menuItems.find(i => i.id === itemId);
             const optionsDiv = document.getElementById(`options-${itemId}`);
-            if (!optionsDiv) return;
-            
-            const restricciones = checkIngredientRestrictions(item);
+            if (!optionsDiv || !item) return;
             
             optionsDiv.innerHTML = '';
             
-            // Opción "Completo" - seleccionada por defecto
+            // Opción "Completo"
             const completeOption = document.createElement('div');
             completeOption.className = `ingredient-option complete-option ${item.currentSelections.size === 0 ? 'selected' : ''}`;
             completeOption.onclick = () => selectComplete(itemId);
@@ -2840,7 +2874,7 @@
             Object.keys(item.ingredients).forEach(ingKey => {
                 const ingrediente = item.ingredients[ingKey];
                 if (!ingrediente.obligatorio) {
-                    const stockIng = sistemaData.inventario[ingKey]?.stock || 0;
+                    const stockIng = sistemaData?.inventario?.[ingKey]?.stock || 0;
                     const reservado = calcularReservado(ingKey);
                     const stockReal = stockIng - reservado;
                     const disabled = stockReal <= 0;
@@ -2873,6 +2907,7 @@
         // ==========================================
         function selectComplete(itemId) {
             const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
             item.selectionType = "completo";
             item.currentSelections.clear();
             
@@ -2881,6 +2916,7 @@
 
         function toggleIngredient(itemId, ingredientKey) {
             const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
             item.selectionType = "personalizado";
             
             if (item.currentSelections.has(ingredientKey)) {
@@ -2892,12 +2928,6 @@
             generateIngredientOptions(itemId);
         }
 
-        function checkIngredientRestrictions(item) {
-            // Placeholder para futuras restricciones
-            return [];
-        }
-
-        // Función para actualizar el estado del botón "-" dinámicamente
         function actualizarBotonMinus(itemId, cantidad) {
             const btnMinus = document.getElementById(`btn-minus-${itemId}`);
             if (btnMinus) {
@@ -2907,15 +2937,15 @@
 
         function changeQuantity(itemId, change) {
             const item = menuItems.find(i => i.id === itemId);
-            const newQty = item.quantity + change;
+            if (!item) return;
+            
+            const newQty = (item.quantity || 0) + change;
             
             if (newQty < 0) return;
             
-            // Calcular stock real disponible
-            const stockReal = item.stock - item.totalOrdered;
+            const stockReal = (item.stock || 0) - (item.totalOrdered || 0);
             
             if (change > 0) {
-                // Verificar ingredientes principales
                 const ingCheck = verificarIngredientesPrincipales(item);
                 if (!ingCheck.disponible) {
                     showToast('No hay ingredientes principales disponibles', 'error');
@@ -2937,37 +2967,28 @@
                 item.quantity = newQty;
             }
             
-            // Actualizar el texto de la cantidad
             const qtyEl = document.getElementById(`qty-${itemId}`);
-            if (qtyEl) qtyEl.textContent = item.quantity;
+            if (qtyEl) qtyEl.textContent = item.quantity || 0;
             
-            // Actualizar el estado del botón "-" según la cantidad
             actualizarBotonMinus(itemId, item.quantity);
             
             const ingredientsSection = document.getElementById(`ingredients-${itemId}`);
             if (ingredientsSection) {
                 if (item.quantity > 0) {
-                    setTimeout(() => ingredientsSection.classList.remove('hidden'), 10);
+                    ingredientsSection.classList.remove('hidden');
                     
                     if (change > 0) {
-                        // Pre-seleccionar "Completo" por defecto
                         item.selectionType = "completo";
                         item.currentSelections.clear();
                         generateIngredientOptions(itemId);
-                        
-                        // No agregamos a instancias todavía, esperamos confirmación
                     } else if (change < 0 && item.instances.length > 0) {
-                        // Si reduce cantidad, remover la última instancia no confirmada
-                        // o la última instancia si no hay pendientes
                         const instanciaPendiente = item.instances.findIndex(inst => !inst.confirmada);
                         if (instanciaPendiente >= 0) {
-                            // NO restaurar stock aquí - solo se restaura al eliminar manualmente
                             item.instances.splice(instanciaPendiente, 1);
-                            item.totalOrdered--;
+                            item.totalOrdered = (item.totalOrdered || 0) - 1;
                         } else if (item.instances.length > 0) {
-                            // Remover la última
                             item.instances.pop();
-                            item.totalOrdered--;
+                            item.totalOrdered = (item.totalOrdered || 0) - 1;
                         }
                     }
                 } else {
@@ -2984,16 +3005,15 @@
             const priceAdjDiv = document.getElementById(`price-adj-${itemId}`);
             const jokeDiv = document.getElementById(`joke-${itemId}`);
             
-            if (!confirmBtn) return;
+            if (!confirmBtn || !item) return;
             
             const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
             const availableNonRequired = allNonRequired.filter(key => {
-                const stock = sistemaData.inventario[key]?.stock || 0;
+                const stock = sistemaData?.inventario?.[key]?.stock || 0;
                 const reservado = calcularReservado(key);
                 return (stock - reservado) > 0;
             });
             
-            // Verificar si seleccionó todos los ingredientes disponibles
             const selectedAllAvailable = availableNonRequired.length > 0 && 
                 availableNonRequired.every(key => item.currentSelections.has(key));
             
@@ -3006,7 +3026,6 @@
                 if (jokeDiv) jokeDiv.classList.remove('show');
                 
                 if (item.currentSelections.size > 0) {
-                    // Calcular precio ajustado basado en ingredientes removidos
                     const precioAjustado = calcularPrecioAjustado(item);
                     if (priceAdjDiv) {
                         priceAdjDiv.innerHTML = `<i class="fas fa-tag"></i> Precio ajustado: <strong>Bs. ${precioAjustado.toFixed(2).replace('.', ',')}</strong>`;
@@ -3021,19 +3040,16 @@
             }
         }
 
-        // Calcular precio ajustado basado en ingredientes removidos y tasa actual
         function calcularPrecioAjustado(item) {
             const tasaActual = obtenerTasaEfectiva();
-            const precioBase = item.basePrice * tasaActual;
+            const precioBase = (item.basePrice || 0) * tasaActual;
             
-            // Calcular descuento por ingredientes removidos
             let descuentoTotal = 0;
             item.currentSelections.forEach(ingKey => {
-                const ingData = sistemaData.inventario[ingKey];
+                const ingData = sistemaData?.inventario?.[ingKey];
                 if (ingData && ingData.precioUnitario) {
-                    // El precio unitario está en USD, convertir a Bs
                     const precioIngredienteBs = ingData.precioUnitario * tasaActual;
-                    descuentoTotal += precioIngredienteBs * item.ingredients[ingKey].cantidad;
+                    descuentoTotal += precioIngredienteBs * (item.ingredients[ingKey]?.cantidad || 0);
                 }
             });
             
@@ -3042,63 +3058,57 @@
 
         function confirmCustomization(itemId) {
             const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
             
             if (item.quantity === 0) return;
             
             const allNonRequired = Object.keys(item.ingredients).filter(key => !item.ingredients[key]?.obligatorio);
             const availableNonRequired = allNonRequired.filter(key => {
-                const stock = sistemaData.inventario[key]?.stock || 0;
+                const stock = sistemaData?.inventario?.[key]?.stock || 0;
                 const reservado = calcularReservado(key);
                 return (stock - reservado) > 0;
             });
             
-            // Verificar si quiere quitar todos los ingredientes disponibles
             if (item.currentSelections.size === availableNonRequired.length && availableNonRequired.length > 0) {
                 showToast('¡No puedes quitar todos los ingredientes disponibles!', 'error');
                 return;
             }
             
-            // Crear instancias según la cantidad seleccionada
             const cantidad = item.quantity;
             
             for (let i = 0; i < cantidad; i++) {
-                // Calcular precio final
                 const precioFinal = calcularPrecioAjustado(item);
                 
-                // Calcular descuento total por ingredientes removidos
                 let descuentoTotal = 0;
                 const tasaActual = obtenerTasaEfectiva();
                 item.currentSelections.forEach(ingKey => {
-                    const ingData = sistemaData.inventario[ingKey];
+                    const ingData = sistemaData?.inventario?.[ingKey];
                     if (ingData && ingData.precioUnitario) {
                         const precioIngredienteBs = ingData.precioUnitario * tasaActual;
-                        descuentoTotal += precioIngredienteBs * item.ingredients[ingKey].cantidad;
+                        descuentoTotal += precioIngredienteBs * (item.ingredients[ingKey]?.cantidad || 0);
                     }
                 });
                 
-                // Crear nueva instancia confirmada
                 const nuevaInstancia = {
-                    id: item.instances.length + 1,
+                    id: (item.instances.length + 1) || 1,
                     removedIngredients: Array.from(item.currentSelections),
                     isComplete: item.currentSelections.size === 0,
                     selectionType: item.selectionType,
                     price: precioFinal,
-                    descuentoPorIngredientes: descuentoTotal, // Guardar explícitamente el descuento
-                    precioBase: item.basePrice * tasaActual, // Guardar precio base
+                    descuentoPorIngredientes: descuentoTotal,
+                    precioBase: (item.basePrice || 0) * tasaActual,
                     confirmada: true
                 };
                 
-                // NO reducir stock de ingredientes aquí - eso solo pasa al confirmar el pedido completo
+                if (!item.instances) item.instances = [];
                 item.instances.push(nuevaInstancia);
-                item.totalOrdered++;
+                item.totalOrdered = (item.totalOrdered || 0) + 1;
             }
             
-            // Resetear cantidad y selecciones
             item.quantity = 0;
             item.currentSelections.clear();
             item.selectionType = "completo";
             
-            // Actualizar el estado del botón "-" después de confirmar
             actualizarBotonMinus(itemId, 0);
             
             const ingredientsSection = document.getElementById(`ingredients-${itemId}`);
@@ -3108,7 +3118,7 @@
             if (qtyEl) qtyEl.textContent = '0';
             
             updateOrderSummary();
-            renderMenu(); // Re-renderizar para actualizar stock mostrado
+            renderMenu();
             showToast(`${cantidad} platillo(s) añadido(s) al pedido`, 'success');
         }
 
@@ -3142,9 +3152,8 @@
             const onlineOptions = document.getElementById('onlineOrderOptions');
             const restaurantSection = document.getElementById('restaurantOrderSection');
             
-            // Filtrar items que tienen instancias confirmadas
             const validItems = menuItems.filter(item => 
-                item.instances.some(instance => instance.confirmada)
+                item.instances && item.instances.some(instance => instance.confirmada)
             );
             
             if (validItems.length === 0) {
@@ -3175,15 +3184,14 @@
                 html += `<div class="instance-number">${validInstances.length}</div>`;
                 
                 validInstances.forEach((instance, index) => {
-                    total += instance.price;
+                    total += instance.price || 0;
                     totalItems++;
                     
                     let modifiers = '';
-                    if (instance.removedIngredients.length > 0) {
+                    if (instance.removedIngredients && instance.removedIngredients.length > 0) {
                         modifiers = 'Personalizado (sin: ' + 
                             instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + 
                             ')';
-                        // Agregar información de descuento si existe
                         if (instance.descuentoPorIngredientes > 0) {
                             modifiers += `<br><small style="color: var(--success);">Descuento: -Bs. ${instance.descuentoPorIngredientes.toFixed(2)}</small>`;
                         }
@@ -3201,7 +3209,7 @@
                                     </div>
                                     <div class="order-item-modifiers">${modifiers}</div>
                                 </div>
-                                <div class="order-item-price">Bs. ${instance.price.toFixed(2).replace('.', ',')}</div>
+                                <div class="order-item-price">Bs. ${(instance.price || 0).toFixed(2).replace('.', ',')}</div>
                             </div>
                         </div>
                     `;
@@ -3221,7 +3229,6 @@
             
             orderSummaryContent.innerHTML = html;
             
-            // Mostrar botones correspondientes
             if (isInRestaurant) {
                 restaurantSection.classList.add('show');
                 onlineOptions.classList.remove('show');
@@ -3231,7 +3238,6 @@
                 onlineOptions.classList.add('show');
             }
             
-            // Actualizar montos en modales
             document.getElementById('deliveryMonto').textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
             document.getElementById('reservaMonto').textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
         }
@@ -3243,12 +3249,11 @@
             const instanceIndex = item.instances.findIndex(i => i.id === instanceId);
             if (instanceIndex === -1) return;
             
-            // Solo restaurar stock si la instancia estaba confirmada
             item.instances.splice(instanceIndex, 1);
-            item.totalOrdered--;
+            item.totalOrdered = (item.totalOrdered || 0) - 1;
             
             updateOrderSummary();
-            renderMenu(); // Re-renderizar para actualizar stock mostrado
+            renderMenu();
             showToast('Platillo eliminado del pedido', 'success');
         }
 
@@ -3267,26 +3272,28 @@
             let total = 0;
             
             menuItems.forEach(item => {
-                item.instances.filter(inst => inst.confirmada).forEach(instance => {
-                    total += instance.price;
-                    
-                    let modifiers = '';
-                    if (instance.removedIngredients.length > 0) {
-                        modifiers = ' (sin: ' + instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + ')';
-                        if (instance.descuentoPorIngredientes > 0) {
-                            modifiers += `<br><small style="color: var(--success);">Descuento por ingredientes: -Bs. ${instance.descuentoPorIngredientes.toFixed(2)}</small>`;
+                if (item.instances) {
+                    item.instances.filter(inst => inst.confirmada).forEach(instance => {
+                        total += instance.price || 0;
+                        
+                        let modifiers = '';
+                        if (instance.removedIngredients && instance.removedIngredients.length > 0) {
+                            modifiers = ' (sin: ' + instance.removedIngredients.map(ing => ing.replace(/_/g, ' ')).join(', ') + ')';
+                            if (instance.descuentoPorIngredientes > 0) {
+                                modifiers += `<br><small style="color: var(--success);">Descuento por ingredientes: -Bs. ${instance.descuentoPorIngredientes.toFixed(2)}</small>`;
+                            }
+                        } else {
+                            modifiers = ' (completo)';
                         }
-                    } else {
-                        modifiers = ' (completo)';
-                    }
-                    
-                    html += `
-                        <div class="review-item">
-                            <span>${item.name}${modifiers}</span>
-                            <strong>Bs. ${instance.price.toFixed(2).replace('.', ',')}</strong>
-                        </div>
-                    `;
-                });
+                        
+                        html += `
+                            <div class="review-item">
+                                <span>${item.name}${modifiers}</span>
+                                <strong>Bs. ${(instance.price || 0).toFixed(2).replace('.', ',')}</strong>
+                            </div>
+                        `;
+                    });
+                }
             });
             
             html += `
@@ -3314,20 +3321,18 @@
             hideLoading();
             
             if (exito) {
-                // Agregar a pedidos del cliente para seguimiento
                 pedidosCliente.push({
                     id: pedido.id,
                     estado: 'pendiente',
                     timestamp: pedido.timestamp
                 });
                 
-                // Mostrar mensaje de éxito con timer
                 document.getElementById('thankYouMessage').classList.add('show');
                 document.getElementById('restaurantOrderSection').classList.remove('show');
                 
-                // Iniciar timer de 20 minutos
                 let minutes = 20;
                 let seconds = 0;
+                if (paymentTimer) clearInterval(paymentTimer);
                 paymentTimer = setInterval(() => {
                     if (seconds === 0) {
                         if (minutes === 0) {
@@ -3343,11 +3348,11 @@
                         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }, 1000);
                 
-                // Limpiar pedido
                 limpiarPedido();
-                
-                // Agregar notificación inicial
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido está pendiente de confirmación por el cajero.');
+                showToast('¡Pedido enviado exitosamente!', 'success');
+            } else {
+                showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
             }
         }
 
@@ -3355,18 +3360,18 @@
         // DELIVERY
         // ==========================================
         function showDeliveryModal() {
-            // Abrir el modal directamente, sin espera
             document.getElementById('deliveryModal').classList.add('show');
             validateDeliveryForm();
         }
 
-        // Funciones para manejar el código de referencia de 6 dígitos
         function moveToNextRef(input, type, index) {
             if (input.value.length === 1) {
                 const container = document.getElementById(`${type}ReferenceContainer`);
-                const inputs = container.querySelectorAll('.reference-digit');
-                if (index < inputs.length - 1) {
-                    inputs[index + 1].focus();
+                if (container) {
+                    const inputs = container.querySelectorAll('.reference-digit');
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
                 }
             }
             validateDeliveryForm();
@@ -3376,8 +3381,10 @@
         function handleRefKeypress(e, type, index) {
             if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
                 const container = document.getElementById(`${type}ReferenceContainer`);
-                const inputs = container.querySelectorAll('.reference-digit');
-                inputs[index - 1].focus();
+                if (container) {
+                    const inputs = container.querySelectorAll('.reference-digit');
+                    inputs[index - 1].focus();
+                }
             }
             if (e.key === 'Enter') {
                 if (type === 'delivery') {
@@ -3404,117 +3411,36 @@
         }
 
         function validateDeliveryForm() {
-            const direccion = document.getElementById('deliveryDireccion').value.trim();
-            const telefono = document.getElementById('deliveryTelefono').value.trim();
+            const direccion = document.getElementById('deliveryDireccion')?.value.trim() || '';
+            const telefono = document.getElementById('deliveryTelefono')?.value.trim() || '';
             const referencia = getReferenceCode('delivery');
-            const comprobante = document.getElementById('deliveryComprobante').files.length > 0;
+            const comprobante = document.getElementById('deliveryComprobante')?.files.length > 0;
             
             const direccionValid = direccion.length >= 20;
             const telefonoValid = telefono.length >= 11 && telefono.length <= 14;
             const referenciaValid = referencia.length === 6;
             
-            document.getElementById('direccionError').classList.toggle('show', direccion.length > 0 && !direccionValid);
-            document.getElementById('telefonoError').classList.toggle('show', telefono.length > 0 && !telefonoValid);
-            document.getElementById('referenciaErrorDelivery').classList.toggle('show', referencia.length > 0 && !referenciaValid);
+            const direccionError = document.getElementById('direccionError');
+            if (direccionError) direccionError.classList.toggle('show', direccion.length > 0 && !direccionValid);
             
-            document.getElementById('btnConfirmDelivery').disabled = !(direccionValid && telefonoValid && referenciaValid && comprobante);
+            const telefonoError = document.getElementById('telefonoError');
+            if (telefonoError) telefonoError.classList.toggle('show', telefono.length > 0 && !telefonoValid);
+            
+            const referenciaError = document.getElementById('referenciaErrorDelivery');
+            if (referenciaError) referenciaError.classList.toggle('show', referencia.length > 0 && !referenciaValid);
+            
+            const btnConfirm = document.getElementById('btnConfirmDelivery');
+            if (btnConfirm) btnConfirm.disabled = !(direccionValid && telefonoValid && referenciaValid && comprobante);
         }
 
         function handleFileSelect(input, labelId) {
             const label = document.getElementById(labelId);
-            if (input.files && input.files[0]) {
+            if (input.files && input.files[0] && label) {
                 label.innerHTML = `<i class="fas fa-check-circle" style="color: var(--success); font-size: 2rem; margin-bottom: 10px; display: block;"></i> ${input.files[0].name}`;
                 label.classList.add('has-file');
             }
             validateDeliveryForm();
             validateReservaForm();
-        }
-
-        async function confirmDelivery() {
-            const pedido = crearPedidoBase();
-            pedido.tipo = 'delivery';
-            pedido.direccion = document.getElementById('deliveryDireccion').value.trim();
-            pedido.telefono = document.getElementById('deliveryTelefono').value.trim();
-            pedido.referencia = getReferenceCode('delivery');
-            
-            // Convertir comprobante a base64 para enviar al cajero
-            const comprobanteFile = document.getElementById('deliveryComprobante').files[0];
-            if (comprobanteFile) {
-                pedido.comprobanteNombre = comprobanteFile.name;
-                pedido.comprobanteBase64 = await fileToBase64(comprobanteFile);
-            }
-            
-            closeModal('deliveryModal');
-            showLoading();
-            
-            const exito = await guardarPedido(pedido);
-            
-            hideLoading();
-            
-            if (exito) {
-                // Limpiar campos
-                document.getElementById('deliveryDireccion').value = '';
-                document.getElementById('deliveryTelefono').value = '';
-                const deliveryRefContainer = document.getElementById('deliveryReferenceContainer');
-                deliveryRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
-                document.getElementById('deliveryComprobante').value = '';
-                document.getElementById('deliveryFileLabel').innerHTML = `
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
-                    Haz clic para subir el comprobante de pago
-                `;
-                document.getElementById('deliveryFileLabel').classList.remove('has-file');
-                
-                // Agregar a pedidos del cliente
-                pedidosCliente.push({
-                    id: pedido.id,
-                    estado: 'pendiente',
-                    timestamp: pedido.timestamp
-                });
-                
-                limpiarPedido();
-                
-                // Mostrar mensaje de confirmación
-                document.getElementById('thankYouMessage').classList.add('show');
-                document.getElementById('onlineOrderOptions').classList.remove('show');
-                
-                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
-            }
-        }
-
-        // ==========================================
-        // RESERVA
-        // ==========================================
-        function showReservaModal() {
-            // Configurar fecha mínima para el campo date (hoy)
-            const hoy = new Date();
-            const yyyy = hoy.getFullYear();
-            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-            const dd = String(hoy.getDate()).padStart(2, '0');
-            const fechaMinima = `${yyyy}-${mm}-${dd}`;
-            
-            const fechaInput = document.getElementById('reservaFecha');
-            fechaInput.min = fechaMinima;
-            fechaInput.value = fechaMinima;
-            selectedDate = new Date(fechaMinima);
-            
-            // Abrir el modal directamente, sin espera
-            document.getElementById('reservaModal').classList.add('show');
-            validateReservaForm();
-        }
-
-        function validateReservaForm() {
-            const nombre = document.getElementById('reservaNombre').value.trim();
-            const fecha = document.getElementById('reservaFecha').value;
-            const referencia = getReferenceCode('reserva');
-            const comprobante = document.getElementById('reservaComprobante').files.length > 0;
-            
-            const nombreValid = nombre.length > 0;
-            const fechaValid = fecha !== '';
-            const referenciaValid = referencia.length === 6;
-            
-            document.getElementById('referenciaErrorReserva').classList.toggle('show', referencia.length > 0 && !referenciaValid);
-            
-            document.getElementById('btnConfirmReserva').disabled = !(nombreValid && fechaValid && referenciaValid && comprobante);
         }
 
         function fileToBase64(file) {
@@ -3526,18 +3452,125 @@
             });
         }
 
+        async function confirmDelivery() {
+            const pedido = crearPedidoBase();
+            pedido.tipo = 'delivery';
+            pedido.direccion = document.getElementById('deliveryDireccion')?.value.trim() || '';
+            pedido.telefono = document.getElementById('deliveryTelefono')?.value.trim() || '';
+            pedido.referencia = getReferenceCode('delivery');
+            
+            const comprobanteFile = document.getElementById('deliveryComprobante')?.files[0];
+            if (comprobanteFile) {
+                pedido.comprobanteNombre = comprobanteFile.name;
+                try {
+                    pedido.comprobanteBase64 = await fileToBase64(comprobanteFile);
+                } catch (error) {
+                    console.error('Error al convertir comprobante:', error);
+                }
+            }
+            
+            closeModal('deliveryModal');
+            showLoading();
+            
+            const exito = await guardarPedido(pedido);
+            
+            hideLoading();
+            
+            if (exito) {
+                const deliveryDireccion = document.getElementById('deliveryDireccion');
+                if (deliveryDireccion) deliveryDireccion.value = '';
+                
+                const deliveryTelefono = document.getElementById('deliveryTelefono');
+                if (deliveryTelefono) deliveryTelefono.value = '';
+                
+                const deliveryRefContainer = document.getElementById('deliveryReferenceContainer');
+                if (deliveryRefContainer) {
+                    deliveryRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
+                }
+                
+                const deliveryComprobante = document.getElementById('deliveryComprobante');
+                if (deliveryComprobante) deliveryComprobante.value = '';
+                
+                const deliveryFileLabel = document.getElementById('deliveryFileLabel');
+                if (deliveryFileLabel) {
+                    deliveryFileLabel.innerHTML = `
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+                        Haz clic para subir el comprobante de pago
+                    `;
+                    deliveryFileLabel.classList.remove('has-file');
+                }
+                
+                pedidosCliente.push({
+                    id: pedido.id,
+                    estado: 'pendiente',
+                    timestamp: pedido.timestamp
+                });
+                
+                limpiarPedido();
+                
+                document.getElementById('thankYouMessage').classList.add('show');
+                document.getElementById('onlineOrderOptions').classList.remove('show');
+                
+                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
+                showToast('¡Pedido de delivery enviado exitosamente!', 'success');
+            } else {
+                showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
+            }
+        }
+
+        // ==========================================
+        // RESERVA
+        // ==========================================
+        function showReservaModal() {
+            const hoy = new Date();
+            const yyyy = hoy.getFullYear();
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const fechaMinima = `${yyyy}-${mm}-${dd}`;
+            
+            const fechaInput = document.getElementById('reservaFecha');
+            if (fechaInput) {
+                fechaInput.min = fechaMinima;
+                fechaInput.value = fechaMinima;
+                selectedDate = new Date(fechaMinima);
+            }
+            
+            document.getElementById('reservaModal').classList.add('show');
+            validateReservaForm();
+        }
+
+        function validateReservaForm() {
+            const nombre = document.getElementById('reservaNombre')?.value.trim() || '';
+            const fecha = document.getElementById('reservaFecha')?.value || '';
+            const referencia = getReferenceCode('reserva');
+            const comprobante = document.getElementById('reservaComprobante')?.files.length > 0;
+            
+            const nombreValid = nombre.length > 0;
+            const fechaValid = fecha !== '';
+            const referenciaValid = referencia.length === 6;
+            
+            const referenciaError = document.getElementById('referenciaErrorReserva');
+            if (referenciaError) referenciaError.classList.toggle('show', referencia.length > 0 && !referenciaValid);
+            
+            const btnConfirm = document.getElementById('btnConfirmReserva');
+            if (btnConfirm) btnConfirm.disabled = !(nombreValid && fechaValid && referenciaValid && comprobante);
+        }
+
         async function confirmReserva() {
             const pedido = crearPedidoBase();
             pedido.tipo = 'reserva';
-            pedido.fechaReserva = document.getElementById('reservaFecha').value;
-            pedido.clienteNombre = document.getElementById('reservaNombre').value.trim();
+            pedido.fechaReserva = document.getElementById('reservaFecha')?.value || '';
+            pedido.clienteNombre = document.getElementById('reservaNombre')?.value.trim() || '';
             pedido.referencia = getReferenceCode('reserva');
             
-            // Convertir comprobante a base64 para enviar al cajero
-            const comprobanteFile = document.getElementById('reservaComprobante').files[0];
+            const comprobanteFile = document.getElementById('reservaComprobante')?.files[0];
             if (comprobanteFile) {
                 pedido.comprobanteNombre = comprobanteFile.name;
-                pedido.comprobanteBase64 = await fileToBase64(comprobanteFile);
+                try {
+                    pedido.comprobanteBase64 = await fileToBase64(comprobanteFile);
+                } catch (error) {
+                    console.error('Error al convertir comprobante:', error);
+                }
             }
             
             closeModal('reservaModal');
@@ -3548,20 +3581,30 @@
             hideLoading();
             
             if (exito) {
-                // Limpiar campos
-                document.getElementById('reservaNombre').value = '';
-                document.getElementById('reservaFecha').value = '';
+                const reservaNombre = document.getElementById('reservaNombre');
+                if (reservaNombre) reservaNombre.value = '';
+                
+                const reservaFecha = document.getElementById('reservaFecha');
+                if (reservaFecha) reservaFecha.value = '';
+                
                 const reservaRefContainer = document.getElementById('reservaReferenceContainer');
-                reservaRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
-                document.getElementById('reservaComprobante').value = '';
-                document.getElementById('reservaFileLabel').innerHTML = `
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
-                    Haz clic para subir el comprobante de pago
-                `;
-                document.getElementById('reservaFileLabel').classList.remove('has-file');
+                if (reservaRefContainer) {
+                    reservaRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
+                }
+                
+                const reservaComprobante = document.getElementById('reservaComprobante');
+                if (reservaComprobante) reservaComprobante.value = '';
+                
+                const reservaFileLabel = document.getElementById('reservaFileLabel');
+                if (reservaFileLabel) {
+                    reservaFileLabel.innerHTML = `
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+                        Haz clic para subir el comprobante de pago
+                    `;
+                    reservaFileLabel.classList.remove('has-file');
+                }
                 selectedDate = null;
                 
-                // Agregar a pedidos del cliente
                 pedidosCliente.push({
                     id: pedido.id,
                     estado: 'pendiente',
@@ -3570,11 +3613,13 @@
                 
                 limpiarPedido();
                 
-                // Mostrar mensaje de confirmación
                 document.getElementById('thankYouMessage').classList.add('show');
                 document.getElementById('onlineOrderOptions').classList.remove('show');
                 
                 agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
+                showToast('¡Reserva enviada exitosamente!', 'success');
+            } else {
+                showToast('Error al procesar la reserva. Intenta nuevamente.', 'error');
             }
         }
 
@@ -3583,7 +3628,7 @@
         // ==========================================
         function crearPedidoBase() {
             const pedido = {
-                id: 'PED-' + Date.now(),
+                id: 'PED-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
                 timestamp: new Date().toISOString(),
                 estado: 'pendiente',
                 items: [],
@@ -3597,19 +3642,21 @@
             const tasaEfectiva = obtenerTasaEfectiva();
             
             menuItems.forEach(item => {
-                item.instances.filter(inst => inst.confirmada).forEach(instance => {
-                    pedido.items.push({
-                        platilloId: item.id,
-                        nombre: item.name,
-                        cantidad: 1,
-                        personalizacion: instance.removedIngredients,
-                        precioUnitario: item.basePrice,
-                        subtotal: instance.price / tasaEfectiva,
-                        descuentoPorIngredientes: instance.descuentoPorIngredientes / tasaEfectiva,
-                        precioBase: instance.precioBase / tasaEfectiva
+                if (item.instances) {
+                    item.instances.filter(inst => inst.confirmada).forEach(instance => {
+                        pedido.items.push({
+                            platilloId: item.id,
+                            nombre: item.name,
+                            cantidad: 1,
+                            personalizacion: instance.removedIngredients || [],
+                            precioUnitario: item.basePrice || 0,
+                            subtotal: (instance.price || 0) / tasaEfectiva,
+                            descuentoPorIngredientes: (instance.descuentoPorIngredientes || 0) / tasaEfectiva,
+                            precioBase: (instance.precioBase || (item.basePrice * tasaEfectiva)) / tasaEfectiva
+                        });
+                        pedido.total += (instance.price || 0) / tasaEfectiva;
                     });
-                    pedido.total += instance.price / tasaEfectiva;
-                });
+                }
             });
             
             return pedido;
@@ -3617,34 +3664,52 @@
 
         async function guardarPedido(pedido) {
             try {
+                if (!sistemaData) {
+                    sistemaData = { 
+                        menu: [], 
+                        inventario: {}, 
+                        pedidos: [], 
+                        config: { tasaCambio: 400 } 
+                    };
+                }
                 if (!sistemaData.pedidos) sistemaData.pedidos = [];
+                
                 sistemaData.pedidos.push(pedido);
                 
-                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                // Usar la URL correcta para PUT
+                const url = `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`;
+                
+                const response = await fetch(url, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+                        'X-Bin-Versioning': 'false'
                     },
                     body: JSON.stringify(sistemaData)
                 });
                 
-                if (!response.ok) throw new Error('Error al guardar');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Pedido guardado exitosamente:', result);
                 
                 return true;
             } catch (error) {
-                console.error('Error:', error);
-                showToast('Error al procesar el pedido', 'error');
+                console.error('Error detallado al guardar pedido:', error);
+                showToast('Error de conexión. Verifica tu internet y reintenta.', 'error');
                 return false;
             }
         }
 
         function limpiarPedido() {
             menuItems.forEach(item => {
-                // NO restaurar stock aquí - eso se maneja en el servidor o al rechazar
-                item.instances = [];
+                if (item.instances) item.instances = [];
                 item.quantity = 0;
-                item.currentSelections.clear();
+                if (item.currentSelections) item.currentSelections.clear();
                 item.selectionType = "completo";
                 item.totalOrdered = 0;
             });
@@ -3653,19 +3718,21 @@
         }
 
         function formatearPrecioBs(dolares) {
-            const precioBs = dolares * obtenerTasaEfectiva();
+            const precioBs = (dolares || 0) * obtenerTasaEfectiva();
             return `Bs. ${precioBs.toFixed(2).replace('.', ',')}`;
         }
 
         function getStockClass(stock, hayIngredientes) {
             if (!hayIngredientes) return 'sold-out';
-            if (stock === 0) return 'sold-out';
+            if (stock <= 0) return 'sold-out';
             if (stock <= 2) return 'low';
             return 'available';
         }
 
         function actualizarEstadoSync(estado) {
             const statusEl = document.getElementById('syncStatus');
+            if (!statusEl) return;
+            
             const iconEl = statusEl.querySelector('i');
             const textEl = statusEl.querySelector('span');
             
@@ -3673,16 +3740,16 @@
             
             switch(estado) {
                 case 'online':
-                    iconEl.className = 'fas fa-check-circle';
-                    textEl.textContent = 'Sincronizado';
+                    if (iconEl) iconEl.className = 'fas fa-check-circle';
+                    if (textEl) textEl.textContent = 'Sincronizado';
                     break;
                 case 'syncing':
-                    iconEl.className = 'fas fa-sync-alt fa-spin';
-                    textEl.textContent = 'Sincronizando...';
+                    if (iconEl) iconEl.className = 'fas fa-sync-alt fa-spin';
+                    if (textEl) textEl.textContent = 'Sincronizando...';
                     break;
                 case 'offline':
-                    iconEl.className = 'fas fa-exclamation-triangle';
-                    textEl.textContent = 'Modo offline';
+                    if (iconEl) iconEl.className = 'fas fa-exclamation-triangle';
+                    if (textEl) textEl.textContent = 'Modo offline';
                     break;
             }
         }
@@ -3697,6 +3764,8 @@
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
+            if (!toast) return;
+            
             toast.textContent = message;
             toast.className = `toast show ${type}`;
             
@@ -3709,7 +3778,6 @@
         // EVENT LISTENERS
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
-            // La app se inicializa después de verificar ubicación
             checkLocation();
         });
 
