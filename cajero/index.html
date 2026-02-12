@@ -107,15 +107,20 @@
         .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Montserrat', sans-serif; }
         .btn-cobrar { background: linear-gradient(135deg, var(--success), #2E7D32); color: white; }
         .btn-cobrar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 142, 60, 0.4); }
+        .btn-cobrar:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-ver { background: #e0e0e0; color: var(--secondary); }
         .btn-ver:hover { background: #d0d0d0; }
         .btn-rechazar { background: linear-gradient(135deg, var(--danger), #B71C1C); color: white; }
+        .btn-rechazar:disabled { background: #ccc; cursor: not-allowed; }
         .btn-entregar { background: linear-gradient(135deg, var(--success), #2E7D32); color: white; }
         .btn-entregar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 142, 60, 0.4); }
+        .btn-entregar:disabled { background: #ccc; cursor: not-allowed; }
         .btn-enviar { background: linear-gradient(135deg, var(--info), #1565C0); color: white; }
         .btn-enviar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(25, 118, 210, 0.4); }
+        .btn-enviar:disabled { background: #ccc; cursor: not-allowed; }
         .btn-confirmar { background: linear-gradient(135deg, #9c27b0, #7b1fa2); color: white; }
         .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(156, 39, 176, 0.4); }
+        .btn-confirmar:disabled { background: #ccc; cursor: not-allowed; }
         
         .status-badge { 
             display: inline-flex; 
@@ -405,6 +410,18 @@
             color: var(--secondary);
         }
         
+        /* Spinner de procesamiento en botones */
+        .btn-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        
         @media (max-width: 768px) {
             .tasa-bar { flex-direction: column; gap: 1rem; padding: 1rem; }
             .header { flex-direction: column; text-align: center; }
@@ -645,6 +662,53 @@
             BASE_URL: 'https://api.jsonbin.io/v3/b'
         };
 
+        // ==========================================
+        // SISTEMA DE BLOQUEO Y COLA DE OPERACIONES
+        // ==========================================
+        let isProcessing = false;
+        let operationQueue = [];
+        let processingTimeout = null;
+        
+        // Función para ejecutar operaciones secuencialmente
+        async function executeNextOperation() {
+            if (isProcessing || operationQueue.length === 0) return;
+            
+            isProcessing = true;
+            const operation = operationQueue.shift();
+            
+            try {
+                await operation();
+            } catch (error) {
+                console.error('Error en operación:', error);
+            } finally {
+                // Delay antes de permitir siguiente operación
+                processingTimeout = setTimeout(() => {
+                    isProcessing = false;
+                    executeNextOperation();
+                }, 500); // 500ms entre operaciones
+            }
+        }
+        
+        function queueOperation(operation) {
+            operationQueue.push(operation);
+            executeNextOperation();
+        }
+        
+        // Función para bloquear botones durante operación
+        function setButtonsDisabled(disabled) {
+            document.querySelectorAll('.btn-cobrar, .btn-rechazar, .btn-entregar, .btn-enviar, .btn-confirmar, .btn-modal.primary').forEach(btn => {
+                btn.disabled = disabled;
+                if (disabled && !btn.querySelector('.btn-spinner')) {
+                    const originalText = btn.innerHTML;
+                    btn.setAttribute('data-original-text', originalText);
+                    btn.innerHTML = '<span class="btn-spinner"></span>Procesando...';
+                } else if (!disabled && btn.getAttribute('data-original-text')) {
+                    btn.innerHTML = btn.getAttribute('data-original-text');
+                    btn.removeAttribute('data-original-text');
+                }
+            });
+        }
+
         let sistemaData = null;
         let syncInterval = null;
         let currentPedido = null;
@@ -668,6 +732,9 @@
         });
 
         async function cargarDatos() {
+            // Evitar múltiples cargas simultáneas
+            if (isProcessing) return;
+            
             actualizarEstadoSync('syncing');
             try {
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
@@ -676,6 +743,10 @@
                 });
                 if (!response.ok) throw new Error('Error al cargar datos');
                 const data = await response.json();
+                
+                // Pequeño delay para evitar conflictos
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 sistemaData = data.record || data;
                 limpiarPedidosDiaAnterior();
                 actualizarEstadoSync('online');
@@ -917,9 +988,10 @@
                 extraInfo = `<div style="margin-bottom: 10px; font-weight: 700; color: var(--info);"><i class="fas fa-chair"></i> Mesa #${pedido.mesa || '--'}</div>`;
             }
             
-            const botonesRechazo = (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') ? `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')"><i class="fas fa-times"></i> Rechazar</button>` : '';
+            const botonesRechazo = (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') ? `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')" id="btn-rechazar-${pedido.id}"><i class="fas fa-times"></i> Rechazar</button>` : '';
             
-            return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
+            // Agregar ID único al botón de cobrar para control
+            return `<div class="order-card" id="card-${pedido.id}"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')" id="btn-cobrar-${pedido.id}"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
         }
 
         // Función para que el cajero/admin solicite el comprobante del cliente
@@ -950,8 +1022,16 @@
             infoHtml += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">`;
             infoHtml += `<div><strong>Pedido:</strong> ${pedidoId}</div>`;
             infoHtml += `<div><strong>Tipo:</strong> ${pedido?.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</div>`;
+            if (pedido?.tipo === 'delivery') {
+                infoHtml += `<div><strong>Teléfono:</strong> ${pedido.telefono}</div>`;
+                infoHtml += `<div><strong>Dirección:</strong> ${pedido.direccion}</div>`;
+            } else {
+                infoHtml += `<div><strong>Cliente:</strong> ${pedido.clienteNombre}</div>`;
+                infoHtml += `<div><strong>Fecha Reserva:</strong> ${new Date(pedido.fechaReserva).toLocaleDateString()}</div>`;
+            }
+            infoHtml += `<div><strong>Referencia:</strong> ${pedido.referencia}</div>`;
+            infoHtml += `<div><strong>Total:</strong> $${pedido.total.toFixed(2)}</div>`;
             infoHtml += `<div><strong>Archivo:</strong> ${comprobante.nombre || 'comprobante.jpg'}</div>`;
-            infoHtml += `<div><strong>Fecha:</strong> ${new Date(comprobante.timestamp).toLocaleString()}</div>`;
             infoHtml += `</div>`;
             
             infoContainer.innerHTML = infoHtml;
@@ -992,30 +1072,35 @@
             let estadoBadge = '';
             let botonAccion = '';
             let cardClass = '';
+            let btnId = '';
             
             switch(pedido.estado) {
                 case 'en_cocina':
                     estadoClass = 'status-en-cocina';
                     estadoBadge = '<span class="status-badge status-en-cocina"><i class="fas fa-fire"></i> En Cocina</span>';
-                    botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'entrega')"><i class="fas fa-check"></i> Pedido Entregado</button>`;
+                    btnId = `btn-entregar-${pedido.id}`;
+                    botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'entrega')" id="${btnId}"><i class="fas fa-check"></i> Pedido Entregado</button>`;
                     cardClass = 'en-cocina';
                     break;
                 case 'en_camino':
                     estadoClass = 'status-en-camino';
                     estadoBadge = '<span class="status-badge status-en-camino"><i class="fas fa-motorcycle"></i> En Camino</span>';
-                    botonAccion = `<button class="btn btn-enviar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'envio')"><i class="fas fa-check"></i> Pedido Enviado</button>`;
+                    btnId = `btn-enviar-${pedido.id}`;
+                    botonAccion = `<button class="btn btn-enviar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'envio')" id="${btnId}"><i class="fas fa-check"></i> Pedido Enviado</button>`;
                     cardClass = 'en-camino';
                     break;
                 case 'reserva_pendiente':
                     estadoClass = 'status-reserva-pendiente';
                     estadoBadge = '<span class="status-badge status-reserva-pendiente"><i class="fas fa-calendar"></i> Reserva Pendiente</span>';
-                    botonAccion = `<button class="btn btn-confirmar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva')"><i class="fas fa-user-check"></i> Cliente Confirmado</button>`;
+                    btnId = `btn-confirmar-${pedido.id}`;
+                    botonAccion = `<button class="btn btn-confirmar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva')" id="${btnId}"><i class="fas fa-user-check"></i> Cliente Confirmado</button>`;
                     cardClass = 'reserva-pendiente';
                     break;
                 case 'reserva_atendida':
                     estadoClass = 'status-reserva-atendida';
                     estadoBadge = '<span class="status-badge status-reserva-atendida"><i class="fas fa-utensils"></i> Cliente Atendido</span>';
-                    botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva_entrega')"><i class="fas fa-check"></i> Pedido Entregado</button>`;
+                    btnId = `btn-entregar-reserva-${pedido.id}`;
+                    botonAccion = `<button class="btn btn-entregar" onclick="mostrarConfirmacionEntrega('${pedido.id}', 'reserva_entrega')" id="${btnId}"><i class="fas fa-check"></i> Pedido Entregado</button>`;
                     cardClass = 'reserva-atendida';
                     break;
             }
@@ -1065,7 +1150,7 @@
                 extraInfo = `<div style="margin: 10px 0; font-weight: 700; color: var(--info); background: #E3F2FD; padding: 10px; border-radius: 8px;"><i class="fas fa-chair"></i> Mesa #${pedido.mesa || '--'}</div>`;
             }
             
-            return `<div class="order-card ${cardClass}">
+            return `<div class="order-card ${cardClass}" id="card-prep-${pedido.id}">
                 <div class="order-card-header">
                     <span class="order-id">${pedido.id}</span>
                     <span class="order-time"><i class="fas fa-clock"></i> ${hora}</span>
@@ -1080,6 +1165,9 @@
 
         // Confirmación de entrega/envío/reserva
         function mostrarConfirmacionEntrega(pedidoId, tipo) {
+            // Evitar múltiples clicks
+            if (isProcessing) return;
+            
             pedidoConfirmacion = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!pedidoConfirmacion) return;
             
@@ -1161,42 +1249,88 @@
         }
 
         async function ejecutarConfirmacion() {
-            if (!pedidoConfirmacion || !tipoConfirmacion) return;
+            // Prevenir ejecución múltiple
+            if (isProcessing || !pedidoConfirmacion || !tipoConfirmacion) return;
             
-            switch(tipoConfirmacion) {
-                case 'entrega':
-                    pedidoConfirmacion.estado = 'entregado';
-                    pedidoConfirmacion.fechaEntrega = new Date().toISOString();
-                    break;
-                case 'envio':
-                    pedidoConfirmacion.estado = 'enviado';
-                    pedidoConfirmacion.fechaEnvio = new Date().toISOString();
-                    break;
-                case 'reserva':
-                    pedidoConfirmacion.estado = 'reserva_atendida';
-                    pedidoConfirmacion.fechaAsistencia = new Date().toISOString();
-                    break;
-                case 'reserva_entrega':
-                    pedidoConfirmacion.estado = 'reserva_completada';
-                    pedidoConfirmacion.fechaCompletado = new Date().toISOString();
-                    break;
-            }
+            // Bloquear botones inmediatamente
+            setButtonsDisabled(true);
             
-            await guardarCambios();
-            cerrarModal('confirmEntregaModal');
-            
-            const mensajes = {
-                'entrega': 'Pedido marcado como entregado',
-                'envio': 'Pedido marcado como enviado',
-                'reserva': 'Cliente confirmado y en atención',
-                'reserva_entrega': 'Pedido de reserva completado'
-            };
-            
-            mostrarNotificacion(mensajes[tipoConfirmacion]);
-            renderPedidos();
-            
-            pedidoConfirmacion = null;
-            tipoConfirmacion = null;
+            queueOperation(async () => {
+                try {
+                    // Verificar que el pedido sigue existiendo y en estado válido
+                    const pedidoActual = sistemaData.pedidos.find(p => p.id === pedidoConfirmacion.id);
+                    if (!pedidoActual) {
+                        mostrarNotificacion('Pedido no encontrado', 'error');
+                        return;
+                    }
+                    
+                    // Verificar estado actual antes de cambiar
+                    const estadosValidos = {
+                        'entrega': ['en_cocina'],
+                        'envio': ['en_camino'],
+                        'reserva': ['reserva_pendiente'],
+                        'reserva_entrega': ['reserva_atendida']
+                    };
+                    
+                    if (!estadosValidos[tipoConfirmacion].includes(pedidoActual.estado)) {
+                        console.log(`Estado actual ${pedidoActual.estado} no válido para ${tipoConfirmacion}`);
+                    }
+                    
+                    // Actualizar estado secuencialmente con delays
+                    switch(tipoConfirmacion) {
+                        case 'entrega':
+                            pedidoActual.estado = 'entregado';
+                            pedidoActual.fechaEntrega = new Date().toISOString();
+                            break;
+                        case 'envio':
+                            pedidoActual.estado = 'enviado';
+                            pedidoActual.fechaEnvio = new Date().toISOString();
+                            break;
+                        case 'reserva':
+                            pedidoActual.estado = 'reserva_atendida';
+                            pedidoActual.fechaAsistencia = new Date().toISOString();
+                            break;
+                        case 'reserva_entrega':
+                            pedidoActual.estado = 'reserva_completada';
+                            pedidoActual.fechaCompletado = new Date().toISOString();
+                            break;
+                    }
+                    
+                    // Delay antes de guardar
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    // Guardar cambios
+                    await guardarCambios();
+                    
+                    // Delay después de guardar
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // Cerrar modal
+                    cerrarModal('confirmEntregaModal');
+                    
+                    const mensajes = {
+                        'entrega': 'Pedido marcado como entregado',
+                        'envio': 'Pedido marcado como enviado',
+                        'reserva': 'Cliente confirmado y en atención',
+                        'reserva_entrega': 'Pedido de reserva completado'
+                    };
+                    
+                    mostrarNotificacion(mensajes[tipoConfirmacion]);
+                    
+                    // Delay antes de re-renderizar
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    renderPedidos();
+                    
+                } catch (error) {
+                    console.error('Error en confirmación:', error);
+                    mostrarNotificacion('Error al procesar. Intente nuevamente.', 'error');
+                } finally {
+                    pedidoConfirmacion = null;
+                    tipoConfirmacion = null;
+                    setButtonsDisabled(false);
+                }
+            });
         }
 
         function handleGlobalKeypress(e) {
@@ -1283,6 +1417,9 @@
 
         // Cobro con Múltiples Métodos de Pago
         function mostrarCobro(pedidoId) {
+            // Evitar múltiples clicks
+            if (isProcessing) return;
+            
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
@@ -1584,95 +1721,171 @@
         }
 
         async function confirmarCobro() {
-            if (!currentPedido || pagosMixtos.length === 0) return;
+            // Prevenir ejecución múltiple
+            if (isProcessing || !currentPedido || pagosMixtos.length === 0) return;
             
-            let totalRecibido = 0;
-            let totalRecibidoUsd = 0;
+            // Bloquear botón inmediatamente
+            const btnConfirmar = document.getElementById('btnConfirmarCobro');
+            btnConfirmar.disabled = true;
             
-            pagosMixtos.forEach(pago => {
-                if (pago.metodo === 'efectivo_usd') {
-                    totalRecibidoUsd += pago.monto;
-                    totalRecibido += pago.monto * tasaEfectiva;
-                } else {
-                    totalRecibido += pago.monto;
+            queueOperation(async () => {
+                try {
+                    let totalRecibido = 0;
+                    let totalRecibidoUsd = 0;
+                    
+                    pagosMixtos.forEach(pago => {
+                        if (pago.metodo === 'efectivo_usd') {
+                            totalRecibidoUsd += pago.monto;
+                            totalRecibido += pago.monto * tasaEfectiva;
+                        } else {
+                            totalRecibido += pago.monto;
+                        }
+                    });
+                    
+                    const diferencia = totalRecibido - totalPagar;
+                    const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
+                    
+                    // Verificar que el pedido sigue existiendo
+                    const pedidoActual = sistemaData.pedidos.find(p => p.id === currentPedido.id);
+                    if (!pedidoActual) {
+                        mostrarNotificacion('Pedido no encontrado', 'error');
+                        return;
+                    }
+                    
+                    // CORREGIDO: Determinar siguiente estado según tipo de pedido
+                    if (pedidoActual.tipo === 'delivery') {
+                        pedidoActual.estado = 'en_camino';
+                    } else if (pedidoActual.tipo === 'reserva') {
+                        pedidoActual.estado = 'reserva_pendiente';
+                    } else {
+                        pedidoActual.estado = 'en_cocina';
+                    }
+                    
+                    pedidoActual.cajero = 'Cajero Principal';
+                    pedidoActual.fechaCobro = new Date().toISOString();
+                    
+                    // Guardar información de pago mixto
+                    pedidoActual.pagosMixtos = pagosMixtos.map(p => ({
+                        metodo: p.metodo,
+                        monto: p.monto,
+                        montoBs: p.metodo === 'efectivo_usd' ? p.monto * tasaEfectiva : p.monto,
+                        referencia: p.referencia
+                    }));
+                    
+                    pedidoActual.metodoPago = 'mixto';
+                    pedidoActual.montoRecibido = totalRecibido;
+                    pedidoActual.montoRecibidoUsd = totalRecibidoUsd;
+                    pedidoActual.tasaAplicada = tasaEfectiva;
+                    
+                    if (diferencia < 0) {
+                        pedidoActual.diferencia = Math.abs(diferencia);
+                        pedidoActual.tipoDiferencia = specialOption;
+                        if (specialOption === 'casa') pedidoActual.invitadoPor = document.getElementById('nombreInvita').value;
+                    } else if (diferencia > 0) {
+                        pedidoActual.cambio = diferencia;
+                    }
+                    
+                    // Delay antes de guardar
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    // Guardar cambios
+                    await guardarCambios();
+                    
+                    // Delay después de guardar
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    closeModal('cobroModal');
+                    mostrarNotificacion('Cobro procesado. Pedido en preparación.');
+                    
+                    // Delay antes de re-renderizar
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    renderPedidos();
+                    
+                } catch (error) {
+                    console.error('Error en cobro:', error);
+                    mostrarNotificacion('Error al procesar cobro. Intente nuevamente.', 'error');
+                    btnConfirmar.disabled = false;
                 }
             });
-            
-            const diferencia = totalRecibido - totalPagar;
-            const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
-            
-            // CORREGIDO: Determinar siguiente estado según tipo de pedido
-            if (currentPedido.tipo === 'delivery') {
-                currentPedido.estado = 'en_camino';
-            } else if (currentPedido.tipo === 'reserva') {
-                currentPedido.estado = 'reserva_pendiente';
-            } else {
-                currentPedido.estado = 'en_cocina';
-            }
-            
-            currentPedido.cajero = 'Cajero Principal';
-            currentPedido.fechaCobro = new Date().toISOString();
-            
-            // Guardar información de pago mixto
-            currentPedido.pagosMixtos = pagosMixtos.map(p => ({
-                metodo: p.metodo,
-                monto: p.monto,
-                montoBs: p.metodo === 'efectivo_usd' ? p.monto * tasaEfectiva : p.monto,
-                referencia: p.referencia
-            }));
-            
-            currentPedido.metodoPago = 'mixto';
-            currentPedido.montoRecibido = totalRecibido;
-            currentPedido.montoRecibidoUsd = totalRecibidoUsd;
-            currentPedido.tasaAplicada = tasaEfectiva;
-            
-            if (diferencia < 0) {
-                currentPedido.diferencia = Math.abs(diferencia);
-                currentPedido.tipoDiferencia = specialOption;
-                if (specialOption === 'casa') currentPedido.invitadoPor = document.getElementById('nombreInvita').value;
-            } else if (diferencia > 0) {
-                currentPedido.cambio = diferencia;
-            }
-            
-            await guardarCambios();
-            closeModal('cobroModal');
-            mostrarNotificacion('Cobro procesado. Pedido en preparación.');
-            renderPedidos();
         }
 
         // Rechazo
         function mostrarRechazo(pedidoId) {
+            // Evitar múltiples clicks
+            if (isProcessing) return;
+            
             pedidoRechazo = sistemaData.pedidos.find(p => p.id === pedidoId);
-            document.getElementById('rechazoModal').classList.add('show');
+            if (pedidoRechazo) {
+                document.getElementById('rechazoModal').classList.add('show');
+            }
         }
 
         async function confirmarRechazo() {
+            // Prevenir ejecución múltiple
+            if (isProcessing || !pedidoRechazo) return;
+            
             const razon = document.querySelector('input[name="rejectionReason"]:checked')?.value;
-            if (!razon) { alert('Selecciona una razón de rechazo'); return; }
-            if (!pedidoRechazo) return;
+            if (!razon) { 
+                alert('Selecciona una razón de rechazo'); 
+                return; 
+            }
             
-            pedidoRechazo.estado = 'rechazado';
-            pedidoRechazo.razonRechazo = razon;
-            pedidoRechazo.fechaRechazo = new Date().toISOString();
+            // Bloquear botones inmediatamente
+            setButtonsDisabled(true);
             
-            // Restaurar stock
-            if (pedidoRechazo.items) {
-                pedidoRechazo.items.forEach(item => {
-                    const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
-                    if (platillo && platillo.ingredientes) {
-                        Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
-                            if (!item.personalizacion?.includes(ingKey)) {
-                                if (sistemaData.inventario[ingKey]) sistemaData.inventario[ingKey].stock += ingData.cantidad * (item.cantidad || 1);
+            queueOperation(async () => {
+                try {
+                    // Verificar que el pedido sigue existiendo
+                    const pedidoActual = sistemaData.pedidos.find(p => p.id === pedidoRechazo.id);
+                    if (!pedidoActual) {
+                        mostrarNotificacion('Pedido no encontrado', 'error');
+                        return;
+                    }
+                    
+                    pedidoActual.estado = 'rechazado';
+                    pedidoActual.razonRechazo = razon;
+                    pedidoActual.fechaRechazo = new Date().toISOString();
+                    
+                    // Restaurar stock
+                    if (pedidoActual.items) {
+                        pedidoActual.items.forEach(item => {
+                            const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
+                            if (platillo && platillo.ingredientes) {
+                                Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
+                                    if (!item.personalizacion?.includes(ingKey)) {
+                                        if (sistemaData.inventario[ingKey]) sistemaData.inventario[ingKey].stock += ingData.cantidad * (item.cantidad || 1);
+                                    }
+                                });
                             }
                         });
                     }
-                });
-            }
-            
-            await guardarCambios();
-            closeModal('rechazoModal');
-            mostrarNotificacion('Pedido rechazado. Cliente notificado.');
-            renderPedidos();
+                    
+                    // Delay antes de guardar
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    // Guardar cambios
+                    await guardarCambios();
+                    
+                    // Delay después de guardar
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    closeModal('rechazoModal');
+                    mostrarNotificacion('Pedido rechazado. Cliente notificado.');
+                    
+                    // Delay antes de re-renderizar
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    renderPedidos();
+                    
+                } catch (error) {
+                    console.error('Error en rechazo:', error);
+                    mostrarNotificacion('Error al procesar rechazo. Intente nuevamente.', 'error');
+                } finally {
+                    pedidoRechazo = null;
+                    setButtonsDisabled(false);
+                }
+            });
         }
 
         // Utilidades
@@ -1701,15 +1914,27 @@
         
         async function guardarCambios() {
             try {
-                await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_CONFIG.API_KEY },
                     body: JSON.stringify(sistemaData)
                 });
-            } catch (error) { console.error('Error guardando:', error); }
+                
+                if (!response.ok) throw new Error('Error al guardar');
+                
+                // Pequeño delay después de guardar exitosamente
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+            } catch (error) { 
+                console.error('Error guardando:', error);
+                throw error;
+            }
         }
         
-        window.addEventListener('beforeunload', () => { if (syncInterval) clearInterval(syncInterval); });
+        window.addEventListener('beforeunload', () => { 
+            if (syncInterval) clearInterval(syncInterval); 
+            if (processingTimeout) clearTimeout(processingTimeout);
+        });
     </script>
 </body>
 </html>
