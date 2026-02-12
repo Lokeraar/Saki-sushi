@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 Panel del Cajero - Saki Sushi</title>
+    <title>?? Panel del Cajero - Saki Sushi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -420,7 +420,7 @@
         <div class="modal-content">
             <div class="modal-body" style="padding: 2rem;">
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h2 style="margin-bottom: 1rem; color: var(--secondary);">¡Buenos días!</h2>
+                <h2 style="margin-bottom: 1rem; color: var(--secondary);">?Buenos días!</h2>
                 <p style="color: #666; margin-bottom: 1.5rem;">El administrador no ha establecido la <strong>tasa del dólar del día</strong>. Por favor, introdúcela para continuar.</p>
                 <div style="background: #f8f8f8; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--secondary);">Tasa del Día (Bs. por $1)</label>
@@ -437,7 +437,7 @@
     <!-- Notification -->
     <div class="notification" id="notification">
         <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></i>
-        <div><h4 style="margin: 0; color: var(--secondary);">Éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
+        <div><h4 style="margin: 0; color: var(--secondary);">éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
     </div>
 
     <!-- Modal de Confirmación de Entrega/Envío/Reserva -->
@@ -637,7 +637,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN JSONBin
+        // CONFIGURACIóN JSONBin
         // ==========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
@@ -656,6 +656,24 @@
         let pagosMixtos = [];
         let totalPagar = 0;
         let tasaEfectiva = 400;
+
+		// Función para que el cajero/admin solicite el comprobante
+		function solicitarComprobante(pedidoId) {
+			const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
+			const comprobante = comprobantes[pedidoId];
+			
+			if (!comprobante) {
+				showToast('No se encontró comprobante para este pedido', 'error');
+				return null;
+			}
+			
+			if (!comprobante.disponible) {
+				showToast('El comprobante era muy grande y no se guardó. Solicitar por WhatsApp.', 'warning');
+				return null;
+			}
+			
+			return comprobante;
+		}
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1109,25 +1127,25 @@
             switch(tipo) {
                 case 'entrega':
                     titulo = 'Confirmar Entrega';
-                    mensaje = '¿Confirmas que el pedido ha sido entregado al cliente en la mesa?';
+                    mensaje = '?Confirmas que el pedido ha sido entregado al cliente en la mesa?';
                     icono = 'fa-check-circle';
                     header.className = 'modal-header entrega';
                     break;
                 case 'envio':
                     titulo = 'Confirmar Envío';
-                    mensaje = '¿Confirmas que el pedido ha sido enviado al cliente?';
+                    mensaje = '?Confirmas que el pedido ha sido enviado al cliente?';
                     icono = 'fa-motorcycle';
                     header.className = 'modal-header envio';
                     break;
                 case 'reserva':
                     titulo = 'Confirmar Asistencia';
-                    mensaje = '¿Confirmas que el cliente ha llegado y está siendo atendido?';
+                    mensaje = '?Confirmas que el cliente ha llegado y está siendo atendido?';
                     icono = 'fa-user-check';
                     header.className = 'modal-header reserva';
                     break;
                 case 'reserva_entrega':
                     titulo = 'Confirmar Entrega';
-                    mensaje = '¿Confirmas que el pedido ha sido servido al cliente reservado?';
+                    mensaje = '?Confirmas que el pedido ha sido servido al cliente reservado?';
                     icono = 'fa-utensils';
                     header.className = 'modal-header entrega';
                     break;
@@ -1427,7 +1445,7 @@
                         </div>
                         ${showReferencia ? `
                             <div class="reference-input">
-                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">Últimos 6 dígitos de referencia:</label>
+                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">últimos 6 dígitos de referencia:</label>
                                 <input type="text" maxlength="6" placeholder="000000" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
                             </div>
                         ` : ''}
@@ -1530,7 +1548,7 @@
                 remainingAmount.style.color = 'var(--warning)';
             } else if (pendiente === 0) {
                 remainingDisplay.className = 'payment-mix-remaining paid';
-                remainingAmount.textContent = '¡PAGO COMPLETO!';
+                remainingAmount.textContent = '?PAGO COMPLETO!';
                 remainingAmount.style.color = 'var(--success)';
             } else {
                 remainingDisplay.className = 'payment-mix-remaining overpaid';
