@@ -274,6 +274,30 @@
             font-size: 0.875rem;
             z-index: 10;
         }
+
+        /* Botón de sincronización manual */
+        .sync-manual-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .sync-manual-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .sync-manual-btn.syncing {
+            animation: pulse 1.5s infinite;
+        }
     </style>
 </head>
 <body>
@@ -289,7 +313,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contraseña de Administrador</label>
-                    <input type="password" class="form-input" id="adminPasswordInput" placeholder="••••••" onkeypress="handleLoginKeypress(event)">
+                    <input type="password" class="form-input" id="adminPasswordInput" placeholder="******" onkeypress="handleLoginKeypress(event)">
                     <div class="error-message" id="loginError">Contraseña incorrecta</div>
                 </div>
                 <button class="btn btn-primary" onclick="loginAdmin()">
@@ -348,7 +372,7 @@
             <div class="recovery-steps" id="recoverySuccessStep">
                 <div class="login-logo">
                     <i class="fas fa-unlock" style="color: var(--success);"></i>
-                    <h1>¡Recuperación Exitosa!</h1>
+                    <h1>✅ Recuperación Exitosa!</h1>
                     <p>Tu contraseña ha sido recuperada</p>
                 </div>
                 <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.5rem; margin: 1.5rem 0; border: 1px solid var(--border);">
@@ -370,7 +394,7 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h2 style="margin-bottom: 1rem;">¡Buenos días!</h2>
+                <h2 style="margin-bottom: 1rem;">👋 ¡Buenos días!</h2>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Antes de iniciar actividades, por favor actualiza la <strong>tasa del dólar del día</strong>.</p>
                 <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Tasa del Día (Bs. por $1)</label>
@@ -554,6 +578,11 @@
         <header class="header">
             <div class="logo">🍣 Saki Sushi Admin</div>
             <div class="header-actions">
+                <!-- Botón de sincronización manual -->
+                <div class="sync-manual-btn" onclick="sincronizarManual()" title="Sincronizar con servidor">
+                    <i class="fas fa-sync-alt" id="manualSyncIcon"></i>
+                    <span>JSONbin</span>
+                </div>
                 <div class="sync-status"><div class="sync-dot"></div><span>Sincronizado</span></div>
                 <button class="btn-header btn-secondary" onclick="window.open('../cliente/', '_blank')"><i class="fas fa-utensils"></i> Ver Menú Cliente</button>
                 <button class="btn-header btn-secondary" onclick="window.open('../cajero/', '_blank')"><i class="fas fa-cash-register"></i> Panel Cajero</button>
@@ -595,7 +624,7 @@
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
-                <button class="tab" onclick="cambiarTab('menu')">🍱 Menú & Precios</button>
+                <button class="tab" onclick="cambiarTab('menu')">🍣 Menú & Precios</button>
                 <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
                 <button class="tab" onclick="cambiarTab('usuarios')">👥 Usuarios</button>
                 <button class="tab" onclick="cambiarTab('config')">⚙️ Configuración</button>
@@ -631,7 +660,7 @@
                 <div class="grid grid-2" style="margin-top: 1.5rem;">
                     <div class="card">
                         <div class="card-header">
-                            <div><div class="card-title">Pedidos Recientes</div><div class="card-subtitle">Últimas 5 órdenes</div></div>
+                            <div><div class="card-title">Pedidos Recientes</div><div class="card-subtitle">últimas 5 órdenes</div></div>
                         </div>
                         <div id="pedidos-recientes"><p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Cargando...</p></div>
                     </div>
@@ -648,7 +677,7 @@
             <div id="menu" class="tab-content">
                 <div class="card" style="margin-bottom: 1.5rem; border: 2px solid var(--primary);">
                     <div class="card-header">
-                        <div><div class="card-title" style="color: var(--primary);">💱 Configuración de Precios</div><div class="card-subtitle">Los precios se ingresan en USD ($) y se convierten automáticamente</div></div>
+                        <div><div class="card-title" style="color: var(--primary);">💰 Configuración de Precios</div><div class="card-subtitle">Los precios se ingresan en USD ($) y se convierten automáticamente</div></div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                         <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tasa Base del Día</div><div style="font-size: 1.5rem; font-weight: 700;" id="tasa-base-menu">0.00</div></div>
@@ -710,13 +739,11 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Contraseña Temporal</label>
-                            <input type="text" class="form-input" id="newCashierPassword" placeholder="••••••" onkeypress="handleNewUserKeypress(event)">
+                            <input type="text" class="form-input" id="newCashierPassword" placeholder="******" onkeypress="handleNewUserKeypress(event)">
                         </div>
                         <button class="btn-header btn-success" onclick="createCashierUser()"><i class="fas fa-user-plus"></i> Crear Usuario Cajero</button>
                     </div>
-                    <div class="user-list" id="cashierUsersList">
-                        <!-- Users loaded dynamically -->
-                    </div>
+                    <div class="user-list" id="cashierUsersList"></div>
                 </div>
             </div>
 
@@ -733,15 +760,15 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Contraseña Actual</label>
-                            <input type="password" class="form-input" id="currentAdminPass" placeholder="••••••" onkeypress="handlePasswordChangeKeypress(event)">
+                            <input type="password" class="form-input" id="currentAdminPass" placeholder="******" onkeypress="handlePasswordChangeKeypress(event)">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nueva Contraseña</label>
-                            <input type="password" class="form-input" id="newAdminPass" placeholder="••••••" onkeypress="handlePasswordChangeKeypress(event)">
+                            <input type="password" class="form-input" id="newAdminPass" placeholder="******" onkeypress="handlePasswordChangeKeypress(event)">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Confirmar Nueva Contraseña</label>
-                            <input type="password" class="form-input" id="confirmAdminPass" placeholder="••••••" onkeypress="handlePasswordChangeKeypress(event)">
+                            <input type="password" class="form-input" id="confirmAdminPass" placeholder="******" onkeypress="handlePasswordChangeKeypress(event)">
                         </div>
                         <button class="btn-header btn-primary" onclick="changeAdminPassword()"><i class="fas fa-key"></i> Cambiar Contraseña</button>
                     </div>
@@ -768,7 +795,7 @@
                     <div class="qr-section">
                         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Los códigos QR dirigirán a los clientes al menú con el perfil de mesa seleccionado.</p>
                         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
-                            <input type="text" class="form-input" id="qrNombreInput" placeholder="Nombre del QR (ej: Mesa 1)" style="max-width: 300px;" onkeypress="handleQRKeypress(event)">
+                            <input type="text" class="form-input" id="qrNombreInput" placeholder="Ej: Mesa 1, Terraza 2, etc." style="max-width: 300px;" onkeypress="handleQRKeypress(event)">
                             <button class="btn-header btn-primary" onclick="generarQR()"><i class="fas fa-qrcode"></i> Generar QR</button>
                         </div>
                     </div>
@@ -776,20 +803,28 @@
                 </div>
             </div>
 
-            <!-- Reportes Tab -->
+            <!-- Reportes Tab - TOTALMENTE FUNCIONAL CON GRÁFICAS -->
             <div id="reportes" class="tab-content">
                 <div class="grid grid-4">
                     <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas del Día</div><div class="stat-value" id="reporte-ventas-dia">$0</div><div class="card-subtitle" id="reporte-ordenes-dia">0 órdenes</div></div>
-                    <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas Semana</div><div class="stat-value" id="reporte-ventas-semana">$0</div><div class="card-subtitle">Últimos 7 días</div></div>
+                    <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas Semana</div><div class="stat-value" id="reporte-ventas-semana">$0</div><div class="card-subtitle">últimos 7 días</div></div>
                     <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ticket Promedio</div><div class="stat-value" id="ticket-promedio">$0</div><div class="card-subtitle">por orden</div></div>
                     <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Platillo Top</div><div class="stat-value" id="platillo-top" style="font-size: 1.25rem;">-</div><div class="card-subtitle">más vendido</div></div>
                 </div>
 
                 <div class="chart-grid" style="margin-top: 1.5rem;">
-                    <div class="chart-container"><canvas id="ventasChart"></canvas></div>
-                    <div class="chart-container"><canvas id="categoriasChart"></canvas></div>
-                    <div class="chart-container"><canvas id="metodosChart"></canvas></div>
-                    <div class="chart-container"><canvas id="horasChart"></canvas></div>
+                    <div class="chart-container">
+                        <canvas id="ventasChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoriasChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="metodosChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="horasChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="card" style="margin-top: 1.5rem;">
@@ -845,6 +880,12 @@
         let charts = {};
         let currentRecoveryCode = '';
 
+        // Control de sincronización
+        let lastSyncTime = 0;
+        const SYNC_COOLDOWN = 60000;
+        let syncIntervalId = null;
+        let isManualSyncing = false;
+
         // Subcategorías según panel cliente
         const SUBCATEGORIAS = {
             'rolls': [
@@ -878,6 +919,10 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
             checkAuth();
+            // Sincronización automática cada 3 minutos (180000 ms)
+            syncIntervalId = setInterval(() => {
+                sincronizarAutomatica();
+            }, 180000);
         });
 
         function checkAuth() {
@@ -900,8 +945,6 @@
             document.getElementById('mainContent').classList.add('active');
             verificarTasaDelDia();
             actualizarUI();
-            setInterval(async () => { await cargarDatos(); actualizarUI(); }, 30000);
-            setInterval(verificarAumentoDiario, 60000);
         }
 
         function handleLoginKeypress(e) {
@@ -996,13 +1039,27 @@
         }
 
         // ==========================================
-        // CARGA DE DATOS
+        // CARGA DE DATOS (SINCRONIZACIÓN NO BLOQUEANTE)
         // ==========================================
-        async function cargarDatos() {
+        async function cargarDatos(skipCooldown = false) {
+            const ahora = Date.now();
+            if (!skipCooldown && (ahora - lastSyncTime < SYNC_COOLDOWN)) {
+                console.log('Carga omitida - en cooldown');
+                return false;
+            }
+            
             try {
-                const response = await fetch(JSONBIN_URL, { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
+                const response = await fetch(JSONBIN_URL, { 
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY } 
+                });
                 const result = await response.json();
+                
                 if (result.record) {
+                    // PRESERVAR ESTADO DE EDICIÓN: ingredientesPlato y modales abiertos
+                    const ingredientesGuardados = [...ingredientesPlato];
+                    const modalPlatilloAbierto = document.getElementById('modal-platillo').classList.contains('active');
+                    const modalIngredienteAbierto = document.getElementById('modal-ingrediente').classList.contains('active');
+                    
                     datos = { ...datos, ...result.record };
                     if (!datos.config) datos.config = {};
                     if (!datos.config.adminPassword) datos.config.adminPassword = DEFAULT_ADMIN_PASSWORD;
@@ -1012,18 +1069,74 @@
                     if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
                     if (!datos.codigosQR) datos.codigosQR = [];
                     if (!datos.usuarios) datos.usuarios = [];
+                    
+                    // RESTAURAR ESTADO DE EDICIÓN
+                    if (modalPlatilloAbierto) {
+                        ingredientesPlato = ingredientesGuardados;
+                        renderIngredientesPlato();
+                    }
+                    
+                    lastSyncTime = ahora;
+                    return true;
                 }
-            } catch (error) { console.error('Error cargando datos:', error); }
+            } catch (error) { 
+                console.error('Error cargando datos:', error);
+                return false;
+            }
+        }
+
+        // Sincronización automática silenciosa
+        async function sincronizarAutomatica() {
+            if (isManualSyncing) return;
+            await cargarDatos(true);
+            actualizarUI();
+        }
+
+        // Sincronización manual con feedback visual
+        async function sincronizarManual() {
+            if (isManualSyncing) {
+                mostrarNotificacion('Ya hay una sincronización en curso...', 'info');
+                return;
+            }
+            
+            isManualSyncing = true;
+            const syncIcon = document.getElementById('manualSyncIcon');
+            const originalClass = syncIcon.className;
+            syncIcon.className = 'fas fa-sync-alt fa-spin';
+            document.querySelector('.sync-manual-btn').classList.add('syncing');
+            
+            mostrarNotificacion('Sincronizando con servidor...', 'success');
+            
+            const sincronizado = await cargarDatos(true);
+            
+            if (sincronizado) {
+                actualizarUI();
+                mostrarNotificacion('Datos sincronizados', 'success');
+            } else {
+                mostrarNotificacion('Error al sincronizar. Modo offline.', 'error');
+            }
+            
+            syncIcon.className = originalClass;
+            document.querySelector('.sync-manual-btn').classList.remove('syncing');
+            isManualSyncing = false;
         }
 
         async function guardarDatos() {
             try {
                 await fetch(JSONBIN_URL, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-Master-Key': JSONBIN_API_KEY 
+                    },
                     body: JSON.stringify(datos)
                 });
-            } catch (error) { console.error('Error guardando:', error); }
+                lastSyncTime = Date.now();
+                return true;
+            } catch (error) { 
+                console.error('Error guardando:', error);
+                return false;
+            }
         }
 
         // ==========================================
@@ -1191,19 +1304,6 @@
             mostrarNotificacion('Aumento diario reactivado');
         }
 
-        function verificarAumentoDiario() {
-            const ahora = new Date();
-            if (ahora.getHours() === 6 && ahora.getMinutes() === 0) {
-                if (datos.config.aumentoActivo && !datos.config.aumentoDetenido) {
-                    calcularTasaEfectiva();
-                    guardarDatos();
-                    actualizarDisplayTasa();
-                    recalcularCostos();
-                    mostrarNotificacion('Aumento diario aplicado automáticamente');
-                }
-            }
-        }
-
         // ==========================================
         // SISTEMA DE UNIDADES Y CONVERSIONES
         // ==========================================
@@ -1263,7 +1363,7 @@
         }
 
         // ==========================================
-        // GESTIÓN DE INVENTARIO - CON PASSWORD OVERLAY RESTAURADO
+        // GESTIÓN DE INVENTARIO - CON PASSWORD OVERLAY
         // ==========================================
         function desbloquearStock() {
             document.getElementById('modal-password').classList.add('active');
@@ -1391,7 +1491,6 @@
             const precioCosto = parseFloat(document.getElementById('ingrediente-costo').value) || 0;
             const precioVenta = parseFloat(document.getElementById('ingrediente-precio-venta').value) || 0;
             
-            // Guardar ingrediente
             datos.inventario[id] = {
                 nombre: document.getElementById('ingrediente-nombre').value,
                 stock: stockFinal,
@@ -1405,12 +1504,10 @@
             
             cerrarModal('modal-ingrediente');
             
-            // ACTUALIZACIÓN AUTOMÁTICA DE STOCK EN PLATILLOS
             recalcularStockPlatillosPorIngrediente(id);
             
             await guardarDatos();
             
-            // Actualizar todas las vistas
             renderizarInventario();
             renderizarMenu();
             actualizarDashboard();
@@ -1418,14 +1515,12 @@
             mostrarNotificacion('Ingrediente guardado correctamente. Stock de platillos actualizado.');
         }
 
-        // Función que recalcula el stock de todos los platillos afectados por un ingrediente
         function recalcularStockPlatillosPorIngrediente(ingredienteId) {
             let platillosActualizados = 0;
             
             datos.menu.forEach(platillo => {
                 if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
                     let maxPlatillos = Infinity;
-                    let hayIngredientesDisponibles = true;
                     
                     Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
                         const ing = datos.inventario[ingId];
@@ -1442,34 +1537,21 @@
                         } else {
                             if (data.obligatorio) {
                                 maxPlatillos = 0;
-                                hayIngredientesDisponibles = false;
                             }
                         }
                     });
                     
                     if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
                     
-                    const stockAnterior = platillo.stock || 0;
                     platillo.stock = maxPlatillos;
                     platillo.stockMaximo = maxPlatillos;
-                    
-                    if (stockAnterior === 0 && maxPlatillos > 0) {
-                        platillo.disponible = true;
-                    }
                     
                     platillosActualizados++;
                 }
             });
-            
-            if (platillosActualizados > 0) {
-                console.log(`Stock recalculado para ${platillosActualizados} platillo(s)`);
-            }
         }
 
-        // Función para recalcular todos los platillos
         function recalcularStockTodosPlatillos() {
-            let platillosActualizados = 0;
-            
             datos.menu.forEach(platillo => {
                 if (platillo.ingredientes && Object.keys(platillo.ingredientes).length > 0) {
                     let maxPlatillos = Infinity;
@@ -1495,19 +1577,10 @@
                     
                     if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
                     
-                    const stockAnterior = platillo.stock || 0;
                     platillo.stock = maxPlatillos;
                     platillo.stockMaximo = maxPlatillos;
-                    
-                    if (stockAnterior === 0 && maxPlatillos > 0) {
-                        platillo.disponible = true;
-                    }
-                    
-                    platillosActualizados++;
                 }
             });
-            
-            return platillosActualizados;
         }
 
         async function eliminarIngrediente() {
@@ -1959,7 +2032,7 @@
         }
 
         // ==========================================
-        // CÓDIGOS QR
+        // CÓDIGOS QR - CORREGIDO: USA EL NOMBRE INGRESADO
         // ==========================================
         function handleQRKeypress(e) {
             if (e.key === 'Enter') generarQR();
@@ -1967,18 +2040,30 @@
 
         function generarQR() {
             const nombre = document.getElementById('qrNombreInput').value.trim();
-            if (!nombre) { alert('Introduce un nombre para el QR'); return; }
+            if (!nombre) { 
+                mostrarNotificacion('Introduce un nombre para el QR', 'error');
+                return; 
+            }
             
-            const qr = { id: 'QR_' + Date.now(), nombre: nombre, fecha: new Date().toISOString() };
+            const qr = { 
+                id: 'QR_' + Date.now(), 
+                nombre: nombre, 
+                fecha: new Date().toISOString() 
+            };
             datos.codigosQR.push(qr);
             guardarDatos();
             renderizarQRs();
             document.getElementById('qrNombreInput').value = '';
-            mostrarNotificacion('Código QR generado: ' + nombre);
+            mostrarNotificacion(`Código QR generado: ${nombre}`);
         }
 
         function renderizarQRs() {
             const container = document.getElementById('qrContainer');
+            if (datos.codigosQR.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay códigos QR generados</p>';
+                return;
+            }
+            
             container.innerHTML = datos.codigosQR.map(qr => {
                 const url = `${window.location.origin}/Saki-sushi/cliente/?mesa=${encodeURIComponent(qr.nombre)}`;
                 return `
@@ -2000,7 +2085,14 @@
                     const container = document.getElementById(`qr-${qr.id}`);
                     if (container) {
                         container.innerHTML = '';
-                        new QRCode(container, { text: url, width: 128, height: 128, colorDark: '#dc2626', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                        new QRCode(container, { 
+                            text: url, 
+                            width: 128, 
+                            height: 128, 
+                            colorDark: '#dc2626', 
+                            colorLight: '#ffffff', 
+                            correctLevel: QRCode.CorrectLevel.H 
+                        });
                     }
                 });
             }, 100);
@@ -2017,7 +2109,14 @@
             
             const container = document.getElementById('qr-ampliado-container');
             container.innerHTML = '';
-            new QRCode(container, { text: url, width: 400, height: 400, colorDark: '#dc2626', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+            new QRCode(container, { 
+                text: url, 
+                width: 400, 
+                height: 400, 
+                colorDark: '#dc2626', 
+                colorLight: '#ffffff', 
+                correctLevel: QRCode.CorrectLevel.H 
+            });
             
             document.getElementById('modal-qr-ampliado').classList.add('active');
         }
@@ -2040,23 +2139,44 @@
         }
 
         // ==========================================
-        // REPORTES Y GRÁFICAS
+        // REPORTES Y GRÁFICAS - TOTALMENTE FUNCIONALES
         // ==========================================
         function renderizarReportes() {
             const ahora = new Date();
             const inicioDia = new Date(ahora.setHours(0,0,0,0));
-            const inicioSemana = new Date(ahora.setDate(ahora.getDate() - 7));
+            const inicioSemana = new Date();
+            inicioSemana.setDate(inicioSemana.getDate() - 7);
             
-            const pedidosCobrados = datos.pedidos.filter(p => p.estado === 'cobrado');
+            const pedidosCobrados = datos.pedidos.filter(p => 
+                p.estado === 'cobrado' || 
+                p.estado === 'en_cocina' || 
+                p.estado === 'en_camino' || 
+                p.estado === 'entregado' || 
+                p.estado === 'enviado' || 
+                p.estado === 'reserva_pendiente' || 
+                p.estado === 'reserva_atendida' || 
+                p.estado === 'reserva_completada'
+            );
             
-            const ventasDia = pedidosCobrados.filter(p => new Date(p.timestamp) >= inicioDia).reduce((sum, p) => sum + (p.total || 0), 0);
-            const ventasSemana = pedidosCobrados.filter(p => new Date(p.timestamp) >= inicioSemana).reduce((sum, p) => sum + (p.total || 0), 0);
-            const ordenesDia = pedidosCobrados.filter(p => new Date(p.timestamp) >= inicioDia).length;
+            const ventasDia = pedidosCobrados
+                .filter(p => new Date(p.timestamp) >= inicioDia)
+                .reduce((sum, p) => sum + (p.total || 0), 0);
+            
+            const ventasSemana = pedidosCobrados
+                .filter(p => new Date(p.timestamp) >= inicioSemana)
+                .reduce((sum, p) => sum + (p.total || 0), 0);
+            
+            const ordenesDia = pedidosCobrados
+                .filter(p => new Date(p.timestamp) >= inicioDia).length;
+            
             const ticketPromedio = ordenesDia > 0 ? ventasDia / ordenesDia : 0;
             
             const conteoPlatillos = {};
             pedidosCobrados.forEach(p => {
-                p.items?.forEach(item => { conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + item.cantidad; });
+                p.items?.forEach(item => {
+                    const cantidad = item.cantidad || 1;
+                    conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + cantidad;
+                });
             });
             const platilloTop = Object.entries(conteoPlatillos).sort((a, b) => b[1] - a[1])[0];
             
@@ -2067,36 +2187,75 @@
             document.getElementById('platillo-top').textContent = platilloTop ? platilloTop[0] : '-';
             
             const tbody = document.getElementById('ventas-body');
-            tbody.innerHTML = pedidosCobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => {
-                const totalBs = ((p.total || 0) * (datos.config.tasaEfectiva || 0)).toFixed(2);
-                return `<tr><td>${new Date(p.timestamp).toLocaleDateString()}</td><td>${p.id}</td><td>${p.cajero || 'N/A'}</td><td>${p.items?.length || 0} items</td><td>$${p.total?.toFixed(2)}</td><td>${totalBs} Bs.</td><td>${p.metodoPago || 'N/A'}</td><td><span class="badge badge-success">${p.estado}</span></td></tr>`;
-            }).join('');
+            tbody.innerHTML = pedidosCobrados
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .map(p => {
+                    const totalBs = ((p.total || 0) * (datos.config.tasaEfectiva || 0)).toFixed(2);
+                    return `<tr>
+                        <td>${new Date(p.timestamp).toLocaleDateString()}</td>
+                        <td>${p.id}</td>
+                        <td>${p.cajero || 'N/A'}</td>
+                        <td>${p.items?.length || 0} items</td>
+                        <td>$${p.total?.toFixed(2)}</td>
+                        <td>${totalBs} Bs.</td>
+                        <td>${p.metodoPago || 'N/A'}</td>
+                        <td><span class="badge badge-success">${p.estado}</span></td>
+                    </tr>`;
+                }).join('');
             
             generarGraficas(pedidosCobrados);
         }
 
         function generarGraficas(pedidos) {
+            // Destruir gráficas existentes para evitar duplicados
             if (charts.ventas) charts.ventas.destroy();
             if (charts.categorias) charts.categorias.destroy();
             if (charts.metodos) charts.metodos.destroy();
             if (charts.horas) charts.horas.destroy();
             
+            // 1. VENTAS POR DÍA (últimos 7 días)
             const ventasPorDia = {};
             for (let i = 6; i >= 0; i--) {
-                const fecha = new Date(); fecha.setDate(fecha.getDate() - i);
-                ventasPorDia[fecha.toLocaleDateString('es-ES', { weekday: 'short' })] = 0;
+                const fecha = new Date();
+                fecha.setDate(fecha.getDate() - i);
+                const key = fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+                ventasPorDia[key] = 0;
             }
             pedidos.forEach(p => {
-                const dia = new Date(p.timestamp).toLocaleDateString('es-ES', { weekday: 'short' });
-                if (ventasPorDia.hasOwnProperty(dia)) ventasPorDia[dia] += p.total || 0;
+                const fecha = new Date(p.timestamp);
+                const key = fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+                if (ventasPorDia.hasOwnProperty(key)) {
+                    ventasPorDia[key] += p.total || 0;
+                }
             });
             
             charts.ventas = new Chart(document.getElementById('ventasChart'), {
                 type: 'line',
-                data: { labels: Object.keys(ventasPorDia), datasets: [{ label: 'Ventas ($)', data: Object.values(ventasPorDia), borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.1)', fill: true, tension: 0.4 }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Ventas Últimos 7 Días', color: '#fff' }, legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#a1a1aa' } }, x: { ticks: { color: '#a1a1aa' } } } }
+                data: { 
+                    labels: Object.keys(ventasPorDia), 
+                    datasets: [{ 
+                        label: 'Ventas ($)', 
+                        data: Object.values(ventasPorDia), 
+                        borderColor: '#dc2626', 
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)', 
+                        fill: true, 
+                        tension: 0.4 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        title: { display: true, text: 'Ventas últimos 7 Días', color: '#fff' }, 
+                        legend: { labels: { color: '#fff' } } 
+                    }, 
+                    scales: { 
+                        y: { ticks: { color: '#a1a1aa' } }, 
+                        x: { ticks: { color: '#a1a1aa' } } 
+                    } 
+                }
             });
             
+            // 2. VENTAS POR CATEGORÍA
             const ventasPorCategoria = {};
             pedidos.forEach(p => {
                 p.items?.forEach(item => {
@@ -2108,26 +2267,79 @@
             
             charts.categorias = new Chart(document.getElementById('categoriasChart'), {
                 type: 'doughnut',
-                data: { labels: Object.keys(ventasPorCategoria), datasets: [{ data: Object.values(ventasPorCategoria), backgroundColor: ['#dc2626', '#22c55e', '#f59e0b', '#1976D2', '#8b5cf6', '#ec4899'] }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Ventas por Categoría', color: '#fff' }, legend: { position: 'right', labels: { color: '#fff' } } } }
+                data: { 
+                    labels: Object.keys(ventasPorCategoria), 
+                    datasets: [{ 
+                        data: Object.values(ventasPorCategoria), 
+                        backgroundColor: ['#dc2626', '#22c55e', '#f59e0b', '#1976D2', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'] 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        title: { display: true, text: 'Ventas por Categoría', color: '#fff' }, 
+                        legend: { position: 'right', labels: { color: '#fff' } } 
+                    } 
+                }
             });
             
+            // 3. MÉTODOS DE PAGO
             const metodosPago = {};
-            pedidos.forEach(p => { metodosPago[p.metodoPago || 'Desconocido'] = (metodosPago[p.metodoPago || 'Desconocido'] || 0) + 1; });
+            pedidos.forEach(p => { 
+                metodosPago[p.metodoPago || 'Desconocido'] = (metodosPago[p.metodoPago || 'Desconocido'] || 0) + 1; 
+            });
             
             charts.metodos = new Chart(document.getElementById('metodosChart'), {
                 type: 'bar',
-                data: { labels: Object.keys(metodosPago), datasets: [{ label: 'Cantidad', data: Object.values(metodosPago), backgroundColor: '#22c55e' }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Métodos de Pago', color: '#fff' }, legend: { display: false } }, scales: { y: { ticks: { color: '#a1a1aa' } }, x: { ticks: { color: '#a1a1aa' } } } }
+                data: { 
+                    labels: Object.keys(metodosPago), 
+                    datasets: [{ 
+                        label: 'Cantidad de órdenes', 
+                        data: Object.values(metodosPago), 
+                        backgroundColor: '#22c55e' 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        title: { display: true, text: 'Métodos de Pago', color: '#fff' }, 
+                        legend: { display: false } 
+                    }, 
+                    scales: { 
+                        y: { ticks: { color: '#a1a1aa' } }, 
+                        x: { ticks: { color: '#a1a1aa' } } 
+                    } 
+                }
             });
             
+            // 4. VENTAS POR HORA DEL DÍA
             const ventasPorHora = Array(24).fill(0);
-            pedidos.forEach(p => { ventasPorHora[new Date(p.timestamp).getHours()] += p.total || 0; });
+            pedidos.forEach(p => { 
+                const hora = new Date(p.timestamp).getHours();
+                ventasPorHora[hora] += p.total || 0; 
+            });
             
             charts.horas = new Chart(document.getElementById('horasChart'), {
                 type: 'bar',
-                data: { labels: Array.from({length: 24}, (_, i) => i + ':00'), datasets: [{ label: 'Ventas ($)', data: ventasPorHora, backgroundColor: '#f59e0b' }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Ventas por Hora del Día', color: '#fff' }, legend: { display: false } }, scales: { y: { ticks: { color: '#a1a1aa' } }, x: { ticks: { color: '#a1a1aa', maxTicksLimit: 12 } } } }
+                data: { 
+                    labels: Array.from({length: 24}, (_, i) => i + ':00'), 
+                    datasets: [{ 
+                        label: 'Ventas ($)', 
+                        data: ventasPorHora, 
+                        backgroundColor: '#f59e0b' 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        title: { display: true, text: 'Ventas por Hora del Día', color: '#fff' }, 
+                        legend: { display: false } 
+                    }, 
+                    scales: { 
+                        y: { ticks: { color: '#a1a1aa' } }, 
+                        x: { ticks: { color: '#a1a1aa', maxTicksLimit: 12 } } 
+                    } 
+                }
             });
         }
 
@@ -2236,7 +2448,8 @@
 
         function actualizarDashboard() {
             const hoy = new Date().toISOString().split('T')[0];
-            const pedidosHoy = datos.pedidos.filter(p => p.timestamp.startsWith(hoy) && p.estado === 'cobrado');
+            const pedidosHoy = datos.pedidos.filter(p => p.timestamp.startsWith(hoy) && 
+                (p.estado === 'cobrado' || p.estado === 'en_cocina' || p.estado === 'en_camino' || p.estado === 'entregado' || p.estado === 'enviado' || p.estado === 'reserva_pendiente' || p.estado === 'reserva_atendida' || p.estado === 'reserva_completada'));
             const totalHoy = pedidosHoy.reduce((sum, p) => sum + (p.total || 0), 0);
             
             document.getElementById('ventas-hoy').textContent = '$' + totalHoy.toFixed(2);
@@ -2267,7 +2480,7 @@
                         <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Mínimo: ${formatearUnidad(ing.minimo, ing.unidad || 'unidades')}</div>
                     </div>
                 `;
-            }).join('') || '<p style="color: var(--success); text-align: center; padding: 2rem;">✓ Todo el stock está en niveles óptimos</p>';
+            }).join('') || '<p style="color: var(--success); text-align: center; padding: 2rem;">✅ Todo el stock está en niveles óptimos</p>';
         }
 
         // ==========================================
@@ -2308,6 +2521,11 @@
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tabId).classList.add('active');
+            
+            // Refrescar gráficas al entrar a Reportes
+            if (tabId === 'reportes') {
+                renderizarReportes();
+            }
         }
 
         function cerrarModal(modalId) { 
@@ -2321,6 +2539,10 @@
             notif.classList.add('show');
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
+
+        window.addEventListener('beforeunload', () => { 
+            if (syncIntervalId) clearInterval(syncIntervalId); 
+        });
     </script>
 </body>
 </html>
