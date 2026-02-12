@@ -610,7 +610,7 @@
             pointer-events: none;
         }
 
-        .menu-item.agotado .item-image {
+        .menu-item.agotado .item-image-container {
             filter: grayscale(100%) brightness(0.5);
         }
 
@@ -652,13 +652,37 @@
             z-index: 10;
         }
 
-        .item-image {
+        /* Imagen del platillo - AHORA CON <img> EN LUGAR DE background-image */
+        .item-image-container {
             height: 250px;
             width: 100%;
-            background-size: cover;
-            background-position: center;
             position: relative;
+            overflow: hidden;
             transition: var(--transition);
+            background-color: #f0f0f0;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .item-image:hover {
+            transform: scale(1.05);
+        }
+
+        .item-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+            color: #757575;
+            font-size: 3rem;
         }
 
         .item-image::after {
@@ -669,18 +693,8 @@
             right: 0;
             height: 60px;
             background: linear-gradient(transparent, rgba(0,0,0,0.5));
+            pointer-events: none;
         }
-
-        .image-sashimi { background-image: url('https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-coquitos { background-image: url('https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-langostinos { background-image: url('https://images.unsplash.com/photo-1621996346565-e3dbc353d2af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-sushi-pizza { background-image: url('https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-ceviche { background-image: url('https://images.unsplash.com/photo-1551503759-5c9c09a53f8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-ceviche-mixto { background-image: url('https://images.unsplash.com/photo-1551503759-5c9c09a53f8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-tiradito { background-image: url('https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-maguro { background-image: url('https://images.unsplash.com/photo-1611143669185-af224c5e3252?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-sushi-deluxe { background-image: url('https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
-        .image-margarita { background-image: url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); }
 
         .item-header {
             padding: 25px;
@@ -1462,7 +1476,7 @@
             font-family: 'Montserrat', sans-serif;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group textarea, .form-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #E0E0E0;
@@ -1471,7 +1485,12 @@
             transition: var(--transition);
         }
 
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group select {
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -1586,78 +1605,43 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* Calendar Styles */
-        .calendar-container {
-            margin: 20px 0;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .calendar-header button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        .calendar-header h3 {
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-
-        .calendar-day-header {
-            text-align: center;
-            font-weight: 700;
-            color: var(--secondary);
-            padding: 10px;
-            font-size: 0.9rem;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Estilos para el campo de fecha */
+        .date-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E0E0E0;
             border-radius: 10px;
-            cursor: pointer;
+            font-size: 1rem;
             transition: var(--transition);
-            font-weight: 600;
-            border: 2px solid transparent;
         }
 
-        .calendar-day:hover:not(.disabled) {
-            background: #F5F5F5;
+        .date-input:focus {
+            outline: none;
             border-color: var(--primary);
         }
 
-        .calendar-day.selected {
-            background: var(--primary);
-            color: white;
+        /* Estilos para el código de referencia */
+        .reference-code-container {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
         }
 
-        .calendar-day.disabled {
-            color: #ccc;
-            cursor: not-allowed;
-            background: #F5F5F5;
+        .reference-digit {
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            transition: var(--transition);
         }
 
-        .calendar-day.today {
-            border-color: var(--accent);
+        .reference-digit:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
         }
 
         /* Confirmation Modal */
@@ -1769,56 +1753,6 @@
             background: var(--primary);
         }
 
-        /* Order Notification Overlay */
-        .order-notification-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 6000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .order-notification-overlay.show {
-            display: flex;
-        }
-
-        .order-notification-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            animation: slideUp 0.3s ease;
-            border: 4px solid var(--accent);
-        }
-
-        .order-notification-icon {
-            font-size: 4rem;
-            color: var(--accent);
-            margin-bottom: 20px;
-        }
-
-        .order-notification-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.5rem;
-            color: var(--secondary);
-            margin-bottom: 15px;
-        }
-
-        .order-notification-text {
-            color: #666;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
@@ -1828,6 +1762,7 @@
             .order-option-btn { min-width: 100%; }
             .modal-content { margin: 10px; }
             .search-container { margin: 20px 15px; }
+            .reference-digit { width: 45px; height: 45px; font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -1840,17 +1775,6 @@
         <div class="location-error" id="locationError">
             <h3>⚠️ Fuera de zona de cobertura</h3>
             <p>Lo sentimos, los pedidos solo están disponibles en la Gran Caracas. Su solicitud no será procesada.</p>
-        </div>
-    </div>
-
-    <!-- Order Notification Overlay -->
-    <div class="order-notification-overlay" id="orderNotificationOverlay">
-        <div class="order-notification-content">
-            <div class="order-notification-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <h3 class="order-notification-title" id="orderNotificationTitle">Pedido en proceso</h3>
-            <p class="order-notification-text" id="orderNotificationText">Esperando confirmación del restaurante...</p>
         </div>
     </div>
 
@@ -2066,9 +1990,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Referencia de pago *</label>
-                    <input type="text" id="deliveryReferencia" placeholder="6 dígitos exactos" maxlength="6" oninput="validateDeliveryForm()">
-                    <div class="error" id="referenciaError">La referencia debe tener exactamente 6 caracteres</div>
+                    <label>Código de referencia *</label>
+                    <div class="reference-code-container" id="deliveryReferenceContainer">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'delivery', 0)" onkeydown="handleRefKeypress(event, 'delivery', 0)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'delivery', 1)" onkeydown="handleRefKeypress(event, 'delivery', 1)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'delivery', 2)" onkeydown="handleRefKeypress(event, 'delivery', 2)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'delivery', 3)" onkeydown="handleRefKeypress(event, 'delivery', 3)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'delivery', 4)" onkeydown="handleRefKeypress(event, 'delivery', 4)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'delivery', 5)" onkeydown="handleRefKeypress(event, 'delivery', 5)">
+                    </div>
+                    <div class="error" id="referenciaErrorDelivery">Debe ingresar un código de 6 dígitos</div>
                 </div>
 
                 <div class="form-group">
@@ -2113,9 +2044,7 @@
 
                 <div class="form-group">
                     <label>Selecciona la fecha de reserva *</label>
-                    <div class="calendar-container" id="calendarContainer">
-                        <!-- Calendar generated by JS -->
-                    </div>
+                    <input type="date" class="date-input" id="reservaFecha" min="" onchange="validateReservaForm()">
                 </div>
 
                 <div class="form-group">
@@ -2124,9 +2053,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Referencia de pago *</label>
-                    input type="text" id="reservaReferencia" placeholder="6 dígitos exactos" maxlength="6" oninput="validateReservaForm()">
-                    <div class="error" id="referenciaReservaError">La referencia debe tener exactamente 6 caracteres</div>
+                    <label>Código de referencia *</label>
+                    <div class="reference-code-container" id="reservaReferenceContainer">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'reserva', 0)" onkeydown="handleRefKeypress(event, 'reserva', 0)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'reserva', 1)" onkeydown="handleRefKeypress(event, 'reserva', 1)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'reserva', 2)" onkeydown="handleRefKeypress(event, 'reserva', 2)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'reserva', 3)" onkeydown="handleRefKeypress(event, 'reserva', 3)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'reserva', 4)" onkeydown="handleRefKeypress(event, 'reserva', 4)">
+                        <input type="text" class="reference-digit" maxlength="1" oninput="moveToNextRef(this, 'reserva', 5)" onkeydown="handleRefKeypress(event, 'reserva', 5)">
+                    </div>
+                    <div class="error" id="referenciaErrorReserva">Debe ingresar un código de 6 dígitos</div>
                 </div>
 
                 <div class="form-group">
@@ -2342,7 +2278,6 @@
                 await cargarDatos();
                 renderSidebar();
                 renderMenu();
-                initCalendar();
                 
                 // Iniciar polling de notificaciones
                 iniciarPollingNotificaciones();
@@ -2420,10 +2355,10 @@
                     basePrice: item.precio,
                     description: item.descripcion,
                     ingredients: item.ingredientes || {},
-                    stock: item.stockMaximo || item.stock || 0,
+                    stock: item.stock || 0,
                     stockMaximo: item.stockMaximo || item.stock || 0,
                     disponible: item.disponible,
-                    imageClass: item.imagen,
+                    imagen: item.imagen || null,
                     // Restaurar cantidad e instancias si existían en el pedido
                     quantity: itemEnPedido ? itemEnPedido.quantity : 0,
                     instances: itemEnPedido ? itemEnPedido.instances : [],
@@ -2693,7 +2628,7 @@
         }
 
         // ==========================================
-        // RENDERIZADO DEL MENÚ
+        // RENDERIZADO DEL MENÚ CON IMÁGENES
         // ==========================================
         function renderMenu() {
             const menuGrid = document.getElementById('menuGrid');
@@ -2752,9 +2687,19 @@
                 const stockReal = Math.max(0, item.stock - item.totalOrdered);
                 const disponible = item.disponible && stockReal > 0 && hayIngredientes;
                 
+                // Renderizar imagen: si hay URL, mostrar <img>, si no, placeholder
+                let imagenHtml = '';
+                if (item.imagen && item.imagen.trim() !== '') {
+                    imagenHtml = `<img src="${item.imagen}" class="item-image" alt="${item.name}" onerror="this.style.display='none'; this.parentNode.classList.add('image-error'); this.parentNode.innerHTML += '<div class=\\'item-image-placeholder\\'><i class=\\'fas fa-image\\'></i><span style=\\'font-size: 0.8rem; margin-top: 10px;\\'>Sin imagen</span></div>';">`;
+                } else {
+                    imagenHtml = `<div class="item-image-placeholder"><i class="fas fa-image"></i><span style="font-size: 0.8rem; margin-top: 10px;">Sin imagen</span></div>`;
+                }
+                
                 return `
                     <div class="menu-item ${claseAgotado} ${!disponible && !estaEnPedido ? 'disabled' : ''}" data-id="${item.id}">
-                        <div class="item-image ${item.imageClass}"></div>
+                        <div class="item-image-container">
+                            ${imagenHtml}
+                        </div>
                         <div class="item-header">
                             <div class="item-name">
                                 <span>${item.name}</span>
@@ -2945,6 +2890,11 @@
             }
             
             generateIngredientOptions(itemId);
+        }
+
+        function checkIngredientRestrictions(item) {
+            // Placeholder para futuras restricciones
+            return [];
         }
 
         // Función para actualizar el estado del botón "-" dinámicamente
@@ -3405,29 +3355,67 @@
         // DELIVERY
         // ==========================================
         function showDeliveryModal() {
-            // Mostrar notificación superpuesta primero
-            showOrderNotification('delivery');
-            
-            // Luego abrir el modal después de 6 segundos
-            setTimeout(() => {
-                document.getElementById('deliveryModal').classList.add('show');
-                validateDeliveryForm();
-            }, 6000);
+            // Abrir el modal directamente, sin espera
+            document.getElementById('deliveryModal').classList.add('show');
+            validateDeliveryForm();
+        }
+
+        // Funciones para manejar el código de referencia de 6 dígitos
+        function moveToNextRef(input, type, index) {
+            if (input.value.length === 1) {
+                const container = document.getElementById(`${type}ReferenceContainer`);
+                const inputs = container.querySelectorAll('.reference-digit');
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+            validateDeliveryForm();
+            if (type === 'reserva') validateReservaForm();
+        }
+
+        function handleRefKeypress(e, type, index) {
+            if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                const container = document.getElementById(`${type}ReferenceContainer`);
+                const inputs = container.querySelectorAll('.reference-digit');
+                inputs[index - 1].focus();
+            }
+            if (e.key === 'Enter') {
+                if (type === 'delivery') {
+                    if (document.getElementById('btnConfirmDelivery').disabled) {
+                        validateDeliveryForm();
+                    } else {
+                        confirmDelivery();
+                    }
+                } else if (type === 'reserva') {
+                    if (document.getElementById('btnConfirmReserva').disabled) {
+                        validateReservaForm();
+                    } else {
+                        confirmReserva();
+                    }
+                }
+            }
+        }
+
+        function getReferenceCode(type) {
+            const container = document.getElementById(`${type}ReferenceContainer`);
+            if (!container) return '';
+            const inputs = container.querySelectorAll('.reference-digit');
+            return Array.from(inputs).map(i => i.value).join('');
         }
 
         function validateDeliveryForm() {
             const direccion = document.getElementById('deliveryDireccion').value.trim();
             const telefono = document.getElementById('deliveryTelefono').value.trim();
-            const referencia = document.getElementById('deliveryReferencia').value.trim();
+            const referencia = getReferenceCode('delivery');
             const comprobante = document.getElementById('deliveryComprobante').files.length > 0;
             
             const direccionValid = direccion.length >= 20;
             const telefonoValid = telefono.length >= 11 && telefono.length <= 14;
-            const referenciaValid = referencia.length === 6; // EXACTAMENTE 6 caracteres
+            const referenciaValid = referencia.length === 6;
             
             document.getElementById('direccionError').classList.toggle('show', direccion.length > 0 && !direccionValid);
             document.getElementById('telefonoError').classList.toggle('show', telefono.length > 0 && !telefonoValid);
-            document.getElementById('referenciaError').classList.toggle('show', referencia.length > 0 && !referenciaValid);
+            document.getElementById('referenciaErrorDelivery').classList.toggle('show', referencia.length > 0 && !referenciaValid);
             
             document.getElementById('btnConfirmDelivery').disabled = !(direccionValid && telefonoValid && referenciaValid && comprobante);
         }
@@ -3447,8 +3435,14 @@
             pedido.tipo = 'delivery';
             pedido.direccion = document.getElementById('deliveryDireccion').value.trim();
             pedido.telefono = document.getElementById('deliveryTelefono').value.trim();
-            pedido.referencia = document.getElementById('deliveryReferencia').value.trim();
-            pedido.comprobante = 'comprobante_delivery_' + Date.now();
+            pedido.referencia = getReferenceCode('delivery');
+            
+            // Convertir comprobante a base64 para enviar al cajero
+            const comprobanteFile = document.getElementById('deliveryComprobante').files[0];
+            if (comprobanteFile) {
+                pedido.comprobanteNombre = comprobanteFile.name;
+                pedido.comprobanteBase64 = await fileToBase64(comprobanteFile);
+            }
             
             closeModal('deliveryModal');
             showLoading();
@@ -3461,7 +3455,8 @@
                 // Limpiar campos
                 document.getElementById('deliveryDireccion').value = '';
                 document.getElementById('deliveryTelefono').value = '';
-                document.getElementById('deliveryReferencia').value = '';
+                const deliveryRefContainer = document.getElementById('deliveryReferenceContainer');
+                deliveryRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
                 document.getElementById('deliveryComprobante').value = '';
                 document.getElementById('deliveryFileLabel').innerHTML = `
                     <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
@@ -3490,103 +3485,60 @@
         // RESERVA
         // ==========================================
         function showReservaModal() {
-            // Mostrar notificación superpuesta primero
-            showOrderNotification('reserva');
+            // Configurar fecha mínima para el campo date (hoy)
+            const hoy = new Date();
+            const yyyy = hoy.getFullYear();
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const fechaMinima = `${yyyy}-${mm}-${dd}`;
             
-            // Luego abrir el modal después de 6 segundos
-            setTimeout(() => {
-                document.getElementById('reservaModal').classList.add('show');
-                validateReservaForm();
-            }, 6000);
-        }
-
-        function initCalendar() {
-            const container = document.getElementById('calendarContainer');
-            const today = new Date();
-            let currentMonth = today.getMonth();
-            let currentYear = today.getFullYear();
+            const fechaInput = document.getElementById('reservaFecha');
+            fechaInput.min = fechaMinima;
+            fechaInput.value = fechaMinima;
+            selectedDate = new Date(fechaMinima);
             
-            renderCalendar(currentMonth, currentYear);
-        }
-
-        function renderCalendar(month, year) {
-            const container = document.getElementById('calendarContainer');
-            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
-                              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const today = new Date();
-            
-            let html = `
-                <div class="calendar-header">
-                    <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-                    <h3>${monthNames[month]} ${year}</h3>
-                    <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
-                </div>
-                <div class="calendar-grid">
-                    <div class="calendar-day-header">Dom</div>
-                    <div class="calendar-day-header">Lun</div>
-                    <div class="calendar-day-header">Mar</div>
-                    <div class="calendar-day-header">Mié</div>
-                    <div class="calendar-day-header">Jue</div>
-                    <div class="calendar-day-header">Vie</div>
-                    <div class="calendar-day-header">Sáb</div>
-            `;
-            
-            // Espacios vacíos antes del primer día
-            for (let i = 0; i < firstDay; i++) {
-                html += '<div></div>';
-            }
-            
-            // Días del mes
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, month, day);
-                const isToday = date.toDateString() === today.toDateString();
-                const isPast = date < today && !isToday;
-                const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
-                
-                html += `
-                    <div class="calendar-day ${isToday ? 'today' : ''} ${isPast ? 'disabled' : ''} ${isSelected ? 'selected' : ''}"
-                         ${!isPast ? `onclick="selectDate(${year}, ${month}, ${day})"` : ''}>
-                        ${day}
-                    </div>
-                `;
-            }
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function changeMonth(delta) {
-            // Implementar cambio de mes (simplificado para este ejemplo)
-        }
-
-        function selectDate(year, month, day) {
-            selectedDate = new Date(year, month, day);
-            initCalendar(); // Re-render para mostrar selección
+            // Abrir el modal directamente, sin espera
+            document.getElementById('reservaModal').classList.add('show');
             validateReservaForm();
         }
 
         function validateReservaForm() {
             const nombre = document.getElementById('reservaNombre').value.trim();
-            const referencia = document.getElementById('reservaReferencia').value.trim();
+            const fecha = document.getElementById('reservaFecha').value;
+            const referencia = getReferenceCode('reserva');
             const comprobante = document.getElementById('reservaComprobante').files.length > 0;
             
-            const referenciaValid = referencia.length === 6; // EXACTAMENTE 6 caracteres
+            const nombreValid = nombre.length > 0;
+            const fechaValid = fecha !== '';
+            const referenciaValid = referencia.length === 6;
             
-            document.getElementById('referenciaReservaError').classList.toggle('show', referencia.length > 0 && !referenciaValid);
+            document.getElementById('referenciaErrorReserva').classList.toggle('show', referencia.length > 0 && !referenciaValid);
             
-            document.getElementById('btnConfirmReserva').disabled = !(nombre.length > 0 && selectedDate && referenciaValid && comprobante);
+            document.getElementById('btnConfirmReserva').disabled = !(nombreValid && fechaValid && referenciaValid && comprobante);
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
         }
 
         async function confirmReserva() {
             const pedido = crearPedidoBase();
             pedido.tipo = 'reserva';
-            pedido.fechaReserva = selectedDate.toISOString();
+            pedido.fechaReserva = document.getElementById('reservaFecha').value;
             pedido.clienteNombre = document.getElementById('reservaNombre').value.trim();
-            pedido.referencia = document.getElementById('reservaReferencia').value.trim();
-            pedido.comprobante = 'comprobante_reserva_' + Date.now();
+            pedido.referencia = getReferenceCode('reserva');
+            
+            // Convertir comprobante a base64 para enviar al cajero
+            const comprobanteFile = document.getElementById('reservaComprobante').files[0];
+            if (comprobanteFile) {
+                pedido.comprobanteNombre = comprobanteFile.name;
+                pedido.comprobanteBase64 = await fileToBase64(comprobanteFile);
+            }
             
             closeModal('reservaModal');
             showLoading();
@@ -3598,7 +3550,9 @@
             if (exito) {
                 // Limpiar campos
                 document.getElementById('reservaNombre').value = '';
-                document.getElementById('reservaReferencia').value = '';
+                document.getElementById('reservaFecha').value = '';
+                const reservaRefContainer = document.getElementById('reservaReferenceContainer');
+                reservaRefContainer.querySelectorAll('.reference-digit').forEach(input => input.value = '');
                 document.getElementById('reservaComprobante').value = '';
                 document.getElementById('reservaFileLabel').innerHTML = `
                     <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
@@ -3622,30 +3576,6 @@
                 
                 agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
             }
-        }
-
-        // ==========================================
-        // NOTIFICACIÓN SUPERPUESTA DE PEDIDO
-        // ==========================================
-        function showOrderNotification(tipo) {
-            const overlay = document.getElementById('orderNotificationOverlay');
-            const title = document.getElementById('orderNotificationTitle');
-            const text = document.getElementById('orderNotificationText');
-            
-            if (tipo === 'delivery' || tipo === 'reserva') {
-                title.textContent = 'Pedido en proceso...';
-                text.textContent = 'Esperando confirmación del restaurante';
-            } else if (tipo === 'mesa') {
-                title.textContent = 'Pedido en proceso...';
-                text.textContent = 'Pase a caja a cancelar';
-            }
-            
-            overlay.classList.add('show');
-            
-            // Ocultar después de 6 segundos
-            setTimeout(() => {
-                overlay.classList.remove('show');
-            }, 6000);
         }
 
         // ==========================================
@@ -3675,8 +3605,8 @@
                         personalizacion: instance.removedIngredients,
                         precioUnitario: item.basePrice,
                         subtotal: instance.price / tasaEfectiva,
-                        descuentoPorIngredientes: instance.descuentoPorIngredientes / tasaEfectiva, // Guardar descuento en USD
-                        precioBase: instance.precioBase / tasaEfectiva // Guardar precio base en USD
+                        descuentoPorIngredientes: instance.descuentoPorIngredientes / tasaEfectiva,
+                        precioBase: instance.precioBase / tasaEfectiva
                     });
                     pedido.total += instance.price / tasaEfectiva;
                 });
@@ -3687,6 +3617,7 @@
 
         async function guardarPedido(pedido) {
             try {
+                if (!sistemaData.pedidos) sistemaData.pedidos = [];
                 sistemaData.pedidos.push(pedido);
                 
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
