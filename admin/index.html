@@ -21,64 +21,59 @@
         /* Login Overlay */
         .login-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
             z-index: 10000; display: flex; align-items: center; justify-content: center;
-            padding: 20px;
+            padding: 2rem;
         }
         .login-box {
-            background: var(--bg-card); border: 2px solid var(--primary);
+            background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 1rem; padding: 3rem; max-width: 450px; width: 100%;
-            box-shadow: 0 25px 50px rgba(220, 38, 38, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .login-logo { text-align: center; margin-bottom: 2rem; font-size: 4rem; color: var(--primary); }
-        .login-title { text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .login-subtitle { text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.875rem; }
-        .login-input {
-            width: 100%; padding: 1rem; background: var(--bg-dark);
-            border: 2px solid var(--border); border-radius: 0.5rem;
-            color: var(--text-primary); font-size: 1.1rem; text-align: center;
-            letter-spacing: 0.5rem; margin-bottom: 1rem;
+        .login-logo { text-align: center; margin-bottom: 2rem; }
+        .login-logo i { font-size: 4rem; color: var(--primary); margin-bottom: 1rem; }
+        .login-logo h1 { font-size: 1.875rem; font-weight: 700; }
+        .login-logo p { color: var(--text-secondary); margin-top: 0.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); font-size: 0.875rem; }
+        .form-input {
+            width: 100%; padding: 0.875rem 1rem; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.5rem;
+            color: var(--text-primary); font-size: 1rem; transition: all 0.3s;
         }
-        .login-input:focus { outline: none; border-color: var(--primary); }
-        .login-btn {
-            width: 100%; padding: 1rem; background: var(--primary);
-            color: white; border: none; border-radius: 0.5rem;
-            font-size: 1.1rem; font-weight: 600; cursor: pointer;
-            transition: all 0.3s;
+        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); }
+        .btn {
+            width: 100%; padding: 0.875rem; border: none; border-radius: 0.5rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 1rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
-        .login-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
-        .login-links {
-            display: flex; justify-content: space-between; margin-top: 1.5rem;
-            font-size: 0.875rem;
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); margin-top: 0.75rem; }
+        .btn-secondary:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+        .login-links { display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.875rem; }
         .login-links a { color: var(--primary); text-decoration: none; cursor: pointer; }
         .login-links a:hover { text-decoration: underline; }
-        .login-error {
-            color: var(--danger); text-align: center; margin-bottom: 1rem;
-            font-size: 0.875rem; display: none;
-        }
+        .error-message { color: var(--danger); font-size: 0.875rem; margin-top: 0.5rem; display: none; }
         
-        /* Recovery Modal */
+        /* Password Recovery Modal */
         .recovery-steps { display: none; }
         .recovery-steps.active { display: block; }
-        .recovery-email {
-            width: 100%; padding: 1rem; background: var(--bg-dark);
-            border: 2px solid var(--border); border-radius: 0.5rem;
-            color: var(--text-primary); margin-bottom: 1rem;
+        .recovery-code { display: flex; gap: 0.5rem; justify-content: center; margin: 1.5rem 0; }
+        .recovery-code input {
+            width: 3rem; height: 3rem; text-align: center; font-size: 1.5rem;
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 0.5rem; color: var(--text-primary);
         }
+        
+        /* Main Layout */
+        .main-content { display: none; }
+        .main-content.active { display: block; }
         
         .header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
         .header-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: all 0.3s; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--border); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: black; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-small { padding: 0.5rem 1rem; font-size: 0.75rem; }
+        .btn-header { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: all 0.3s; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; }
         
         .tasa-bar { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 1rem 2rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
         .tasa-display { display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; }
@@ -87,7 +82,13 @@
         .aumento-group { display: flex; align-items: center; gap: 1rem; background: rgba(0,0,0,0.2); padding: 0.75rem 1.5rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.2); }
         .aumento-label { font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .help-tooltip { position: relative; cursor: help; color: var(--warning); }
-        .help-tooltip:hover::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: var(--bg-card); color: var(--text-primary); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); width: 300px; font-size: 0.875rem; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .help-tooltip:hover::after { 
+            content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; 
+            transform: translateX(-50%); background: var(--bg-card); color: var(--text-primary); 
+            padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); 
+            width: 300px; font-size: 0.875rem; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            white-space: normal; text-align: left; line-height: 1.4;
+        }
         .aumento-input { width: 100px; padding: 0.5rem; border: 2px solid var(--warning); border-radius: 0.5rem; background: rgba(255,255,255,0.1); color: white; font-size: 1rem; font-weight: 600; text-align: center; }
         .aumento-total { background: rgba(255,255,255,0.15); padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; }
         
@@ -117,11 +118,9 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); font-size: 0.875rem; }
-        .form-input, .form-select, .form-textarea { width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary); font-size: 0.875rem; }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
-        .form-textarea { min-height: 80px; resize: vertical; }
+        .form-select { width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary); font-size: 0.875rem; }
+        .form-select:focus { outline: none; border-color: var(--primary); }
+        .form-textarea { width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary); font-size: 0.875rem; min-height: 80px; resize: vertical; }
         .input-group { display: flex; gap: 0.5rem; align-items: center; }
         .input-prefix { background: var(--bg-hover); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-secondary); font-weight: 600; }
         
@@ -135,41 +134,32 @@
         .plato-title { font-weight: 600; font-size: 1.1rem; }
         .plato-img { width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem; margin-right: 1rem; }
         .ingredient-tag { display: inline-flex; align-items: center; gap: 0.25rem; background: var(--bg-hover); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-right: 0.5rem; margin-bottom: 0.25rem; font-size: 0.75rem; }
-        .ingredient-tag i { font-size: 0.7rem; }
-        .ingredient-tag.available { color: var(--success); }
-        .ingredient-tag.unavailable { color: var(--danger); }
         
-        /* Tooltip de ingredientes */
-        .ingredients-tooltip {
+        .ingredient-status-tooltip {
             position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
-            background: var(--bg-hover); padding: 0.5rem 1rem; border-radius: 0.5rem;
-            cursor: help; font-size: 0.875rem; border: 1px solid var(--border);
+            cursor: help; margin-left: 0.5rem;
         }
-        .ingredients-tooltip:hover .ingredients-popup {
-            display: block; animation: fadeIn 0.2s ease;
+        .ingredient-status-tooltip:hover .ingredient-status-popup {
+            display: block;
         }
-        .ingredients-popup {
-            display: none; position: absolute; bottom: 100%; left: 50%;
-            transform: translateX(-50%); background: var(--bg-card);
-            border: 2px solid var(--primary); border-radius: 0.75rem;
-            padding: 1rem; min-width: 250px; max-width: 350px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 100;
-            margin-bottom: 10px;
+        .ingredient-status-popup {
+            display: none; position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.5rem;
+            padding: 1rem; min-width: 250px; z-index: 100; margin-left: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .ingredients-popup::after {
-            content: ''; position: absolute; top: 100%; left: 50%;
-            transform: translateX(-50%); border: 10px solid transparent;
-            border-top-color: var(--primary);
+        .ingredient-status-popup::before {
+            content: ''; position: absolute; right: 100%; top: 50%; transform: translateY(-50%);
+            border: 8px solid transparent; border-right-color: var(--border);
         }
-        .ingredient-check-item {
-            display: flex; align-items: center; gap: 0.5rem;
-            padding: 0.5rem; border-bottom: 1px solid var(--border);
-            font-size: 0.875rem;
+        .ingredient-status-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.5rem 0; border-bottom: 1px solid var(--border);
         }
-        .ingredient-check-item:last-child { border-bottom: none; }
-        .ingredient-check-item i { font-size: 0.875rem; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .ingredient-status-item:last-child { border-bottom: none; }
+        .status-icon { font-size: 1rem; }
+        .status-icon.available { color: var(--success); }
+        .status-icon.unavailable { color: var(--danger); }
         
         .ingrediente-plato-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; background: var(--bg-dark); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); }
         @media (max-width: 768px) { .ingrediente-plato-row { grid-template-columns: 1fr; } }
@@ -221,10 +211,6 @@
         .password-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; cursor: pointer; border: 1px dashed var(--border); font-size: 0.875rem; }
         .password-field { position: relative; }
         
-        .unidad-row { display: flex; gap: 1rem; align-items: flex-end; }
-        .unidad-col { flex: 1; }
-        .unidad-arrow { color: var(--text-secondary); font-size: 1.5rem; padding-bottom: 0.75rem; }
-        
         .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
         .file-input-wrapper input[type=file] { position: absolute; left: -9999px; }
         .file-input-label { display: block; padding: 2rem; background: var(--bg-dark); border: 2px dashed var(--border); border-radius: 0.5rem; text-align: center; cursor: pointer; transition: all 0.3s; }
@@ -235,18 +221,9 @@
         .chart-container { background: var(--bg-dark); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
         .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
         
-        /* Configuración */
-        .config-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
-        .config-section:last-child { border-bottom: none; }
-        .config-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--primary); }
-        .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; color: var(--warning); font-size: 0.875rem; }
-        .danger-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; color: var(--danger); font-size: 0.875rem; }
-        
-        /* Usuarios Cajeros */
-        .user-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .user-info { display: flex; flex-direction: column; }
-        .user-name { font-weight: 600; }
-        .user-email { font-size: 0.875rem; color: var(--text-secondary); }
+        .user-list { margin-top: 1rem; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-dark); border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border); }
+        .user-role { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; background: var(--primary); color: white; }
         
         @media (max-width: 768px) {
             .container { padding: 1rem; }
@@ -270,72 +247,86 @@
     <!-- Login Overlay -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
-            <!-- Paso 1: Login -->
+            <!-- Step 1: Login -->
             <div class="recovery-steps active" id="loginStep">
-                <div class="login-logo">🍣</div>
-                <h2 class="login-title">Panel de Administración</h2>
-                <p class="login-subtitle">Saki Sushi - Acceso Restringido</p>
-                
-                <div class="login-error" id="loginError">Contraseña incorrecta</div>
-                
-                <input type="password" class="login-input" id="loginPassword" placeholder="••••••" maxlength="6">
-                
-                <button class="login-btn" onclick="verificarLogin()">
-                    <i class="fas fa-lock"></i> Acceder
+                <div class="login-logo">
+                    <i class="fas fa-user-shield"></i>
+                    <h1>Panel de Administración</h1>
+                    <p>Saki Sushi - Acceso Restringido</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contraseña de Administrador</label>
+                    <input type="password" class="form-input" id="adminPasswordInput" placeholder="••••••" onkeypress="handleLoginKeypress(event)">
+                    <div class="error-message" id="loginError">Contraseña incorrecta</div>
+                </div>
+                <button class="btn btn-primary" onclick="loginAdmin()">
+                    <i class="fas fa-sign-in-alt"></i> Acceder
                 </button>
-                
                 <div class="login-links">
-                    <a onclick="mostrarRecuperacion()">Recuperar Contraseña</a>
-                    <span style="color: var(--text-secondary);">v2.0</span>
+                    <a onclick="showRecovery()">Recuperar Contraseña</a>
                 </div>
             </div>
-            
-            <!-- Paso 2: Recuperación -->
-            <div class="recovery-steps" id="recoveryStep">
-                <div class="login-logo" style="font-size: 3rem; color: var(--info);"><i class="fas fa-envelope"></i></div>
-                <h2 class="login-title">Recuperar Contraseña</h2>
-                <p class="login-subtitle">Introduce tu correo electrónico registrado</p>
-                
-                <div class="login-error" id="recoveryError">Correo no encontrado</div>
-                <div class="login-error" id="recoverySuccess" style="color: var(--success); display: none;">
-                    Correo enviado. Revisa tu bandeja de entrada.
+
+            <!-- Step 2: Recovery Email -->
+            <div class="recovery-steps" id="recoveryEmailStep">
+                <div class="login-logo">
+                    <i class="fas fa-envelope" style="color: var(--info);"></i>
+                    <h1>Recuperar Contraseña</h1>
+                    <p>Introduce tu correo electrónico registrado</p>
                 </div>
-                
-                <input type="email" class="recovery-email" id="recoveryEmail" placeholder="admin@sakisushi.com">
-                
-                <button class="login-btn" onclick="enviarRecuperacion()">
-                    <i class="fas fa-paper-plane"></i> Enviar Instrucciones
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="recoveryEmail" placeholder="admin@sakisushi.com" onkeypress="handleRecoveryKeypress(event)">
+                    <div class="error-message" id="emailError">Correo no encontrado</div>
+                </div>
+                <button class="btn btn-primary" onclick="sendRecoveryCode()">
+                    <i class="fas fa-paper-plane"></i> Enviar Código
                 </button>
-                
-                <div class="login-links">
-                    <a onclick="volverLogin()">Volver al Login</a>
-                </div>
-            </div>
-            
-            <!-- Paso 3: Email Enviado (Simulación) -->
-            <div class="recovery-steps" id="emailSentStep">
-                <div class="login-logo" style="font-size: 3rem; color: var(--success);"><i class="fas fa-check-circle"></i></div>
-                <h2 class="login-title">¡Correo Enviado!</h2>
-                <div style="background: var(--bg-dark); border-radius: 0.5rem; padding: 1.5rem; margin: 1.5rem 0; text-align: left; font-size: 0.875rem; line-height: 1.6;">
-                    <p style="margin-bottom: 1rem;"><strong>De:</strong> Sistema Saki Sushi &lt;no-reply@sakisushi.com&gt;</p>
-                    <p style="margin-bottom: 1rem;"><strong>Para:</strong> <span id="sentEmail"></span></p>
-                    <p style="margin-bottom: 1rem;"><strong>Asunto:</strong> Recuperación de Contraseña - Panel Admin</p>
-                    <hr style="border-color: var(--border); margin: 1rem 0;">
-                    <p>Estimado Administrador,</p>
-                    <p style="margin: 1rem 0;">Hemos recibido una solicitud de recuperación de contraseña para su cuenta del Panel de Administración de Saki Sushi.</p>
-                    <p style="background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; border-left: 3px solid var(--primary); margin: 1rem 0;">
-                        <strong>Su contraseña actual es:</strong><br>
-                        <span style="font-size: 1.5rem; letter-spacing: 0.5rem; color: var(--primary);" id="shownPassword"></span>
-                    </p>
-                    <p style="margin: 1rem 0;">Por seguridad, le recomendamos cambiar esta contraseña una vez que acceda al sistema. Diríjase a <em>Configuración &gt; Cambiar Contraseña de Admin</em>.</p>
-                    <p style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 1rem;">
-                        Si usted no solicitó esta recuperación, por favor contacte al soporte técnico inmediatamente.<br>
-                        Este es un correo automático, por favor no responda a esta dirección.
-                    </p>
-                    <p style="margin-top: 1rem;">Atentamente,<br><strong>Equipo Saki Sushi</strong></p>
-                </div>
-                <button class="login-btn" onclick="volverLogin()">
+                <button class="btn btn-secondary" onclick="backToLogin()">
                     <i class="fas fa-arrow-left"></i> Volver al Login
+                </button>
+            </div>
+
+            <!-- Step 3: Verify Code -->
+            <div class="recovery-steps" id="recoveryCodeStep">
+                <div class="login-logo">
+                    <i class="fas fa-key" style="color: var(--warning);"></i>
+                    <h1>Verificar Código</h1>
+                    <p>Introduce el código de 6 dígitos enviado a tu correo</p>
+                </div>
+                <div class="recovery-code">
+                    <input type="text" maxlength="1" oninput="moveToNext(this, 0)" onkeydown="handleCodeKeypress(event, 0)">
+                    <input type="text" maxlength="1" oninput="moveToNext(this, 1)" onkeydown="handleCodeKeypress(event, 1)">
+                    <input type="text" maxlength="1" oninput="moveToNext(this, 2)" onkeydown="handleCodeKeypress(event, 2)">
+                    <input type="text" maxlength="1" oninput="moveToNext(this, 3)" onkeydown="handleCodeKeypress(event, 3)">
+                    <input type="text" maxlength="1" oninput="moveToNext(this, 4)" onkeydown="handleCodeKeypress(event, 4)">
+                    <input type="text" maxlength="1" oninput="moveToNext(this, 5)" onkeydown="handleCodeKeypress(event, 5)">
+                </div>
+                <div class="error-message" id="codeError">Código incorrecto</div>
+                <button class="btn btn-primary" onclick="verifyRecoveryCode()">
+                    <i class="fas fa-check"></i> Verificar
+                </button>
+                <button class="btn btn-secondary" onclick="backToLogin()">
+                    <i class="fas fa-arrow-left"></i> Volver al Login
+                </button>
+            </div>
+
+            <!-- Step 4: Show Password -->
+            <div class="recovery-steps" id="recoverySuccessStep">
+                <div class="login-logo">
+                    <i class="fas fa-unlock" style="color: var(--success);"></i>
+                    <h1>¡Recuperación Exitosa!</h1>
+                    <p>Tu contraseña ha sido recuperada</p>
+                </div>
+                <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.5rem; margin: 1.5rem 0; border: 1px solid var(--border);">
+                    <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tu contraseña es:</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);" id="recoveredPassword">654321</div>
+                </div>
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem; color: var(--warning);">
+                    <i class="fas fa-exclamation-triangle"></i> Por seguridad, anota esta contraseña en un lugar seguro. El sistema no permite recuperación adicional sin contacto directo con soporte técnico.
+                </div>
+                <button class="btn btn-primary" onclick="backToLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </button>
             </div>
         </div>
@@ -350,345 +341,264 @@
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Antes de iniciar actividades, por favor actualiza la <strong>tasa del dólar del día</strong>.</p>
                 <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Tasa del Día (Bs. por $1)</label>
-                    <input type="number" step="0.01" class="form-input" id="tasaInicialInput" placeholder="0.00" style="font-size: 1.5rem; text-align: center; font-weight: 700;">
+                    <input type="number" step="0.01" class="form-input" id="tasaInicialInput" placeholder="0.00" style="font-size: 1.5rem; text-align: center; font-weight: 700;" onkeypress="handleTasaKeypress(event)">
                 </div>
                 <button class="btn btn-primary" onclick="guardarTasaInicial()" style="width: 100%; justify-content: center;">Guardar y Continuar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Cambiar Contraseña -->
-    <div class="modal" id="modalCambiarPassword">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-key"></i> Cambiar Contraseña de Admin</h3>
-                <button class="close-btn" onclick="cerrarModal('modalCambiarPassword')">&times;</button>
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">🍣 Saki Sushi Admin</div>
+            <div class="header-actions">
+                <div class="sync-status"><div class="sync-dot"></div><span>Sincronizado</span></div>
+                <button class="btn-header btn-secondary" onclick="window.open('../cliente/', '_blank')"><i class="fas fa-utensils"></i> Ver Menú Cliente</button>
+                <button class="btn-header btn-secondary" onclick="window.open('../cajero/', '_blank')"><i class="fas fa-cash-register"></i> Panel Cajero</button>
+                <button class="btn-header btn-primary" onclick="guardarTodo()"><i class="fas fa-save"></i> Guardar Todo</button>
+                <button class="btn-header btn-secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
             </div>
-            <div class="modal-body">
-                <div class="danger-box">
-                    <i class="fas fa-exclamation-triangle"></i> <strong>Advertencia de Seguridad:</strong><br>
-                    Esta contraseña es <strong>irrecuperable</strong> si la olvida. Asegúrese de guardarla en un lugar seguro. 
-                    Solo podrá recuperarla mediante el correo electrónico configurado.
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Contraseña Actual</label>
-                    <input type="password" class="form-input" id="passwordActual" placeholder="••••••">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Nueva Contraseña (6 dígitos)</label>
-                    <input type="password" class="form-input" id="passwordNueva" placeholder="••••••" maxlength="6">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Confirmar Nueva Contraseña</label>
-                    <input type="password" class="form-input" id="passwordConfirmar" placeholder="••••••" maxlength="6">
-                </div>
-                <div class="login-error" id="passwordChangeError" style="display: none; text-align: center; margin-top: 1rem;"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cerrarModal('modalCambiarPassword')">Cancelar</button>
-                <button class="btn btn-primary" onclick="cambiarPassword()">Cambiar Contraseña</button>
-            </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Modal Configurar Email -->
-    <div class="modal" id="modalConfigurarEmail">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-envelope"></i> Configurar Email de Recuperación</h3>
-                <button class="close-btn" onclick="cerrarModal('modalConfigurarEmail')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="warning-box">
-                    <i class="fas fa-info-circle"></i> Este correo se utilizará para enviarle su contraseña en caso de olvido.
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Correo Electrónico</label>
-                    <input type="email" class="form-input" id="configEmail" placeholder="admin@sakisushi.com">
+        <!-- Tasa del Día -->
+        <div class="tasa-bar">
+            <div class="tasa-display">
+                <span>Tasa del Día:</span>
+                <div class="tasa-input-group">
+                    <input type="number" step="0.01" class="tasa-input" id="tasaDiaInput" placeholder="0.00" onchange="actualizarTasaManual()" onkeypress="handleTasaBarKeypress(event)">
+                    <span>Bs/$</span>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cerrarModal('modalConfigurarEmail')">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarEmail()">Guardar Email</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Gestión de Usuarios Cajeros -->
-    <div class="modal" id="modalUsuariosCajero">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-users"></i> Usuarios del Panel Cajero</h3>
-                <button class="close-btn" onclick="cerrarModal('modalUsuariosCajero')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="config-section">
-                    <h4 style="margin-bottom: 1rem;">Crear Nuevo Usuario Cajero</h4>
-                    <div class="form-group">
-                        <label class="form-label">Nombre Completo</label>
-                        <input type="text" class="form-input" id="cajeroNombre" placeholder="Juan Pérez">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email (opcional)</label>
-                        <input type="email" class="form-input" id="cajeroEmail" placeholder="cajero@sakisushi.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nombre de Usuario</label>
-                        <input type="text" class="form-input" id="cajeroUsername" placeholder="cajero1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Contraseña</label>
-                        <input type="password" class="form-input" id="cajeroPassword" placeholder="••••••">
-                    </div>
-                    <button class="btn btn-success" onclick="crearUsuarioCajero()" style="width: 100%;">
-                        <i class="fas fa-plus"></i> Crear Usuario
-                    </button>
+            
+            <div class="aumento-group">
+                <div class="aumento-label">Aumento Diario <span class="help-tooltip" data-tooltip="Escribir monto numérico. Aumento preventivo diario del dólar y productos para futuras inflaciones. Se acumula diariamente sobre la tasa base."><i class="fas fa-question-circle"></i></span></div>
+                <input type="number" step="0.01" class="aumento-input" id="aumentoDiarioInput" placeholder="0.00" onchange="actualizarAumentoDiario()" onkeypress="handleAumentoKeypress(event)">
+                <span>%</span>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label" id="toggleAumentoLabel">Activado</span>
+                    <label class="toggle"><input type="checkbox" id="toggleAumento" checked onchange="toggleAumentoDiario()"><span class="slider"></span></label>
                 </div>
                 
-                <div class="config-section">
-                    <h4 style="margin-bottom: 1rem;">Usuarios Existentes</h4>
-                    <div id="listaUsuariosCajero">
-                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay usuarios creados</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cerrarModal('modalUsuariosCajero')">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="header" id="mainHeader" style="display: none;">
-        <div class="logo">🍣 Saki Sushi Admin</div>
-        <div class="header-actions">
-            <div class="sync-status"><div class="sync-dot"></div><span>Sincronizado</span></div>
-            <button class="btn btn-secondary" onclick="window.open('../cliente/', '_blank')"><i class="fas fa-utensils"></i> Ver Menú Cliente</button>
-            <button class="btn btn-secondary" onclick="window.open('../cajero/', '_blank')"><i class="fas fa-cash-register"></i> Panel Cajero</button>
-            <button class="btn btn-primary" onclick="guardarTodo()"><i class="fas fa-save"></i> Guardar Todo</button>
-        </div>
-    </header>
-
-    <!-- Tasa del Día - SIEMPRE VISIBLE -->
-    <div class="tasa-bar" id="tasaBar" style="display: none;">
-        <div class="tasa-display">
-            <span>Tasa del Día:</span>
-            <div class="tasa-input-group">
-                <input type="number" step="0.01" class="tasa-input" id="tasaDiaInput" placeholder="0.00" onchange="actualizarTasaManual()">
-                <span>Bs/$</span>
-            </div>
-        </div>
-        
-        <div class="aumento-group">
-            <div class="aumento-label">Aumento Diario <span class="help-tooltip" data-tooltip="Escribir monto numérico. Aumento preventivo diario del dólar y productos para futuras inflaciones. Se acumula diariamente sobre la tasa base."><i class="fas fa-question-circle"></i></span></div>
-            <input type="number" step="0.01" class="aumento-input" id="aumentoDiarioInput" placeholder="0.00" onchange="actualizarAumentoDiario()">
-            <span>%</span>
-            
-            <div class="toggle-container">
-                <span class="toggle-label" id="toggleAumentoLabel">Activado</span>
-                <label class="toggle"><input type="checkbox" id="toggleAumento" checked onchange="toggleAumentoDiario()"><span class="slider"></span></label>
+                <button class="btn-header btn-danger" onclick="detenerAumentoCompleto()" id="btnDetenerCompleto" style="font-size: 0.75rem; padding: 0.5rem 1rem;">Detener por Completo <span class="help-tooltip" data-tooltip="Detiene permanentemente el aumento automático. Deberás cambiar la tasa manualmente todos los días."><i class="fas fa-info-circle"></i></span></button>
+                
+                <button class="btn-header btn-success" onclick="activarAumentoCompleto()" id="btnActivarCompleto" style="font-size: 0.75rem; padding: 0.5rem 1rem; display: none;">Activar por Completo <span class="help-tooltip" data-tooltip="Reactiva el aumento automático diario."><i class="fas fa-info-circle"></i></span></button>
             </div>
             
-            <button class="btn btn-danger btn-small" onclick="detenerAumentoCompleto()" id="btnDetenerCompleto" style="font-size: 0.75rem; padding: 0.5rem 1rem;">Detener por Completo <span class="help-tooltip" data-tooltip="Detiene permanentemente el aumento automático. Deberás cambiar la tasa manualmente todos los días."><i class="fas fa-info-circle"></i></span></button>
-            
-            <button class="btn btn-success btn-small" onclick="activarAumentoCompleto()" id="btnActivarCompleto" style="font-size: 0.75rem; padding: 0.5rem 1rem; display: none;">Activar por Completo <span class="help-tooltip" data-tooltip="Reactiva el aumento automático diario."><i class="fas fa-info-circle"></i></span></button>
-        </div>
-        
-        <div style="font-size: 0.875rem; opacity: 0.9;">Tasa Efectiva: <strong id="tasaEfectivaDisplay">0.00</strong> Bs/$</div>
-        <div class="aumento-total" id="aumentoTotalDisplay" style="display: none;">Aumento total acumulado: <strong id="aumentoTotalValor">0.00%</strong></div>
-    </div>
-
-    <div class="container" id="mainContainer" style="display: none;">
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
-            <button class="tab" onclick="cambiarTab('menu')">🍱 Menú & Precios</button>
-            <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
-            <button class="tab" onclick="cambiarTab('qr')">📱 Códigos QR</button>
-            <button class="tab" onclick="cambiarTab('reportes')">📈 Reportes</button>
-            <button class="tab" onclick="cambiarTab('configuracion')">⚙️ Configuración</button>
+            <div style="font-size: 0.875rem; opacity: 0.9;">Tasa Efectiva: <strong id="tasaEfectivaDisplay">0.00</strong> Bs/$</div>
+            <div class="aumento-total" id="aumentoTotalDisplay" style="display: none;">Aumento total acumulado: <strong id="aumentoTotalValor">0.00%</strong></div>
         </div>
 
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="grid grid-4">
-                <div class="card">
-                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas Hoy</div>
-                    <div class="stat-value" id="ventas-hoy">$0</div>
-                    <div class="card-subtitle" id="ordenes-hoy">0 órdenes</div>
+        <div class="container">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
+                <button class="tab" onclick="cambiarTab('menu')">🍱 Menú & Precios</button>
+                <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
+                <button class="tab" onclick="cambiarTab('usuarios')">👥 Usuarios</button>
+                <button class="tab" onclick="cambiarTab('config')">⚙️ Configuración</button>
+                <button class="tab" onclick="cambiarTab('qr')">📱 Códigos QR</button>
+                <button class="tab" onclick="cambiarTab('reportes')">📈 Reportes</button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="grid grid-4">
+                    <div class="card">
+                        <div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas Hoy</div>
+                        <div class="stat-value" id="ventas-hoy">$0</div>
+                        <div class="card-subtitle" id="ordenes-hoy">0 órdenes</div>
+                    </div>
+                    <div class="card">
+                        <div style="color: var(--text-secondary); font-size: 0.875rem;">Tasa Efectiva</div>
+                        <div class="stat-value" id="tasa-efectiva-card">0</div>
+                        <div class="card-subtitle">Bs. por $1</div>
+                    </div>
+                    <div class="card">
+                        <div style="color: var(--text-secondary); font-size: 0.875rem;">Productos Activos</div>
+                        <div class="stat-value" id="productos-activos">0</div>
+                        <div class="card-subtitle">en el menú</div>
+                    </div>
+                    <div class="card">
+                        <div style="color: var(--text-secondary); font-size: 0.875rem;">Alertas Stock</div>
+                        <div class="stat-value" id="alertas-stock" style="color: var(--warning)">0</div>
+                        <div class="card-subtitle">ingredientes bajos</div>
+                    </div>
                 </div>
-                <div class="card">
-                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Tasa Efectiva</div>
-                    <div class="stat-value" id="tasa-efectiva-card">0</div>
-                    <div class="card-subtitle">Bs. por $1</div>
-                </div>
-                <div class="card">
-                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Productos Activos</div>
-                    <div class="stat-value" id="productos-activos">0</div>
-                    <div class="card-subtitle">en el menú</div>
-                </div>
-                <div class="card">
-                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Alertas Stock</div>
-                    <div class="stat-value" id="alertas-stock" style="color: var(--warning)">0</div>
-                    <div class="card-subtitle">ingredientes bajos</div>
+
+                <div class="grid grid-2" style="margin-top: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div><div class="card-title">Pedidos Recientes</div><div class="card-subtitle">Últimas 5 órdenes</div></div>
+                        </div>
+                        <div id="pedidos-recientes"><p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Cargando...</p></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div><div class="card-title">Stock Crítico</div><div class="card-subtitle">Ingredientes por debajo del mínimo</div></div>
+                        </div>
+                        <div id="stock-critico"><p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Cargando...</p></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-2" style="margin-top: 1.5rem;">
+            <!-- Menú Tab -->
+            <div id="menu" class="tab-content">
+                <div class="card" style="margin-bottom: 1.5rem; border: 2px solid var(--primary);">
+                    <div class="card-header">
+                        <div><div class="card-title" style="color: var(--primary);">💱 Configuración de Precios</div><div class="card-subtitle">Los precios se ingresan en USD ($) y se convierten automáticamente</div></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tasa Base del Día</div><div style="font-size: 1.5rem; font-weight: 700;" id="tasa-base-menu">0.00</div></div>
+                        <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Aumento Acumulado</div><div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);" id="aumento-acumulado-menu">0.00%</div></div>
+                        <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tasa Efectiva</div><div style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="tasa-efectiva-menu">0.00</div></div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-header">
-                        <div><div class="card-title">Pedidos Recientes</div><div class="card-subtitle">Últimas 5 órdenes</div></div>
+                        <div><div class="card-title">Gestión de Platillos</div><div class="card-subtitle">Administra precios, disponibilidad, imágenes e ingredientes</div></div>
+                        <button class="btn-header btn-success" onclick="abrirModalNuevoPlatillo()"><i class="fas fa-plus"></i> Nuevo Platillo o Producto</button>
                     </div>
-                    <div id="pedidos-recientes"><p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Cargando...</p></div>
+                    <div id="platos-container"></div>
                 </div>
+            </div>
+
+            <!-- Inventario Tab -->
+            <div id="inventario" class="tab-content">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div><div class="card-title">Inventario de Ingredientes</div><div class="card-subtitle">Gestiona stock y costos</div></div>
+                            <button class="btn-header btn-success" onclick="abrirModalIngrediente()"><i class="fas fa-plus"></i> Nuevo Ingrediente o Producto</button>
+                        </div>
+                        <div id="lista-inventario"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div><div class="card-title">Actualización de Costos</div><div class="card-subtitle">Los costos se ajustan automáticamente según la tasa</div></div>
+                        </div>
+                        <div style="background: var(--bg-dark); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">Cuando la tasa del dólar cambia, el sistema recalcula automáticamente:</p>
+                            <ul style="color: var(--text-secondary); font-size: 0.875rem; margin-left: 1rem;">
+                                <li>Costo de ingredientes en Bs.</li>
+                                <li>Precios de platillos para deducciones</li>
+                                <li>Márgenes de ganancia</li>
+                            </ul>
+                        </div>
+                        <button class="btn-header btn-primary" onclick="recalcularCostos()" style="width: 100%;"><i class="fas fa-calculator"></i> Recalcular Costos Ahora</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usuarios Tab -->
+            <div id="usuarios" class="tab-content">
                 <div class="card">
                     <div class="card-header">
-                        <div><div class="card-title">Stock Crítico</div><div class="card-subtitle">Ingredientes por debajo del mínimo</div></div>
+                        <div><div class="card-title">Gestión de Usuarios Cajero</div><div class="card-subtitle">Crea y administra usuarios para el panel de cajeros</div></div>
                     </div>
-                    <div id="stock-critico"><p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Cargando...</p></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Menú Tab -->
-        <div id="menu" class="tab-content">
-            <div class="card" style="margin-bottom: 1.5rem; border: 2px solid var(--primary);">
-                <div class="card-header">
-                    <div><div class="card-title" style="color: var(--primary);">💱 Configuración de Precios</div><div class="card-subtitle">Los precios se ingresan en USD ($) y se convierten automáticamente</div></div>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tasa Base del Día</div><div style="font-size: 1.5rem; font-weight: 700;" id="tasa-base-menu">0.00</div></div>
-                    <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Aumento Acumulado</div><div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);" id="aumento-acumulado-menu">0.00%</div></div>
-                    <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tasa Efectiva</div><div style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="tasa-efectiva-menu">0.00</div></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div><div class="card-title">Gestión de Platillos</div><div class="card-subtitle">Administra precios, disponibilidad, imágenes e ingredientes</div></div>
-                    <button class="btn btn-success" onclick="abrirModalNuevoPlatillo()"><i class="fas fa-plus"></i> Nuevo Platillo o Producto</button>
-                </div>
-                <div id="platos-container"></div>
-            </div>
-        </div>
-
-        <!-- Inventario Tab -->
-        <div id="inventario" class="tab-content">
-            <div class="grid grid-2">
-                <div class="card">
-                    <div class="card-header">
-                        <div><div class="card-title">Inventario de Ingredientes</div><div class="card-subtitle">Gestiona stock y costos</div></div>
-                        <button class="btn btn-success" onclick="abrirModalIngrediente()"><i class="fas fa-plus"></i> Nuevo Ingrediente o Producto</button>
+                    <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">Nombre del Cajero</label>
+                            <input type="text" class="form-input" id="newCashierName" placeholder="Nombre completo" onkeypress="handleNewUserKeypress(event)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-input" id="newCashierUsername" placeholder="usuario123" onkeypress="handleNewUserKeypress(event)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contraseña Temporal</label>
+                            <input type="text" class="form-input" id="newCashierPassword" placeholder="••••••" onkeypress="handleNewUserKeypress(event)">
+                        </div>
+                        <button class="btn-header btn-success" onclick="createCashierUser()"><i class="fas fa-user-plus"></i> Crear Usuario Cajero</button>
                     </div>
-                    <div id="lista-inventario"></div>
-                </div>
-                <div class="card">
-                    <div class="card-header">
-                        <div><div class="card-title">Actualización de Costos</div><div class="card-subtitle">Los costos se ajustan automáticamente según la tasa</div></div>
-                    </div>
-                    <div style="background: var(--bg-dark); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">Cuando la tasa del dólar cambia, el sistema recalcula automáticamente:</p>
-                        <ul style="color: var(--text-secondary); font-size: 0.875rem; margin-left: 1rem;">
-                            <li>Costo de ingredientes en Bs.</li>
-                            <li>Precios de platillos para deducciones</li>
-                            <li>Márgenes de ganancia</li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-primary" onclick="recalcularCostos()" style="width: 100%;"><i class="fas fa-calculator"></i> Recalcular Costos Ahora</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- QR Tab -->
-        <div id="qr" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div><div class="card-title">Generador de Códigos QR para Mesas</div><div class="card-subtitle">Crea códigos QR ilimitados para que los clientes ordenen desde su mesa</div></div>
-                </div>
-                <div class="qr-section">
-                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Los códigos QR dirigirán a los clientes al menú con el perfil de mesa seleccionado.</p>
-                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
-                        <input type="text" class="form-input" id="qrNombreInput" placeholder="Nombre del QR (ej: Mesa 1)" style="max-width: 300px;">
-                        <button class="btn btn-primary" onclick="generarQR()"><i class="fas fa-qrcode"></i> Generar QR</button>
+                    <div class="user-list" id="cashierUsersList">
+                        <!-- Users loaded dynamically -->
                     </div>
                 </div>
-                <div class="qr-grid" id="qrContainer"></div>
-            </div>
-        </div>
-
-        <!-- Reportes Tab -->
-        <div id="reportes" class="tab-content">
-            <div class="grid grid-4">
-                <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas del Día</div><div class="stat-value" id="reporte-ventas-dia">$0</div><div class="card-subtitle" id="reporte-ordenes-dia">0 órdenes</div></div>
-                <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas Semana</div><div class="stat-value" id="reporte-ventas-semana">$0</div><div class="card-subtitle">Últimos 7 días</div></div>
-                <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ticket Promedio</div><div class="stat-value" id="ticket-promedio">$0</div><div class="card-subtitle">por orden</div></div>
-                <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Platillo Top</div><div class="stat-value" id="platillo-top" style="font-size: 1.25rem;">-</div><div class="card-subtitle">más vendido</div></div>
             </div>
 
-            <div class="chart-grid" style="margin-top: 1.5rem;">
-                <div class="chart-container"><canvas id="ventasChart"></canvas></div>
-                <div class="chart-container"><canvas id="categoriasChart"></canvas></div>
-                <div class="chart-container"><canvas id="metodosChart"></canvas></div>
-                <div class="chart-container"><canvas id="horasChart"></canvas></div>
-            </div>
-
-            <div class="card" style="margin-top: 1.5rem;">
-                <div class="card-header"><div><div class="card-title">Detalle de Ventas</div><div class="card-subtitle">Historial completo de transacciones</div></div></div>
-                <div class="table-container">
-                    <table id="tabla-ventas">
-                        <thead><tr><th>Fecha</th><th>ID Pedido</th><th>Cajero</th><th>Items</th><th>Total USD</th><th>Total Bs.</th><th>Método Pago</th><th>Estado</th></tr></thead>
-                        <tbody id="ventas-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Configuración Tab -->
-        <div id="configuracion" class="tab-content">
-            <div class="grid grid-2">
-                <div class="card">
-                    <div class="config-section">
-                        <div class="config-title"><i class="fas fa-lock"></i> Seguridad</div>
-                        <button class="btn btn-primary" onclick="abrirModal('modalCambiarPassword')" style="width: 100%; margin-bottom: 1rem;">
-                            <i class="fas fa-key"></i> Cambiar Contraseña de Admin
-                        </button>
-                        <button class="btn btn-secondary" onclick="abrirModal('modalConfigurarEmail')" style="width: 100%;">
-                            <i class="fas fa-envelope"></i> Configurar Email de Recuperación
-                        </button>
+            <!-- Configuración Tab -->
+            <div id="config" class="tab-content">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div><div class="card-title">Cambiar Contraseña de Admin</div><div class="card-subtitle">Actualiza la contraseña de acceso al panel</div></div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> 
+                            <span style="color: var(--warning); font-size: 0.875rem;">Advertencia: Guarda tu contraseña en un lugar seguro. Si la olvidas y no tienes acceso al correo registrado, deberás contactar soporte técnico para recuperación manual.</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contraseña Actual</label>
+                            <input type="password" class="form-input" id="currentAdminPass" placeholder="••••••" onkeypress="handlePasswordChangeKeypress(event)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nueva Contraseña</label>
+                            <input type="password" class="form-input" id="newAdminPass" placeholder="••••••" onkeypress="handlePasswordChangeKeypress(event)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-input" id="confirmAdminPass" placeholder="••••••" onkeypress="handlePasswordChangeKeypress(event)">
+                        </div>
+                        <button class="btn-header btn-primary" onclick="changeAdminPassword()"><i class="fas fa-key"></i> Cambiar Contraseña</button>
                     </div>
                     
-                    <div class="config-section">
-                        <div class="config-title"><i class="fas fa-users"></i> Gestión de Cajeros</div>
-                        <button class="btn btn-success" onclick="abrirModal('modalUsuariosCajero')" style="width: 100%;">
-                            <i class="fas fa-user-plus"></i> Crear/Editar Usuarios Cajero
-                        </button>
-                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem;">
-                            Los usuarios cajeros pueden acceder al panel de cajero con sus credenciales. 
-                            El primer cajero que cobre o rechace un pedido se lo asignará automáticamente.
-                        </p>
+                    <div class="card">
+                        <div class="card-header">
+                            <div><div class="card-title">Correo de Recuperación</div><div class="card-subtitle">Configura el correo para recuperación de contraseña</div></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-input" id="recoveryEmailConfig" placeholder="admin@sakisushi.com" onkeypress="handleEmailConfigKeypress(event)">
+                        </div>
+                        <button class="btn-header btn-primary" onclick="saveRecoveryEmail()"><i class="fas fa-save"></i> Guardar Correo</button>
                     </div>
                 </div>
-                
+            </div>
+
+            <!-- QR Tab -->
+            <div id="qr" class="tab-content">
                 <div class="card">
-                    <div class="config-section">
-                        <div class="config-title"><i class="fas fa-info-circle"></i> Información del Sistema</div>
-                        <div style="background: var(--bg-dark); padding: 1rem; border-radius: 0.5rem;">
-                            <p style="margin-bottom: 0.5rem;"><strong>Versión:</strong> 2.0</p>
-                            <p style="margin-bottom: 0.5rem;"><strong>Última sincronización:</strong> <span id="lastSync">Ahora</span></p>
-                            <p style="margin-bottom: 0.5rem;"><strong>Email configurado:</strong> <span id="emailConfigurado">No configurado</span></p>
-                            <p><strong>Usuarios cajeros:</strong> <span id="totalCajeros">0</span></p>
+                    <div class="card-header">
+                        <div><div class="card-title">Generador de Códigos QR para Mesas</div><div class="card-subtitle">Crea códigos QR ilimitados para que los clientes ordenen desde su mesa</div></div>
+                    </div>
+                    <div class="qr-section">
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Los códigos QR dirigirán a los clientes al menú con el perfil de mesa seleccionado.</p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                            <input type="text" class="form-input" id="qrNombreInput" placeholder="Nombre del QR (ej: Mesa 1)" style="max-width: 300px;" onkeypress="handleQRKeypress(event)">
+                            <button class="btn-header btn-primary" onclick="generarQR()"><i class="fas fa-qrcode"></i> Generar QR</button>
                         </div>
                     </div>
-                    
-                    <div class="config-section" style="border-bottom: none;">
-                        <div class="config-title"><i class="fas fa-shield-alt"></i> Respaldo de Datos</div>
-                        <button class="btn btn-primary" onclick="exportarBackup()" style="width: 100%; margin-bottom: 0.5rem;">
-                            <i class="fas fa-download"></i> Exportar Backup JSON
-                        </button>
-                        <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importarBackup(this)">
-                        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="width: 100%;">
-                            <i class="fas fa-upload"></i> Importar Backup JSON
-                        </button>
+                    <div class="qr-grid" id="qrContainer"></div>
+                </div>
+            </div>
+
+            <!-- Reportes Tab -->
+            <div id="reportes" class="tab-content">
+                <div class="grid grid-4">
+                    <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas del Día</div><div class="stat-value" id="reporte-ventas-dia">$0</div><div class="card-subtitle" id="reporte-ordenes-dia">0 órdenes</div></div>
+                    <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas Semana</div><div class="stat-value" id="reporte-ventas-semana">$0</div><div class="card-subtitle">Últimos 7 días</div></div>
+                    <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ticket Promedio</div><div class="stat-value" id="ticket-promedio">$0</div><div class="card-subtitle">por orden</div></div>
+                    <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Platillo Top</div><div class="stat-value" id="platillo-top" style="font-size: 1.25rem;">-</div><div class="card-subtitle">más vendido</div></div>
+                </div>
+
+                <div class="chart-grid" style="margin-top: 1.5rem;">
+                    <div class="chart-container"><canvas id="ventasChart"></canvas></div>
+                    <div class="chart-container"><canvas id="categoriasChart"></canvas></div>
+                    <div class="chart-container"><canvas id="metodosChart"></canvas></div>
+                    <div class="chart-container"><canvas id="horasChart"></canvas></div>
+                </div>
+
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header"><div><div class="card-title">Detalle de Ventas</div><div class="card-subtitle">Historial completo de transacciones</div></div></div>
+                    <div class="table-container">
+                        <table id="tabla-ventas">
+                            <thead><tr><th>Fecha</th><th>ID Pedido</th><th>Cajero</th><th>Items</th><th>Total USD</th><th>Total Bs.</th><th>Método Pago</th><th>Estado</th></tr></thead>
+                            <tbody id="ventas-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -713,13 +623,13 @@
                     </div>
                     <div id="preview-imagen-plato"></div>
                     <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
-                        <input type="text" class="form-input" id="edit-imagen-link" placeholder="O pega aquí el link de la imagen" onchange="previewImagenLink(this.value)">
+                        <input type="text" class="form-input" id="edit-imagen-link" placeholder="O pega aquí el link de la imagen" onchange="previewImagenLink(this.value)" onkeypress="handleModalKeypress(event)">
                     </div>
                 </div>
-                <div class="form-group"><label class="form-label">Nombre del Platillo</label><input type="text" class="form-input" id="edit-nombre"></div>
+                <div class="form-group"><label class="form-label">Nombre del Platillo</label><input type="text" class="form-input" id="edit-nombre" onkeypress="handleModalKeypress(event)"></div>
                 <div class="form-group">
                     <label class="form-label">Categoría</label>
-                    <select class="form-select" id="edit-categoria" onchange="actualizarSubcategorias()">
+                    <select class="form-select" id="edit-categoria" onchange="handleCategoryChange()">
                         <option value="entradas">Entradas</option>
                         <option value="sushi">Sushi</option>
                         <option value="rolls">Rolls</option>
@@ -732,17 +642,17 @@
                         <option value="ejecutivo">Combo Ejecutivo</option>
                     </select>
                 </div>
-                <div class="form-group" id="grupo-subcategoria" style="display: none;">
+                <div class="form-group" id="subcategoria-container" style="display: none;">
                     <label class="form-label">Subcategoría</label>
                     <select class="form-select" id="edit-subcategoria"></select>
                 </div>
-                <div class="form-group"><label class="form-label">Precio en USD ($)</label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="edit-precio-usd"></div></div>
-                <div class="form-group"><label class="form-label">Descripción (incluye piezas de cada ingrediente)</label><textarea class="form-textarea" id="edit-descripcion" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..."></textarea></div>
-                <div class="form-group"><label class="form-label">Ingredientes del Platillo</label><div id="edit-ingredientes-container"><p style="color: var(--text-secondary);">Ningún ingrediente agregado</p></div><button class="btn btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;"><i class="fas fa-plus"></i> Agregar Ingrediente</button></div>
+                <div class="form-group"><label class="form-label">Precio en USD ($)</label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="edit-precio-usd" onkeypress="handleModalKeypress(event)"></div></div>
+                <div class="form-group"><label class="form-label">Descripción (incluye piezas de cada ingrediente)</label><textarea class="form-textarea" id="edit-descripcion" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..." onkeypress="handleModalKeypress(event)"></textarea></div>
+                <div class="form-group"><label class="form-label">Ingredientes del Platillo</label><div id="edit-ingredientes-container"><p style="color: var(--text-secondary);">Ningún ingrediente agregado</p></div><button class="btn-header btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;"><i class="fas fa-plus"></i> Agregar Ingrediente</button></div>
                 <div class="form-group"><label class="form-label">Stock Calculado (auto)</label><div class="stock-calculated" id="stock-calculado">Agrega ingredientes para calcular</div></div>
                 <div class="form-group"><label class="form-label">Disponible</label><label class="toggle-plato"><input type="checkbox" id="edit-disponible" checked><span class="slider-plato"></span></label></div>
             </div>
-            <div class="modal-footer"><button class="btn btn-secondary" onclick="cerrarModal('modal-platillo')">Cancelar</button><button class="btn btn-primary" onclick="guardarPlatillo()">Guardar Cambios</button></div>
+            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-platillo')">Cancelar</button><button class="btn-header btn-primary" onclick="guardarPlatillo()">Guardar Cambios</button></div>
         </div>
     </div>
 
@@ -752,7 +662,7 @@
             <div class="modal-header"><h3 id="titulo-ingrediente">Nuevo Ingrediente o Producto</h3><button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button></div>
             <div class="modal-body">
                 <input type="hidden" id="ingrediente-id">
-                <div class="form-group"><label class="form-label">Nombre del Ingrediente</label><input type="text" class="form-input" id="ingrediente-nombre" placeholder="Ej: Salmón fresco"></div>
+                <div class="form-group"><label class="form-label">Nombre del Ingrediente</label><input type="text" class="form-input" id="ingrediente-nombre" placeholder="Ej: Salmón fresco" onkeypress="handleIngredienteKeypress(event)"></div>
                 
                 <div class="form-group password-field">
                     <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
@@ -761,42 +671,43 @@
                 </div>
 
                 <div class="form-group">
-                    <div class="unidad-row">
-                        <div class="unidad-col">
+                    <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                        <div style="flex: 1;">
                             <label class="form-label">Mercancía Nueva a Agregar</label>
-                            <input type="number" step="0.001" class="form-input" id="ingrediente-nuevo" placeholder="0" oninput="syncUnidades('nuevo')">
+                            <input type="number" step="0.001" class="form-input" id="ingrediente-nuevo" placeholder="0" oninput="syncUnidades('nuevo')" onkeypress="handleIngredienteKeypress(event)">
                         </div>
-                        <div class="unidad-arrow"><i class="fas fa-exchange-alt"></i></div>
-                        <div class="unidad-col">
+                        <div style="padding-bottom: 0.75rem; color: var(--text-secondary);"><i class="fas fa-exchange-alt"></i></div>
+                        <div style="flex: 1;">
                             <label class="form-label">Unidad de Medida</label>
                             <select class="form-select" id="ingrediente-unidad" onchange="cambiarUnidadSistema()">
                                 <option value="unidades">Unidades/Piezas</option>
-                                <option value="gramos">Gramos</option>
                                 <option value="kilogramos">Kilogramos</option>
-                                <option value="ml">Mililitros</option>
                                 <option value="litros">Litros</option>
                             </select>
                         </div>
                     </div>
-                    <div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Stock será: <strong id="stock-total-preview">0</strong> <span id="unidad-preview">unidades</span></div>
+                    <div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Stock será: <strong id="stock-total-preview">0</strong> <span id="unidad-preview">Unidades/Piezas</span></div>
                     <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);" id="conversion-display"></div>
                 </div>
 
-                <div class="form-group"><label class="form-label">Stock Mínimo (alerta)</label><input type="number" step="0.001" class="form-input" id="ingrediente-minimo" placeholder="10"></div>
+                <div class="form-group">
+                    <label class="form-label">Stock Mínimo (alerta): <span id="unidad-minimo" style="color: var(--text-secondary);">Unidades/Piezas</span></label>
+                    <input type="number" step="0.001" class="form-input" id="ingrediente-minimo" placeholder="10" onkeypress="handleIngredienteKeypress(event)">
+                </div>
 
                 <div class="form-group">
                     <label class="form-label">Precio de Costo del Producto ($) <span class="help-tooltip" data-tooltip="Precio al que se compró este ingrediente. Use la calculadora para dividir el costo total entre la cantidad comprada."><i class="fas fa-info-circle"></i></span></label>
                     <div class="calculadora-costo">
-                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Costo Total Compra ($):</span><input type="number" step="0.01" class="form-input" id="calc-costo-total" placeholder="0.00" style="width: 150px;" oninput="calcularCostoUnitario()"></div>
-                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Cantidad Comprada:</span><input type="number" step="0.001" class="form-input" id="calc-cantidad" placeholder="0" style="width: 150px;" oninput="calcularCostoUnitario()"><span id="calc-unidad-display" style="font-size: 0.875rem; color: var(--text-secondary);">unidades</span></div>
+                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Costo Total Compra ($):</span><input type="number" step="0.01" class="form-input" id="calc-costo-total" placeholder="0.00" style="width: 150px;" oninput="calcularCostoUnitario()" onkeypress="handleIngredienteKeypress(event)"></div>
+                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Cantidad Comprada:</span><input type="number" step="0.001" class="form-input" id="calc-cantidad" placeholder="0" style="width: 150px;" oninput="calcularCostoUnitario()" onkeypress="handleIngredienteKeypress(event)"><span id="calc-unidad-display" style="font-size: 0.875rem; color: var(--text-secondary);">Unidades/Piezas</span></div>
                         <div class="calculadora-result" id="calc-resultado" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-card); border-radius: 0.25rem;">Costo Unitario: $<span id="calc-precio-unitario">0.00</span> por <span id="calc-unidad-result">unidad</span></div>
                     </div>
-                    <div class="input-group" style="margin-top: 0.5rem;"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-costo" placeholder="Precio unitario calculado o manual"></div>
+                    <div class="input-group" style="margin-top: 0.5rem;"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-costo" placeholder="Precio unitario calculado o manual" onkeypress="handleIngredienteKeypress(event)"></div>
                 </div>
 
-                <div class="form-group"><label class="form-label">Precio Unitario de Venta ($) <span class="help-tooltip" data-tooltip="Precio que se deduce al cliente cuando no incluye este ingrediente."><i class="fas fa-info-circle"></i></span></label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-precio-venta" placeholder="0.00"></div></div>
+                <div class="form-group"><label class="form-label">Precio Unitario de Venta ($) <span class="help-tooltip" data-tooltip="Precio que se deduce al cliente cuando no incluye este ingrediente."><i class="fas fa-info-circle"></i></span></label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-precio-venta" placeholder="0.00" onkeypress="handleIngredienteKeypress(event)"></div></div>
             </div>
-            <div class="modal-footer"><button class="btn btn-secondary" onclick="cerrarModal('modal-ingrediente')">Cancelar</button><button class="btn btn-danger" onclick="eliminarIngrediente()" id="btnEliminarIngrediente" style="display: none;"><i class="fas fa-trash"></i> Eliminar</button><button class="btn btn-primary" onclick="guardarIngrediente()">Guardar Ingrediente</button></div>
+            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-ingrediente')">Cancelar</button><button class="btn-header btn-danger" onclick="eliminarIngrediente()" id="btnEliminarIngrediente" style="display: none;"><i class="fas fa-trash"></i> Eliminar</button><button class="btn-header btn-primary" onclick="guardarIngrediente()">Guardar Ingrediente</button></div>
         </div>
     </div>
 
@@ -806,10 +717,10 @@
             <div class="modal-header"><h3>Desbloquear Stock</h3><button class="close-btn" onclick="cerrarModal('modal-password')">&times;</button></div>
             <div class="modal-body">
                 <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contraseña de administrador:</p>
-                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña"></div>
+                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña" onkeypress="handlePasswordModalKeypress(event)"></div>
                 <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contraseña incorrecta</div>
             </div>
-            <div class="modal-footer"><button class="btn btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
+            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn-header btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
         </div>
     </div>
 
@@ -820,7 +731,7 @@
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <h3 style="margin-bottom: 1rem;">¿Detener Aumento Diario?</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Vas a desactivar el aumento diario. A partir de ahora deberás cambiar el precio de la tasa manualmente. El sistema no aplicará incrementos automáticos hasta que vuelvas a activar esta opción.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn btn-secondary" onclick="cerrarModal('modal-confirmar-detener')">Cancelar</button><button class="btn btn-danger" onclick="confirmarDetenerAumento()">Sí, Detener</button></div>
+                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-confirmar-detener')">Cancelar</button><button class="btn-header btn-danger" onclick="confirmarDetenerAumento()">Sí, Detener</button></div>
             </div>
         </div>
     </div>
@@ -832,7 +743,7 @@
                 <div class="alert-icon" style="color: var(--success);"><i class="fas fa-check-circle"></i></div>
                 <h3 style="margin-bottom: 1rem;">¿Reactivar Aumento Diario?</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">El aumento diario será activado. El sistema aplicará automáticamente el incremento a partir de mañana, usando el porcentaje especificado en el campo 'aumento diario'.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn btn-secondary" onclick="cerrarModal('modal-reactivar')">Cancelar</button><button class="btn btn-success" onclick="confirmarReactivarAumento()">Sí, Activar</button></div>
+                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-reactivar')">Cancelar</button><button class="btn-header btn-success" onclick="confirmarReactivarAumento()">Sí, Activar</button></div>
             </div>
         </div>
     </div>
@@ -842,7 +753,7 @@
         <div class="modal-content" style="max-width: 600px; text-align: center;">
             <div class="modal-header"><h3 id="titulo-qr-ampliado">Código QR</h3><button class="close-btn" onclick="cerrarModal('modal-qr-ampliado')">&times;</button></div>
             <div class="modal-body"><div id="qr-ampliado-container" style="display: flex; justify-content: center; padding: 2rem;"></div><p id="url-qr-ampliado" style="color: var(--text-secondary); word-break: break-all; margin-top: 1rem;"></p></div>
-            <div class="modal-footer" style="justify-content: center;"><button class="btn btn-primary" onclick="descargarQR()"><i class="fas fa-download"></i> Descargar QR</button></div>
+            <div class="modal-footer" style="justify-content: center;"><button class="btn-header btn-primary" onclick="descargarQR()"><i class="fas fa-download"></i> Descargar QR</button></div>
         </div>
     </div>
 
@@ -855,10 +766,8 @@
         // ==========================================
         const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69879d6e43b1c97be96d2b13';
         const JSONBIN_API_KEY = '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K';
-        
-        // Configuración por defecto
-        const DEFAULT_PASSWORD = '654321';
-        
+        const DEFAULT_ADMIN_PASSWORD = '654321';
+
         let datos = {
             config: { 
                 tasaCambio: 0, 
@@ -870,182 +779,194 @@
                 ultimaActualizacion: null, 
                 fechaUltimoAumento: null, 
                 fechaInicioAumento: null,
-                adminPassword: DEFAULT_PASSWORD,
-                adminEmail: '',
-                usuariosCajero: []
+                adminPassword: DEFAULT_ADMIN_PASSWORD,
+                recoveryEmail: ''
             },
             menu: [],
             inventario: {},
             pedidos: [],
             ventas: { diarias: [], semanales: [], mensuales: [] },
             notificaciones: [],
-            codigosQR: []
+            codigosQR: [],
+            usuarios: [] // { id, nombre, username, password, rol, activo }
         };
 
         let stockDesbloqueado = false;
         let ingredientesPlato = [];
         let qrActualAmpliado = null;
         let charts = {};
+        let currentRecoveryCode = '';
 
-        // Subcategorías sincronizadas con panel cliente
+        // Subcategorías según panel cliente
         const SUBCATEGORIAS = {
             'rolls': [
-                { id: 'rolls-frios', nombre: 'Rolls Fríos (10 pzas)' },
-                { id: 'rolls-tempura', nombre: 'Rolls Tempura (12 pzas)' }
+                { id: 'rolls-frios', name: 'Rolls Fríos (10 pzas)' },
+                { id: 'rolls-tempura', name: 'Rolls Tempura (12 pzas)' }
             ],
             'china': [
-                { id: 'arroz-chino', nombre: 'Arroz Chino' },
-                { id: 'arroz-cantones', nombre: 'Arroz Cantones' },
-                { id: 'chopsuey', nombre: 'Chopsuey' },
-                { id: 'lomey', nombre: 'Lomey' },
-                { id: 'chow-mein', nombre: 'Chow Mein' },
-                { id: 'fideos-arroz', nombre: 'Fideos de Arroz' },
-                { id: 'tallarines-cantones', nombre: 'Tallarines Cantones' },
-                { id: 'mariscos', nombre: 'Mariscos' },
-                { id: 'foo-yung', nombre: 'Foo Yong' },
-                { id: 'sopas', nombre: 'Sopas' },
-                { id: 'entremeses', nombre: 'Entremeses' }
+                { id: 'arroz-chino', name: 'Arroz Chino' },
+                { id: 'arroz-cantones', name: 'Arroz Cantones' },
+                { id: 'chopsuey', name: 'Chopsuey' },
+                { id: 'lomey', name: 'Lomey' },
+                { id: 'chow-mein', name: 'Chow Mein' },
+                { id: 'fideos-arroz', name: 'Fideos de Arroz' },
+                { id: 'tallarines-cantones', name: 'Tallarines Cantones' },
+                { id: 'mariscos', name: 'Mariscos' },
+                { id: 'foo-yung', name: 'Foo Yong' },
+                { id: 'sopas', name: 'Sopas' },
+                { id: 'entremeses', name: 'Entremeses' }
             ],
             'japonesa': [
-                { id: 'yakimeshi', nombre: 'Yakimeshi' },
-                { id: 'yakisoba', nombre: 'Yakisoba' },
-                { id: 'pasta-udon', nombre: 'Pasta Udon' },
-                { id: 'churrasco', nombre: 'Churrasco' }
+                { id: 'yakimeshi', name: 'Yakimeshi' },
+                { id: 'yakisoba', name: 'Yakisoba' },
+                { id: 'pasta-udon', name: 'Pasta Udon' },
+                { id: 'churrasco', name: 'Churrasco' }
             ]
         };
 
-        // Unidades y conversiones
-        const UNIDADES = {
-            unidades: { factor: 1, base: 'unidades' },
-            gramos: { factor: 1, base: 'gramos', toKg: 0.001 },
-            kilogramos: { factor: 1000, base: 'gramos', toG: 1000 },
-            ml: { factor: 1, base: 'ml', toL: 0.001 },
-            litros: { factor: 1000, base: 'ml', toMl: 1000 }
-        };
-
         // ==========================================
-        // SISTEMA DE LOGIN
+        // FUNCIÓN DE CONVERSIÓN DE UNIDADES
         // ==========================================
-        function verificarLogin() {
-            const password = document.getElementById('loginPassword').value;
-            const passwordCorrecta = datos.config.adminPassword || DEFAULT_PASSWORD;
-            
-            if (password === passwordCorrecta) {
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('mainHeader').style.display = 'flex';
-                document.getElementById('tasaBar').style.display = 'flex';
-                document.getElementById('mainContainer').style.display = 'block';
-                inicializarApp();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-                document.getElementById('loginPassword').value = '';
+        function convertirValorExistente(valor, unidadOrigen) {
+            // Convierte gramos a kilogramos y mililitros a litros
+            if (unidadOrigen === 'gramos') {
+                return valor / 1000;
+            } else if (unidadOrigen === 'mililitros') {
+                return valor / 1000;
             }
-        }
-
-        function mostrarRecuperacion() {
-            document.getElementById('loginStep').classList.remove('active');
-            document.getElementById('recoveryStep').classList.add('active');
-            document.getElementById('recoveryEmail').value = datos.config.adminEmail || '';
-        }
-
-        function volverLogin() {
-            document.getElementById('recoveryStep').classList.remove('active');
-            document.getElementById('emailSentStep').classList.remove('active');
-            document.getElementById('loginStep').classList.add('active');
-            document.getElementById('loginError').style.display = 'none';
-        }
-
-        function enviarRecuperacion() {
-            const email = document.getElementById('recoveryEmail').value;
-            if (!email || !email.includes('@')) {
-                document.getElementById('recoveryError').textContent = 'Introduce un correo válido';
-                document.getElementById('recoveryError').style.display = 'block';
-                return;
-            }
-            
-            // Guardar email si es nuevo
-            if (!datos.config.adminEmail) {
-                datos.config.adminEmail = email;
-                guardarDatos();
-            }
-            
-            // Mostrar simulación de email
-            document.getElementById('sentEmail').textContent = email;
-            document.getElementById('shownPassword').textContent = datos.config.adminPassword || DEFAULT_PASSWORD;
-            document.getElementById('recoveryStep').classList.remove('active');
-            document.getElementById('emailSentStep').classList.add('active');
-        }
-
-        function cambiarPassword() {
-            const actual = document.getElementById('passwordActual').value;
-            const nueva = document.getElementById('passwordNueva').value;
-            const confirmar = document.getElementById('passwordConfirmar').value;
-            const errorDiv = document.getElementById('passwordChangeError');
-            
-            const passwordActual = datos.config.adminPassword || DEFAULT_PASSWORD;
-            
-            if (actual !== passwordActual) {
-                errorDiv.textContent = 'Contraseña actual incorrecta';
-                errorDiv.style.display = 'block';
-                return;
-            }
-            
-            if (nueva.length !== 6 || !/^\d{6}$/.test(nueva)) {
-                errorDiv.textContent = 'La nueva contraseña debe tener exactamente 6 dígitos numéricos';
-                errorDiv.style.display = 'block';
-                return;
-            }
-            
-            if (nueva !== confirmar) {
-                errorDiv.textContent = 'Las contraseñas no coinciden';
-                errorDiv.style.display = 'block';
-                return;
-            }
-            
-            datos.config.adminPassword = nueva;
-            guardarDatos();
-            cerrarModal('modalCambiarPassword');
-            mostrarNotificacion('Contraseña cambiada exitosamente');
-            
-            // Limpiar campos
-            document.getElementById('passwordActual').value = '';
-            document.getElementById('passwordNueva').value = '';
-            document.getElementById('passwordConfirmar').value = '';
-            errorDiv.style.display = 'none';
-        }
-
-        function guardarEmail() {
-            const email = document.getElementById('configEmail').value;
-            if (email && email.includes('@')) {
-                datos.config.adminEmail = email;
-                guardarDatos();
-                actualizarInfoSistema();
-                cerrarModal('modalConfigurarEmail');
-                mostrarNotificacion('Email configurado correctamente');
-            }
+            return valor;
         }
 
         // ==========================================
-        // INICIALIZACIÓN
+        // LOGIN Y AUTENTICACIÓN
         // ==========================================
-        async function inicializarApp() {
+        document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
+            checkAuth();
+        });
+
+        function checkAuth() {
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+            if (isLoggedIn === 'true') {
+                showMainContent();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('mainContent').classList.remove('active');
+            document.getElementById('adminPasswordInput').focus();
+        }
+
+        function showMainContent() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContent').classList.add('active');
             verificarTasaDelDia();
             actualizarUI();
-            
-            setInterval(async () => { 
-                await cargarDatos(); 
-                actualizarUI(); 
-            }, 30000);
+            setInterval(async () => { await cargarDatos(); actualizarUI(); }, 30000);
             setInterval(verificarAumentoDiario, 60000);
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarDatos();
-            // Mostrar login primero
-            document.getElementById('loginOverlay').style.display = 'flex';
-        });
+        function handleLoginKeypress(e) {
+            if (e.key === 'Enter') loginAdmin();
+        }
 
+        function loginAdmin() {
+            const password = document.getElementById('adminPasswordInput').value;
+            if (password === datos.config.adminPassword) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('loginError').style.display = 'none';
+                showMainContent();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('adminPasswordInput').value = '';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+
+        // Recuperación de contraseña
+        function showRecovery() {
+            document.getElementById('loginStep').classList.remove('active');
+            document.getElementById('recoveryEmailStep').classList.add('active');
+            document.getElementById('recoveryEmail').focus();
+        }
+
+        function backToLogin() {
+            document.querySelectorAll('.recovery-steps').forEach(s => s.classList.remove('active'));
+            document.getElementById('loginStep').classList.add('active');
+            document.getElementById('adminPasswordInput').focus();
+        }
+
+        function handleRecoveryKeypress(e) {
+            if (e.key === 'Enter') sendRecoveryCode();
+        }
+
+        function sendRecoveryCode() {
+            const email = document.getElementById('recoveryEmail').value;
+            if (!email || !email.includes('@')) {
+                document.getElementById('emailError').textContent = 'Introduce un correo válido';
+                document.getElementById('emailError').style.display = 'block';
+                return;
+            }
+            
+            // Generar código de 6 dígitos
+            currentRecoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            // Simular envío de correo (en producción, aquí iría la llamada al servidor de correo)
+            console.log(`Código de recuperación para ${email}: ${currentRecoveryCode}`);
+            
+            // Mostrar mensaje de éxito y pasar al siguiente paso
+            document.getElementById('recoveryEmailStep').classList.remove('active');
+            document.getElementById('recoveryCodeStep').classList.add('active');
+            
+            // Enfocar primer input del código
+            document.querySelector('.recovery-code input').focus();
+            
+            mostrarNotificacion('Código enviado a tu correo electrónico');
+        }
+
+        function moveToNext(input, index) {
+            if (input.value.length === 1) {
+                const inputs = document.querySelectorAll('.recovery-code input');
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+        }
+
+        function handleCodeKeypress(e, index) {
+            if (e.key === 'Enter') {
+                verifyRecoveryCode();
+            } else if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                const inputs = document.querySelectorAll('.recovery-code input');
+                inputs[index - 1].focus();
+            }
+        }
+
+        function verifyRecoveryCode() {
+            const inputs = document.querySelectorAll('.recovery-code input');
+            const enteredCode = Array.from(inputs).map(i => i.value).join('');
+            
+            if (enteredCode === currentRecoveryCode) {
+                document.getElementById('recoveryCodeStep').classList.remove('active');
+                document.getElementById('recoverySuccessStep').classList.add('active');
+                document.getElementById('recoveredPassword').textContent = datos.config.adminPassword;
+            } else {
+                document.getElementById('codeError').style.display = 'block';
+                inputs.forEach(i => i.value = '');
+                inputs[0].focus();
+            }
+        }
+
+        // ==========================================
+        // CARGA DE DATOS
+        // ==========================================
         async function cargarDatos() {
             try {
                 const response = await fetch(JSONBIN_URL, { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
@@ -1053,15 +974,44 @@
                 if (result.record) {
                     datos = { ...datos, ...result.record };
                     if (!datos.config) datos.config = {};
-                    if (!datos.config.adminPassword) datos.config.adminPassword = DEFAULT_PASSWORD;
+                    if (!datos.config.adminPassword) datos.config.adminPassword = DEFAULT_ADMIN_PASSWORD;
                     if (!datos.menu) datos.menu = [];
                     if (!datos.inventario) datos.inventario = {};
                     if (!datos.pedidos) datos.pedidos = [];
                     if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
                     if (!datos.codigosQR) datos.codigosQR = [];
-                    if (!datos.config.usuariosCajero) datos.config.usuariosCajero = [];
+                    if (!datos.usuarios) datos.usuarios = [];
+                    
+                    // Convertir unidades antiguas de platillos existentes
+                    convertirUnidadesPlatillos();
                 }
             } catch (error) { console.error('Error cargando datos:', error); }
+        }
+
+        function convertirUnidadesPlatillos() {
+            // Recorrer todos los platillos y convertir unidades antiguas
+            datos.menu.forEach(platillo => {
+                if (platillo.ingredientes) {
+                    Object.keys(platillo.ingredientes).forEach(ingKey => {
+                        const ingData = platillo.ingredientes[ingKey];
+                        // Si existe unidadAntigua o detectamos por cantidad
+                        if (ingData.unidad === 'gramos') {
+                            ingData.cantidad = convertirValorExistente(ingData.cantidad, 'gramos');
+                            ingData.unidad = 'kilogramos';
+                        } else if (ingData.unidad === 'mililitros') {
+                            ingData.cantidad = convertirValorExistente(ingData.cantidad, 'mililitros');
+                            ingData.unidad = 'litros';
+                        } else if (!ingData.unidad) {
+                            // Asignar unidad por defecto según la cantidad
+                            if (ingData.cantidad >= 1) {
+                                ingData.unidad = 'unidades';
+                            } else {
+                                ingData.unidad = 'kilogramos';
+                            }
+                        }
+                    });
+                }
+            });
         }
 
         // ==========================================
@@ -1079,9 +1029,16 @@
             }
         }
 
+        function handleTasaKeypress(e) {
+            if (e.key === 'Enter') guardarTasaInicial();
+        }
+
         async function guardarTasaInicial() {
             const tasa = parseFloat(document.getElementById('tasaInicialInput').value);
-            if (!tasa || tasa <= 0) { alert('Introduce una tasa válida'); return; }
+            if (!tasa || tasa <= 0) { 
+                mostrarNotificacion('Introduce una tasa válida', 'error'); 
+                return; 
+            }
             
             datos.config.tasaCambio = tasa;
             datos.config.ultimaActualizacion = new Date().toISOString();
@@ -1139,6 +1096,10 @@
             document.getElementById('tasa-efectiva-card').textContent = (datos.config.tasaEfectiva || 0).toFixed(2);
         }
 
+        function handleTasaBarKeypress(e) {
+            if (e.key === 'Enter') actualizarTasaManual();
+        }
+
         async function actualizarTasaManual() {
             const nuevaTasa = parseFloat(document.getElementById('tasaDiaInput').value);
             if (!nuevaTasa || nuevaTasa <= 0) return;
@@ -1149,6 +1110,10 @@
             actualizarDisplayTasa();
             recalcularCostos();
             mostrarNotificacion('Tasa actualizada y costos recalculados');
+        }
+
+        function handleAumentoKeypress(e) {
+            if (e.key === 'Enter') actualizarAumentoDiario();
         }
 
         async function actualizarAumentoDiario() {
@@ -1181,8 +1146,13 @@
             }
         }
 
-        function detenerAumentoCompleto() { document.getElementById('modal-confirmar-detener').classList.add('active'); }
-        function activarAumentoCompleto() { document.getElementById('modal-reactivar').classList.add('active'); }
+        function detenerAumentoCompleto() { 
+            document.getElementById('modal-confirmar-detener').classList.add('active'); 
+        }
+        
+        function activarAumentoCompleto() { 
+            document.getElementById('modal-reactivar').classList.add('active'); 
+        }
 
         async function confirmarDetenerAumento() {
             datos.config.aumentoActivo = false;
@@ -1228,79 +1198,88 @@
         function convertirUnidad(valor, desde, hacia) {
             if (desde === hacia) return valor;
             
+            // Convertir a base primero
             let enBase = valor;
-            const infoDesde = UNIDADES[desde];
+            if (desde === 'kilogramos') enBase = valor * 1000; // a gramos
+            else if (desde === 'litros') enBase = valor * 1000; // a ml
+            else if (desde === 'gramos') enBase = valor; // gramos
+            else if (desde === 'mililitros') enBase = valor; // mililitros
+            else if (desde === 'unidades') enBase = valor; // unidades
             
-            if (infoDesde.base === 'gramos') {
-                if (desde === 'kilogramos') enBase = valor * 1000;
-            } else if (infoDesde.base === 'ml') {
-                if (desde === 'litros') enBase = valor * 1000;
-            }
-            
-            const infoHacia = UNIDADES[hacia];
-            if (infoHacia.base === 'gramos') {
-                if (hacia === 'kilogramos') return enBase / 1000;
-            } else if (infoHacia.base === 'ml') {
-                if (hacia === 'litros') return enBase / 1000;
-            }
+            // Convertir de base a destino
+            if (hacia === 'kilogramos') return enBase / 1000;
+            else if (hacia === 'litros') return enBase / 1000;
             
             return enBase;
         }
 
         function formatearUnidad(valor, unidad) {
-            if (unidad === 'gramos' && valor >= 1000) return (valor / 1000).toFixed(2) + ' kg';
             if (unidad === 'kilogramos' && valor < 1) return (valor * 1000).toFixed(0) + ' g';
-            if (unidad === 'ml' && valor >= 1000) return (valor / 1000).toFixed(2) + ' L';
             if (unidad === 'litros' && valor < 1) return (valor * 1000).toFixed(0) + ' ml';
-            return valor.toFixed(2) + ' ' + unidad;
+            if (unidad === 'unidades') return valor.toFixed(0) + ' Unidades/Piezas';
+            return valor.toFixed(3) + ' ' + unidad;
+        }
+
+        function formatearCantidadParaMostrar(valor, unidad) {
+            if (unidad === 'kilogramos' && valor < 1) {
+                return (valor * 1000).toFixed(0) + ' gramos';
+            } else if (unidad === 'litros' && valor < 1) {
+                return (valor * 1000).toFixed(0) + ' mililitros';
+            } else if (unidad === 'unidades') {
+                return valor.toFixed(0) + ' Unidades/Piezas';
+            }
+            return valor.toFixed(3) + ' ' + unidad;
         }
 
         function syncUnidades(origen) {
             const nuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
             const unidad = document.getElementById('ingrediente-unidad').value;
             
+            // Mostrar conversión
             let conversionText = '';
-            if (unidad === 'gramos' && nuevo >= 1000) conversionText = `= ${(nuevo/1000).toFixed(3)} kilogramos`;
-            else if (unidad === 'kilogramos') conversionText = `= ${(nuevo*1000).toFixed(0)} gramos`;
-            else if (unidad === 'ml' && nuevo >= 1000) conversionText = `= ${(nuevo/1000).toFixed(3)} litros`;
-            else if (unidad === 'litros') conversionText = `= ${(nuevo*1000).toFixed(0)} mililitros`;
+            if (unidad === 'kilogramos') {
+                conversionText = `= ${(nuevo * 1000).toFixed(0)} gramos`;
+            } else if (unidad === 'litros') {
+                conversionText = `= ${(nuevo * 1000).toFixed(0)} mililitros`;
+            }
             document.getElementById('conversion-display').textContent = conversionText;
             
+            // Sincronizar con calculadora
             document.getElementById('calc-cantidad').value = nuevo;
-            document.getElementById('calc-unidad-display').textContent = unidad;
+            document.getElementById('calc-unidad-display').textContent = unidad === 'unidades' ? 'Unidades/Piezas' : unidad;
             calcularCostoUnitario();
             calcularStockTotal();
         }
 
         function cambiarUnidadSistema() {
             const unidad = document.getElementById('ingrediente-unidad').value;
-            document.getElementById('calc-unidad-display').textContent = unidad;
-            document.getElementById('calc-unidad-result').textContent = unidad;
+            const displayUnidad = unidad === 'unidades' ? 'Unidades/Piezas' : unidad;
+            document.getElementById('calc-unidad-display').textContent = displayUnidad;
+            document.getElementById('calc-unidad-result').textContent = displayUnidad;
+            document.getElementById('unidad-minimo').textContent = displayUnidad;
+            document.getElementById('unidad-preview').textContent = displayUnidad;
             syncUnidades('nuevo');
-        }
-
-        // ==========================================
-        // GESTIÓN DE SUBCATEGORÍAS
-        // ==========================================
-        function actualizarSubcategorias() {
-            const categoria = document.getElementById('edit-categoria').value;
-            const grupoSub = document.getElementById('grupo-subcategoria');
-            const selectSub = document.getElementById('edit-subcategoria');
-            
-            if (SUBCATEGORIAS[categoria]) {
-                grupoSub.style.display = 'block';
-                selectSub.innerHTML = SUBCATEGORIAS[categoria].map(sub => 
-                    `<option value="${sub.id}">${sub.nombre}</option>`
-                ).join('');
-            } else {
-                grupoSub.style.display = 'none';
-                selectSub.innerHTML = '';
-            }
         }
 
         // ==========================================
         // GESTIÓN DE PLATILLOS
         // ==========================================
+        function handleCategoryChange() {
+            const categoria = document.getElementById('edit-categoria').value;
+            const subcatContainer = document.getElementById('subcategoria-container');
+            const subcatSelect = document.getElementById('edit-subcategoria');
+            
+            if (SUBCATEGORIAS[categoria]) {
+                subcatContainer.style.display = 'block';
+                subcatSelect.innerHTML = SUBCATEGORIAS[categoria].map(sub => 
+                    `<option value="${sub.id}">${sub.name}</option>`
+                ).join('');
+            } else {
+                subcatContainer.style.display = 'none';
+                subcatSelect.innerHTML = '';
+            }
+        }
+
         function handleImagenPlato(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -1338,11 +1317,12 @@
             document.getElementById('preview-imagen-plato').innerHTML = '';
             document.getElementById('label-imagen-plato').innerHTML = '<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; display: block;"></i> Haz clic para subir imagen o arrastra aquí';
             document.getElementById('label-imagen-plato').classList.remove('has-file');
+            document.getElementById('subcategoria-container').style.display = 'none';
             
             ingredientesPlato = [];
             renderIngredientesPlato();
-            actualizarSubcategorias(); // Resetear subcategorías
             document.getElementById('modal-platillo').classList.add('active');
+            document.getElementById('edit-nombre').focus();
         }
 
         function editarPlatillo(id) {
@@ -1357,12 +1337,15 @@
             document.getElementById('edit-precio-usd').value = platillo.precio;
             document.getElementById('edit-disponible').checked = platillo.disponible;
             
-            // Actualizar subcategorías y seleccionar la correcta
-            actualizarSubcategorias();
-            if (platillo.subcategoria) {
+            // Manejar subcategoría
+            if (platillo.subcategoria && SUBCATEGORIAS[platillo.categoria]) {
+                handleCategoryChange();
                 document.getElementById('edit-subcategoria').value = platillo.subcategoria;
+            } else {
+                document.getElementById('subcategoria-container').style.display = 'none';
             }
             
+            // Imagen
             if (platillo.imagen) {
                 document.getElementById('edit-imagen-url').value = platillo.imagen;
                 document.getElementById('edit-imagen-link').value = platillo.imagen;
@@ -1381,11 +1364,24 @@
             if (platillo.ingredientes) {
                 Object.entries(platillo.ingredientes).forEach(([key, val]) => {
                     const ingInfo = datos.inventario[key];
+                    // Asegurar unidad correcta (convertir si es necesario)
+                    let unidad = val.unidad || 'unidades';
+                    let cantidad = val.cantidad;
+                    
+                    // Convertir unidades antiguas
+                    if (unidad === 'gramos') {
+                        cantidad = cantidad / 1000;
+                        unidad = 'kilogramos';
+                    } else if (unidad === 'mililitros') {
+                        cantidad = cantidad / 1000;
+                        unidad = 'litros';
+                    }
+                    
                     ingredientesPlato.push({
                         id: key,
                         nombre: ingInfo ? ingInfo.nombre : key,
-                        cantidad: val.cantidad,
-                        unidad: ingInfo ? ingInfo.unidad : 'unidades',
+                        cantidad: cantidad,
+                        unidad: unidad,
                         obligatorio: val.obligatorio || false
                     });
                 });
@@ -1408,14 +1404,12 @@
                     <input type="text" class="form-input" value="${ing.nombre || ing.id}" placeholder="Nombre del ingrediente" onchange="cambiarNombreIngrediente(${index}, this.value)">
                     <input type="number" step="0.001" class="form-input" value="${ing.cantidad}" placeholder="Cantidad" onchange="cambiarCantidadPlato(${index}, this.value)">
                     <select class="form-select" onchange="cambiarUnidadPlato(${index}, this.value)">
-                        <option value="unidades" ${ing.unidad === 'unidades' ? 'selected' : ''}>Unidades</option>
-                        <option value="gramos" ${ing.unidad === 'gramos' ? 'selected' : ''}>Gramos</option>
+                        <option value="unidades" ${ing.unidad === 'unidades' ? 'selected' : ''}>Unidades/Piezas</option>
                         <option value="kilogramos" ${ing.unidad === 'kilogramos' ? 'selected' : ''}>Kg</option>
-                        <option value="ml" ${ing.unidad === 'ml' ? 'selected' : ''}>ml</option>
                         <option value="litros" ${ing.unidad === 'litros' ? 'selected' : ''}>Litros</option>
                     </select>
                     <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem;"><input type="checkbox" ${ing.obligatorio ? 'checked' : ''} onchange="toggleObligatorio(${index}, this.checked)"> Oblig.</label>
-                    <button class="btn btn-danger btn-small" onclick="eliminarIngredientePlato(${index})"><i class="fas fa-trash"></i></button>
+                    <button class="btn-header btn-danger btn-small" onclick="eliminarIngredientePlato(${index})"><i class="fas fa-trash"></i></button>
                 </div>
             `).join('');
             
@@ -1437,9 +1431,18 @@
             calcularStockPlato();
         }
 
-        function cambiarUnidadPlato(index, unidad) { ingredientesPlato[index].unidad = unidad; }
-        function toggleObligatorio(index, obligatorio) { ingredientesPlato[index].obligatorio = obligatorio; }
-        function eliminarIngredientePlato(index) { ingredientesPlato.splice(index, 1); renderIngredientesPlato(); }
+        function cambiarUnidadPlato(index, unidad) { 
+            ingredientesPlato[index].unidad = unidad; 
+        }
+        
+        function toggleObligatorio(index, obligatorio) { 
+            ingredientesPlato[index].obligatorio = obligatorio; 
+        }
+        
+        function eliminarIngredientePlato(index) { 
+            ingredientesPlato.splice(index, 1); 
+            renderIngredientesPlato(); 
+        }
 
         function calcularStockPlato() {
             if (ingredientesPlato.length === 0) {
@@ -1464,16 +1467,43 @@
             document.getElementById('stock-calculado').textContent = `Se pueden preparar ${maxPlatillos} platillos con el stock actual`;
         }
 
+        function handleModalKeypress(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // Mover al siguiente campo o guardar si es el último
+                const inputs = document.querySelectorAll('#modal-platillo .form-input, #modal-platillo .form-textarea, #modal-platillo .form-select');
+                const currentIndex = Array.from(inputs).indexOf(e.target);
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                } else {
+                    guardarPlatillo();
+                }
+            } else if (e.key === 'Escape') {
+                cerrarModal('modal-platillo');
+            }
+        }
+
         async function guardarPlatillo() {
             const id = document.getElementById('edit-id').value || 'plat_' + Date.now();
             
             const ingredientesObj = {};
             ingredientesPlato.forEach(ing => {
                 const ingId = ing.id || 'ing_manual_' + (ing.nombre || 'desconocido').toLowerCase().replace(/\s+/g, '_');
-                ingredientesObj[ingId] = { cantidad: ing.cantidad, obligatorio: ing.obligatorio };
+                ingredientesObj[ingId] = { 
+                    cantidad: ing.cantidad, 
+                    unidad: ing.unidad,
+                    obligatorio: ing.obligatorio 
+                };
                 
                 if (!datos.inventario[ingId] && ing.nombre) {
-                    datos.inventario[ingId] = { nombre: ing.nombre, stock: 0, unidad: ing.unidad || 'unidades', minimo: 0, precioCosto: 0, precioUnitario: 0 };
+                    datos.inventario[ingId] = { 
+                        nombre: ing.nombre, 
+                        stock: 0, 
+                        unidad: ing.unidad || 'unidades', 
+                        minimo: 0, 
+                        precioCosto: 0, 
+                        precioUnitario: 0 
+                    };
                 }
             });
             
@@ -1491,15 +1521,10 @@
             });
             if (stockCalculado === Infinity || stockCalculado < 0) stockCalculado = 0;
             
-            const categoria = document.getElementById('edit-categoria').value;
-            const subcategoriaSelect = document.getElementById('edit-subcategoria');
-            const subcategoria = subcategoriaSelect.value && SUBCATEGORIAS[categoria] ? subcategoriaSelect.value : null;
-            
             const platillo = {
                 id: id,
                 nombre: document.getElementById('edit-nombre').value,
-                categoria: categoria,
-                subcategoria: subcategoria,
+                categoria: document.getElementById('edit-categoria').value,
                 precio: parseFloat(document.getElementById('edit-precio-usd').value) || 0,
                 descripcion: document.getElementById('edit-descripcion').value,
                 imagen: document.getElementById('edit-imagen-url').value,
@@ -1507,6 +1532,12 @@
                 stock: stockCalculado,
                 disponible: document.getElementById('edit-disponible').checked
             };
+            
+            // Agregar subcategoría si existe
+            const subcatContainer = document.getElementById('subcategoria-container');
+            if (subcatContainer.style.display !== 'none') {
+                platillo.subcategoria = document.getElementById('edit-subcategoria').value;
+            }
             
             const index = datos.menu.findIndex(p => p.id === id);
             if (index >= 0) datos.menu[index] = platillo;
@@ -1552,6 +1583,8 @@
             document.getElementById('ingrediente-precio-venta').value = '';
             document.getElementById('ingrediente-unidad').value = 'unidades';
             document.getElementById('btnEliminarIngrediente').style.display = 'none';
+            document.getElementById('unidad-minimo').textContent = 'Unidades/Piezas';
+            document.getElementById('unidad-preview').textContent = 'Unidades/Piezas';
             
             document.getElementById('calc-costo-total').value = '';
             document.getElementById('calc-cantidad').value = '';
@@ -1559,6 +1592,7 @@
             
             calcularStockTotal();
             document.getElementById('modal-ingrediente').classList.add('active');
+            document.getElementById('ingrediente-nombre').focus();
         }
 
         function editarIngrediente(id) {
@@ -1579,8 +1613,27 @@
             document.getElementById('ingrediente-unidad').value = ing.unidad || 'unidades';
             document.getElementById('btnEliminarIngrediente').style.display = 'inline-flex';
             
+            const displayUnidad = ing.unidad === 'unidades' ? 'Unidades/Piezas' : ing.unidad;
+            document.getElementById('unidad-minimo').textContent = displayUnidad;
+            document.getElementById('unidad-preview').textContent = displayUnidad;
+            
             calcularStockTotal();
             document.getElementById('modal-ingrediente').classList.add('active');
+        }
+
+        function handleIngredienteKeypress(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputs = document.querySelectorAll('#modal-ingrediente .form-input, #modal-ingrediente .form-select');
+                const currentIndex = Array.from(inputs).indexOf(e.target);
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                } else {
+                    guardarIngrediente();
+                }
+            } else if (e.key === 'Escape') {
+                cerrarModal('modal-ingrediente');
+            }
         }
 
         async function guardarIngrediente() {
@@ -1610,6 +1663,7 @@
             
             cerrarModal('modal-ingrediente');
             
+            // Si se agregó stock nuevo, verificar platillos agotados
             if (stockNuevo > 0 && stockAnterior === 0) {
                 await reactivarPlatillosPorIngrediente(id);
             }
@@ -1625,6 +1679,7 @@
             
             datos.menu.forEach(platillo => {
                 if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
+                    // Recalcular stock del platillo
                     let maxPlatillos = Infinity;
                     
                     Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
@@ -1640,6 +1695,7 @@
                     
                     if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
                     
+                    // Si antes estaba agotado y ahora tiene stock, reactivar
                     if (platillo.stock === 0 && maxPlatillos > 0) {
                         platillo.disponible = true;
                         platillosReactivados++;
@@ -1657,6 +1713,7 @@
             const id = document.getElementById('ingrediente-id').value;
             if (!id || !datos.inventario[id]) return;
             
+            // Verificar si está en uso
             const enUso = datos.menu.some(p => p.ingredientes && p.ingredientes[id]);
             if (enUso) {
                 alert('No se puede eliminar: este ingrediente está siendo usado en platillos. Elimínalo de los platillos primero.');
@@ -1676,17 +1733,21 @@
             document.getElementById('modal-password').classList.add('active');
             document.getElementById('admin-password').value = '';
             document.getElementById('password-error').style.display = 'none';
+            document.getElementById('admin-password').focus();
+        }
+
+        function handlePasswordModalKeypress(e) {
+            if (e.key === 'Enter') verificarPassword();
+            else if (e.key === 'Escape') cerrarModal('modal-password');
         }
 
         function verificarPassword() {
-            const password = document.getElementById('admin-password').value;
-            const passwordCorrecta = datos.config.adminPassword || DEFAULT_PASSWORD;
-            
-            if (password === passwordCorrecta) {
+            if (document.getElementById('admin-password').value === datos.config.adminPassword) {
                 stockDesbloqueado = true;
                 document.getElementById('ingrediente-stock').disabled = false;
                 document.getElementById('stock-overlay').style.display = 'none';
                 cerrarModal('modal-password');
+                document.getElementById('ingrediente-stock').focus();
             } else {
                 document.getElementById('password-error').style.display = 'block';
             }
@@ -1698,7 +1759,6 @@
             const unidad = document.getElementById('ingrediente-unidad').value;
             
             document.getElementById('stock-total-preview').textContent = (actual + nuevo).toFixed(3);
-            document.getElementById('unidad-preview').textContent = unidad;
         }
 
         function calcularCostoUnitario() {
@@ -1716,76 +1776,154 @@
         }
 
         // ==========================================
-        // GESTIÓN DE USUARIOS CAJERO
+        // GESTIÓN DE USUARIOS CAJEROS
         // ==========================================
-        function crearUsuarioCajero() {
-            const nombre = document.getElementById('cajeroNombre').value.trim();
-            const email = document.getElementById('cajeroEmail').value.trim();
-            const username = document.getElementById('cajeroUsername').value.trim();
-            const password = document.getElementById('cajeroPassword').value;
+        function handleNewUserKeypress(e) {
+            if (e.key === 'Enter') createCashierUser();
+        }
+
+        async function createCashierUser() {
+            const nombre = document.getElementById('newCashierName').value.trim();
+            const username = document.getElementById('newCashierUsername').value.trim();
+            const password = document.getElementById('newCashierPassword').value.trim();
             
             if (!nombre || !username || !password) {
-                alert('Nombre, usuario y contraseña son obligatorios');
+                mostrarNotificacion('Completa todos los campos', 'error');
                 return;
             }
             
-            const nuevoUsuario = {
-                id: 'cajero_' + Date.now(),
+            // Verificar si username ya existe
+            if (datos.usuarios.some(u => u.username === username)) {
+                mostrarNotificacion('El nombre de usuario ya existe', 'error');
+                return;
+            }
+            
+            const newUser = {
+                id: 'user_' + Date.now(),
                 nombre: nombre,
-                email: email,
                 username: username,
                 password: password,
+                rol: 'cajero',
                 activo: true,
-                fechaCreacion: new Date().toISOString()
+                createdAt: new Date().toISOString()
             };
             
-            datos.config.usuariosCajero.push(nuevoUsuario);
-            guardarDatos();
-            renderizarUsuariosCajero();
+            datos.usuarios.push(newUser);
+            await guardarDatos();
             
-            // Limpiar campos
-            document.getElementById('cajeroNombre').value = '';
-            document.getElementById('cajeroEmail').value = '';
-            document.getElementById('cajeroUsername').value = '';
-            document.getElementById('cajeroPassword').value = '';
+            document.getElementById('newCashierName').value = '';
+            document.getElementById('newCashierUsername').value = '';
+            document.getElementById('newCashierPassword').value = '';
             
-            mostrarNotificacion('Usuario cajero creado exitosamente');
-            actualizarInfoSistema();
+            renderizarUsuarios();
+            mostrarNotificacion('Usuario cajero creado correctamente');
         }
 
-        function eliminarUsuarioCajero(id) {
-            if (!confirm('¿Eliminar este usuario cajero?')) return;
-            datos.config.usuariosCajero = datos.config.usuariosCajero.filter(u => u.id !== id);
-            guardarDatos();
-            renderizarUsuariosCajero();
-            actualizarInfoSistema();
+        async function toggleUserStatus(userId) {
+            const user = datos.usuarios.find(u => u.id === userId);
+            if (user) {
+                user.activo = !user.activo;
+                await guardarDatos();
+                renderizarUsuarios();
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('¿Eliminar este usuario permanentemente?')) return;
+            datos.usuarios = datos.usuarios.filter(u => u.id !== userId);
+            await guardarDatos();
+            renderizarUsuarios();
             mostrarNotificacion('Usuario eliminado');
         }
 
-        function renderizarUsuariosCajero() {
-            const container = document.getElementById('listaUsuariosCajero');
+        function renderizarUsuarios() {
+            const container = document.getElementById('cashierUsersList');
+            const cajeros = datos.usuarios.filter(u => u.rol === 'cajero');
             
-            if (datos.config.usuariosCajero.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay usuarios creados</p>';
+            if (cajeros.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay usuarios cajeros registrados</p>';
                 return;
             }
             
-            container.innerHTML = datos.config.usuariosCajero.map(user => `
-                <div class="user-card">
-                    <div class="user-info">
-                        <span class="user-name">${user.nombre}</span>
-                        <span class="user-email">@${user.username} ${user.email ? '| ' + user.email : ''}</span>
+            container.innerHTML = cajeros.map(user => `
+                <div class="user-item">
+                    <div>
+                        <div style="font-weight: 600;">${user.nombre}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">@${user.username}</div>
                     </div>
-                    <button class="btn btn-danger btn-small" onclick="eliminarUsuarioCajero('${user.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span class="user-role">${user.activo ? 'Activo' : 'Inactivo'}</span>
+                        <button class="btn-header btn-small ${user.activo ? 'btn-danger' : 'btn-success'}" onclick="toggleUserStatus('${user.id}')">
+                            ${user.activo ? '<i class="fas fa-ban"></i>' : '<i class="fas fa-check"></i>'}
+                        </button>
+                        <button class="btn-header btn-small btn-danger" onclick="deleteUser('${user.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
 
         // ==========================================
+        // CONFIGURACIÓN
+        // ==========================================
+        function handlePasswordChangeKeypress(e) {
+            if (e.key === 'Enter') changeAdminPassword();
+        }
+
+        async function changeAdminPassword() {
+            const current = document.getElementById('currentAdminPass').value;
+            const newPass = document.getElementById('newAdminPass').value;
+            const confirm = document.getElementById('confirmAdminPass').value;
+            
+            if (current !== datos.config.adminPassword) {
+                mostrarNotificacion('Contraseña actual incorrecta', 'error');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                mostrarNotificacion('La nueva contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                mostrarNotificacion('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            datos.config.adminPassword = newPass;
+            await guardarDatos();
+            
+            document.getElementById('currentAdminPass').value = '';
+            document.getElementById('newAdminPass').value = '';
+            document.getElementById('confirmAdminPass').value = '';
+            
+            mostrarNotificacion('Contraseña actualizada correctamente');
+        }
+
+        function handleEmailConfigKeypress(e) {
+            if (e.key === 'Enter') saveRecoveryEmail();
+        }
+
+        async function saveRecoveryEmail() {
+            const email = document.getElementById('recoveryEmailConfig').value;
+            if (!email || !email.includes('@')) {
+                mostrarNotificacion('Introduce un correo válido', 'error');
+                return;
+            }
+            
+            datos.config.recoveryEmail = email;
+            await guardarDatos();
+            mostrarNotificacion('Correo de recuperación guardado');
+        }
+
+        // ==========================================
         // CÓDIGOS QR
         // ==========================================
+        function handleQRKeypress(e) {
+            if (e.key === 'Enter') generarQR();
+        }
+
         function generarQR() {
             const nombre = document.getElementById('qrNombreInput').value.trim();
             if (!nombre) { alert('Introduce un nombre para el QR'); return; }
@@ -1807,8 +1945,8 @@
                         <h4 style="margin-bottom: 0.5rem;">${qr.nombre}</h4>
                         <div class="qr-code" id="qr-${qr.id}"></div>
                         <div class="qr-overlay">
-                            <button class="btn btn-primary" onclick="ampliarQR('${qr.id}')" style="margin-bottom: 0.5rem;"><i class="fas fa-search-plus"></i> Ampliar</button>
-                            <button class="btn btn-danger btn-small" onclick="eliminarQR('${qr.id}')"><i class="fas fa-trash"></i> Eliminar</button>
+                            <button class="btn-header btn-primary" onclick="ampliarQR('${qr.id}')" style="margin-bottom: 0.5rem;"><i class="fas fa-search-plus"></i> Ampliar</button>
+                            <button class="btn-header btn-danger btn-small" onclick="eliminarQR('${qr.id}')"><i class="fas fa-trash"></i> Eliminar</button>
                         </div>
                         <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; word-break: break-all;">${url}</p>
                     </div>
@@ -1887,6 +2025,7 @@
             document.getElementById('ticket-promedio').textContent = '$' + ticketPromedio.toFixed(2);
             document.getElementById('platillo-top').textContent = platilloTop ? platilloTop[0] : '-';
             
+            // Tabla de ventas con cajero
             const tbody = document.getElementById('ventas-body');
             tbody.innerHTML = pedidosCobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => {
                 const totalBs = ((p.total || 0) * (datos.config.tasaEfectiva || 0)).toFixed(2);
@@ -1958,28 +2097,40 @@
             
             container.innerHTML = datos.menu.map(item => {
                 const precioBs = ((item.precio || 0) * tasa).toFixed(2);
-                
-                // Generar tooltip de ingredientes con checks/X
-                let ingredientesTooltip = '';
-                if (item.ingredientes && Object.keys(item.ingredientes).length > 0) {
-                    ingredientesTooltip = Object.entries(item.ingredientes).map(([key, val]) => {
-                        const ingInfo = datos.inventario[key];
-                        const hayStock = ingInfo && ingInfo.stock > 0;
-                        return `
-                            <div class="ingredient-check-item">
-                                <i class="fas fa-${hayStock ? 'check-circle' : 'times-circle'}" style="color: ${hayStock ? 'var(--success)' : 'var(--danger)'}"></i>
-                                <span>${ingInfo ? ingInfo.nombre : key}</span>
-                            </div>
-                        `;
-                    }).join('');
-                }
-                
                 let ingredientesHtml = '';
+                let ingredientesStatusHtml = '';
+                
                 if (item.ingredientes) {
+                    // Tags de ingredientes
                     ingredientesHtml = Object.entries(item.ingredientes).map(([key, val]) => {
                         const ingInfo = datos.inventario[key];
-                        return `<span class="ingredient-tag">${ingInfo ? ingInfo.nombre : key}: ${val.cantidad} ${ingInfo ? ingInfo.unidad : 'unid'}</span>`;
+                        const displayCantidad = formatearCantidadParaMostrar(val.cantidad, val.unidad || 'unidades');
+                        return `<span class="ingredient-tag">${ingInfo ? ingInfo.nombre : key}: ${displayCantidad}</span>`;
                     }).join('');
+                    
+                    // Status tooltip
+                    const ingredientesStatus = Object.entries(item.ingredientes).map(([key, val]) => {
+                        const ingInfo = datos.inventario[key];
+                        const disponible = ingInfo && ingInfo.stock > 0;
+                        return {
+                            nombre: ingInfo ? ingInfo.nombre : key,
+                            disponible: disponible
+                        };
+                    });
+                    
+                    ingredientesStatusHtml = `
+                        <div class="ingredient-status-tooltip">
+                            <i class="fas fa-info-circle" style="color: var(--info);"></i>
+                            <div class="ingredient-status-popup">
+                                ${ingredientesStatus.map(ing => `
+                                    <div class="ingredient-status-item">
+                                        <span>${ing.nombre}</span>
+                                        <i class="fas fa-${ing.disponible ? 'check' : 'times'} status-icon ${ing.disponible ? 'available' : 'unavailable'}"></i>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
                 }
                 
                 return `
@@ -1989,20 +2140,13 @@
                                 ${item.imagen ? `<img src="${item.imagen}" class="plato-img" onerror="this.style.display='none'">` : '<div class="plato-img" style="background: var(--bg-hover); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);"><i class="fas fa-image"></i></div>'}
                                 <div>
                                     <div class="plato-title">${item.nombre}</div>
-                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">$${(item.precio || 0).toFixed(2)} = ${precioBs} Bs.</div>
-                                    <div class="ingredients-tooltip" style="margin-top: 0.5rem;">
-                                        <i class="fas fa-utensils"></i> Stock: ${item.stock || 0} unidades
-                                        <div class="ingredients-popup">
-                                            <h4 style="margin-bottom: 0.75rem; color: var(--primary);">Ingredientes</h4>
-                                            ${ingredientesTooltip || '<p style="color: var(--text-secondary);">Sin ingredientes configurados</p>'}
-                                        </div>
-                                    </div>
+                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">$${(item.precio || 0).toFixed(2)} = ${precioBs} Bs. | Stock: ${item.stock || 0} unidades ${ingredientesStatusHtml}</div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <label class="toggle-plato" style="margin-right: 1rem;"><input type="checkbox" ${item.disponible ? 'checked' : ''} onchange="toggleDisponible('${item.id}', this.checked)"><span class="slider-plato"></span></label>
-                                <button class="btn btn-secondary btn-small" onclick="editarPlatillo('${item.id}')"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-danger btn-small" onclick="eliminarPlatillo('${item.id}')"><i class="fas fa-trash"></i></button>
+                                <button class="btn-header btn-secondary btn-small" onclick="editarPlatillo('${item.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-header btn-danger btn-small" onclick="eliminarPlatillo('${item.id}')"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">${item.descripcion || 'Sin descripción'}</div>
@@ -2020,6 +2164,7 @@
                 const percent = ing.minimo > 0 ? (ing.stock / (ing.minimo * 3)) * 100 : 100;
                 const isLow = ing.stock <= ing.minimo;
                 const costoBs = ing.precioCosto ? (ing.precioCosto * (datos.config.tasaEfectiva || 0)).toFixed(2) : '0.00';
+                const displayUnidad = ing.unidad === 'unidades' ? 'Unidades/Piezas' : ing.unidad;
                 
                 return `
                     <div class="ingredient-item">
@@ -2034,7 +2179,7 @@
                             </div>
                             <div class="stock-bar"><div class="stock-fill ${isLow ? 'danger' : percent < 50 ? 'warning' : ''}" style="width: ${Math.min(percent, 100)}%"></div></div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem;"><button class="btn btn-small btn-secondary" onclick="editarIngrediente('${id}')"><i class="fas fa-edit"></i></button></div>
+                        <div style="display: flex; gap: 0.5rem;"><button class="btn-header btn-small btn-secondary" onclick="editarIngrediente('${id}')"><i class="fas fa-edit"></i></button></div>
                     </div>
                 `;
             }).join('') || '<p style="color: var(--text-secondary); text-align: center;">No hay ingredientes registrados</p>';
@@ -2055,6 +2200,7 @@
             Object.values(datos.inventario).forEach(ing => { if (ing.stock <= ing.minimo) alertas++; });
             document.getElementById('alertas-stock').textContent = alertas;
             
+            // Pedidos recientes
             const recientes = datos.pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
             document.getElementById('pedidos-recientes').innerHTML = recientes.map(p => `
                 <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
@@ -2063,6 +2209,7 @@
                 </div>
             `).join('') || '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay pedidos recientes</p>';
             
+            // Stock crítico
             const criticos = Object.entries(datos.inventario).filter(([_, ing]) => ing.stock <= ing.minimo);
             document.getElementById('stock-critico').innerHTML = criticos.map(([id, ing]) => {
                 const percent = ing.minimo > 0 ? (ing.stock / ing.minimo) * 100 : 0;
@@ -2076,12 +2223,6 @@
             }).join('') || '<p style="color: var(--success); text-align: center; padding: 2rem;">✓ Todo el stock está en niveles óptimos</p>';
         }
 
-        function actualizarInfoSistema() {
-            document.getElementById('emailConfigurado').textContent = datos.config.adminEmail || 'No configurado';
-            document.getElementById('totalCajeros').textContent = datos.config.usuariosCajero ? datos.config.usuariosCajero.length : 0;
-            document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
-        }
-
         // ==========================================
         // UTILIDADES
         // ==========================================
@@ -2089,11 +2230,13 @@
             actualizarDashboard();
             renderizarMenu();
             renderizarInventario();
+            renderizarUsuarios();
             renderizarReportes();
             renderizarQRs();
-            renderizarUsuariosCajero();
             actualizarDisplayTasa();
-            actualizarInfoSistema();
+            
+            // Cargar valores en config
+            document.getElementById('recoveryEmailConfig').value = datos.config.recoveryEmail || '';
         }
 
         function recalcularCostos() {
@@ -2115,7 +2258,11 @@
                     let costoTotalIngredientes = 0;
                     Object.entries(plato.ingredientes).forEach(([ingId, data]) => {
                         const ing = datos.inventario[ingId];
-                        if (ing && ing.precioUnitario) costoTotalIngredientes += ing.precioUnitario * data.cantidad;
+                        if (ing && ing.precioUnitario) {
+                            // Convertir cantidad según unidad del ingrediente
+                            const cantidadConvertida = convertirUnidad(data.cantidad, data.unidad || 'unidades', ing.unidad);
+                            costoTotalIngredientes += ing.precioUnitario * cantidadConvertida;
+                        }
                     });
                     plato.costoIngredientes = costoTotalIngredientes;
                 }
@@ -2143,37 +2290,6 @@
             mostrarNotificacion('Todos los cambios guardados');
         }
 
-        function exportarBackup() {
-            const dataStr = JSON.stringify(datos, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `saki_backup_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            mostrarNotificacion('Backup exportado');
-        }
-
-        async function importarBackup(input) {
-            if (!input.files || !input.files[0]) return;
-            
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const backup = JSON.parse(e.target.result);
-                    if (confirm('¿Restaurar este backup? Se sobrescribirán todos los datos actuales.')) {
-                        datos = { ...datos, ...backup };
-                        await guardarDatos();
-                        actualizarUI();
-                        mostrarNotificacion('Backup restaurado correctamente');
-                    }
-                } catch (err) {
-                    alert('Error al leer el archivo');
-                }
-            };
-            reader.readAsText(input.files[0]);
-        }
-
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -2181,8 +2297,9 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        function abrirModal(modalId) { document.getElementById(modalId).classList.add('active'); }
-        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        function cerrarModal(modalId) { 
+            document.getElementById(modalId).classList.remove('active'); 
+        }
 
         function mostrarNotificacion(mensaje, tipo = 'success') {
             const notif = document.getElementById('notification');
