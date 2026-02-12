@@ -47,9 +47,32 @@
         @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 576px) { .stats-grid { grid-template-columns: 1fr; } }
         
-        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px var(--shadow); text-align: center; transition: var(--transition); border: 2px solid transparent; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-color: var(--accent); }
-        .stat-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5em; color: white; }
+        .stat-card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 5px 20px var(--shadow); 
+            text-align: center; 
+            transition: var(--transition); 
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .stat-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            border-color: var(--accent); 
+        }
+        .stat-icon { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0 auto 15px; 
+            font-size: 1.5em; 
+            color: white; 
+        }
         .stat-icon.pendientes { background: var(--warning); }
         .stat-icon.cobrados { background: var(--success); }
         .stat-icon.ventas { background: var(--info); }
@@ -147,7 +170,49 @@
         .modal-body { padding: 25px; }
         .modal-footer { padding: 25px; border-top: 2px solid #f0f0f0; display: flex; gap: 15px; }
         
-        /* Estilos para visualización de comprobante */
+        .stats-detail-modal .modal-header { background: linear-gradient(135deg, var(--info), #1565C0); }
+        .stats-detail-list { max-height: 400px; overflow-y: auto; }
+        .stats-detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .stats-detail-item:last-child { border-bottom: none; }
+        .stats-detail-item .pedido-id { font-weight: 600; color: var(--secondary); }
+        .stats-detail-item .pedido-monto { font-weight: 700; color: var(--primary); }
+        .stats-detail-item .pedido-mesa { font-size: 0.85rem; color: #666; }
+        .stats-detail-item .pedido-hora { font-size: 0.8rem; color: #999; }
+        
+        .ranking-bar { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 8px; 
+            border-bottom: 1px solid #eee; 
+        }
+        .ranking-position { 
+            width: 30px; 
+            height: 30px; 
+            background: var(--accent); 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 700; 
+        }
+        .ranking-info { flex: 1; }
+        .ranking-name { font-weight: 600; }
+        .ranking-cantidad { color: #666; font-size: 0.85rem; }
+        .ranking-bar-container { 
+            width: 100px; 
+            height: 8px; 
+            background: #e0e0e0; 
+            border-radius: 4px; 
+            overflow: hidden; 
+        }
+        .ranking-bar-fill { 
+            height: 100%; 
+            background: var(--primary); 
+            border-radius: 4px; 
+        }
+        
         .comprobante-preview {
             margin-top: 15px;
             background: #f8f8f8;
@@ -354,7 +419,7 @@
         .empty-state i { font-size: 3em; margin-bottom: 15px; color: #ddd; }
         
         .notification { position: fixed; top: 80px; right: 20px; background: white; padding: 20px 25px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; align-items: center; gap: 15px; z-index: 5000; animation: slideIn 0.3s ease; border-left: 5px solid var(--success); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0%); opacity: 1; } }
         .notification.show { display: flex; }
         
         .menu-item-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
@@ -410,7 +475,6 @@
             color: var(--secondary);
         }
         
-        /* Spinner de procesamiento en botones */
         .btn-spinner {
             display: inline-block;
             width: 16px;
@@ -490,6 +554,22 @@
                 <a id="comprobanteDownloadLink" class="btn-modal primary" download="comprobante.jpg" style="text-decoration: none; text-align: center;">
                     <i class="fas fa-download"></i> Descargar
                 </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalle de Estadísticas -->
+    <div class="modal-overlay stats-detail-modal" id="statsDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="statsDetailTitle"><i class="fas fa-chart-bar"></i> Detalle</h2>
+                <button class="modal-close" onclick="cerrarModal('statsDetailModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="statsDetailBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal primary" onclick="cerrarModal('statsDetailModal')">Cerrar</button>
             </div>
         </div>
     </div>
@@ -592,11 +672,29 @@
             <!-- Sección Pedidos -->
             <div class="section active" id="section-pedidos">
                 <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Pedidos del Día</h2>
+                
+                <!-- Estadísticas Interactivas -->
                 <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-icon pendientes"><i class="fas fa-fire"></i></div><div class="stat-value" id="statPendientes">0</div><div class="stat-label">En Preparación</div></div>
-                    <div class="stat-card"><div class="stat-icon cobrados"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="statCobrados">0</div><div class="stat-label">Cobrados Hoy</div></div>
-                    <div class="stat-card"><div class="stat-icon ventas"><i class="fas fa-dollar-sign"></i></div><div class="stat-value" id="statVentas">Bs. 0</div><div class="stat-label">Ventas Totales</div></div>
-                    <div class="stat-card"><div class="stat-icon platillos"><i class="fas fa-utensils"></i></div><div class="stat-value" id="statPlatillos">0</div><div class="stat-label">Platillos Vendidos</div></div>
+                    <div class="stat-card" onclick="verDetalleEstadistica('pendientes')">
+                        <div class="stat-icon pendientes"><i class="fas fa-fire"></i></div>
+                        <div class="stat-value" id="statPendientes">0</div>
+                        <div class="stat-label">En Preparación</div>
+                    </div>
+                    <div class="stat-card" onclick="verDetalleEstadistica('cobrados')">
+                        <div class="stat-icon cobrados"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-value" id="statCobrados">0</div>
+                        <div class="stat-label">Cobrados Hoy</div>
+                    </div>
+                    <div class="stat-card" onclick="verDetalleEstadistica('ventas')">
+                        <div class="stat-icon ventas"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-value" id="statVentas">Bs. 0</div>
+                        <div class="stat-label">Ventas Totales</div>
+                    </div>
+                    <div class="stat-card" onclick="verDetalleEstadistica('platillos')">
+                        <div class="stat-icon platillos"><i class="fas fa-utensils"></i></div>
+                        <div class="stat-value" id="statPlatillos">0</div>
+                        <div class="stat-label">Platillos Vendidos</div>
+                    </div>
                 </div>
 
                 <!-- Pedidos Pendientes de Cobro (Originales) -->
@@ -681,11 +779,10 @@
             } catch (error) {
                 console.error('Error en operación:', error);
             } finally {
-                // Delay antes de permitir siguiente operación
                 processingTimeout = setTimeout(() => {
                     isProcessing = false;
                     executeNextOperation();
-                }, 500); // 500ms entre operaciones
+                }, 500);
             }
         }
         
@@ -694,7 +791,6 @@
             executeNextOperation();
         }
         
-        // Función para bloquear botones durante operación
         function setButtonsDisabled(disabled) {
             document.querySelectorAll('.btn-cobrar, .btn-rechazar, .btn-entregar, .btn-enviar, .btn-confirmar, .btn-modal.primary').forEach(btn => {
                 btn.disabled = disabled;
@@ -716,42 +812,41 @@
         let pedidoConfirmacion = null;
         let tipoConfirmacion = null;
         
-        // Variables para pago mixto
         let pagosMixtos = [];
         let totalPagar = 0;
         let tasaEfectiva = 400;
 
-        // Inicialización
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
             verificarTasaDelDia();
             syncInterval = setInterval(cargarDatos, 10000);
-            
-            // Event listeners para teclas en modales
             document.addEventListener('keydown', handleGlobalKeypress);
         });
 
         async function cargarDatos() {
-            // Evitar múltiples cargas simultáneas
             if (isProcessing) return;
-            
             actualizarEstadoSync('syncing');
+            
             try {
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
                     method: 'GET',
                     headers: { 'X-Master-Key': JSONBIN_CONFIG.API_KEY, 'X-Bin-Meta': 'false' }
                 });
+                
                 if (!response.ok) throw new Error('Error al cargar datos');
                 const data = await response.json();
                 
-                // Pequeño delay para evitar conflictos
                 await new Promise(resolve => setTimeout(resolve, 100));
-                
                 sistemaData = data.record || data;
                 limpiarPedidosDiaAnterior();
+                
                 actualizarEstadoSync('online');
                 document.getElementById('loadingOverlay').style.display = 'none';
                 actualizarVista();
+                
             } catch (error) {
                 console.error('Error cargando datos:', error);
                 actualizarEstadoSync('offline');
@@ -766,19 +861,25 @@
             
             sistemaData.pedidos.forEach(p => {
                 if (p.timestamp.startsWith(hoy)) pedidosHoy.push(p);
-                else if (p.estado === 'cobrado' || p.estado === 'entregado' || p.estado === 'enviado' || p.estado === 'reserva_completada') pedidosArchivar.push(p);
+                else if (['cobrado', 'entregado', 'enviado', 'reserva_completada'].includes(p.estado)) pedidosArchivar.push(p);
             });
             
             if (pedidosArchivar.length > 0) {
                 if (!sistemaData.ventas) sistemaData.ventas = { diarias: [], semanales: [], mensuales: [] };
                 pedidosArchivar.forEach(p => {
-                    sistemaData.ventas.diarias.push({ fecha: p.timestamp, pedidoId: p.id, total: p.total, items: p.items?.length || 0, metodoPago: p.metodoPago, tipo: p.tipo || 'mesa' });
+                    sistemaData.ventas.diarias.push({ 
+                        fecha: p.timestamp, 
+                        pedidoId: p.id, 
+                        total: p.total, 
+                        items: p.items?.length || 0, 
+                        metodoPago: p.metodoPago, 
+                        tipo: p.tipo || 'mesa' 
+                    });
                 });
             }
             sistemaData.pedidos = pedidosHoy;
         }
 
-        // Calcular tasa efectiva considerando aumento diario acumulado
         function calcularTasaEfectiva() {
             if (!sistemaData || !sistemaData.config) return 400;
             
@@ -787,22 +888,18 @@
             const aumentoActivo = sistemaData.config.aumentoActivo || false;
             const aumentoDetenido = sistemaData.config.aumentoDetenido || false;
             const fechaInicio = sistemaData.config.fechaInicioAumento;
-            const fechaUltimoAumento = sistemaData.config.fechaUltimoAumento || fechaInicio;
             
             if (aumentoActivo && !aumentoDetenido && aumentoDiario > 0 && fechaInicio) {
                 const inicio = new Date(fechaInicio);
                 const hoy = new Date();
                 const diffTime = Math.abs(hoy - inicio);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
                 const porcentajeTotal = aumentoDiario * diffDays;
                 return tasaBase * (1 + (porcentajeTotal / 100));
             }
-            
             return tasaBase;
         }
 
-        // Verificar Tasa del Día
         function verificarTasaDelDia() {
             if (!sistemaData || !sistemaData.config) return;
             const hoy = new Date().toISOString().split('T')[0];
@@ -837,7 +934,6 @@
             tasaEfectiva = calcularTasaEfectiva();
         }
 
-        // Vistas
         function showSection(sectionName) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -853,13 +949,233 @@
             renderMenuView();
         }
 
+        // ==========================================
+        // ESTADÍSTICAS INTERACTIVAS (NUEVO)
+        // ==========================================
+        function verDetalleEstadistica(tipo) {
+            if (!sistemaData || !sistemaData.pedidos) return;
+            
+            const hoy = new Date().toISOString().split('T')[0];
+            const pedidosHoy = sistemaData.pedidos.filter(p => p.timestamp.startsWith(hoy));
+            
+            let titulo = '';
+            let contenido = '';
+            let icono = '';
+            
+            switch(tipo) {
+                case 'pendientes':
+                    titulo = 'Pedidos en Preparación';
+                    icono = 'fa-fire';
+                    
+                    const enCocina = pedidosHoy.filter(p => p.estado === 'en_cocina');
+                    const enCamino = pedidosHoy.filter(p => p.estado === 'en_camino');
+                    const reservaPendiente = pedidosHoy.filter(p => p.estado === 'reserva_pendiente');
+                    const reservaAtendida = pedidosHoy.filter(p => p.estado === 'reserva_atendida');
+                    
+                    const todosPendientes = [...enCocina, ...enCamino, ...reservaPendiente, ...reservaAtendida];
+                    
+                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total: <strong>${todosPendientes.length}</strong> pedido(s) en preparación</p>`;
+                    
+                    if (todosPendientes.length === 0) {
+                        contenido += '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay pedidos en preparación</p></div>';
+                    } else {
+                        contenido += '<div class="stats-detail-list">';
+                        todosPendientes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
+                            let estadoTexto = '';
+                            let estadoColor = '';
+                            
+                            if (p.estado === 'en_cocina') { estadoTexto = '👨‍🍳 En Cocina'; estadoColor = 'var(--warning)'; }
+                            else if (p.estado === 'en_camino') { estadoTexto = '🛵 En Camino'; estadoColor = 'var(--info)'; }
+                            else if (p.estado === 'reserva_pendiente') { estadoTexto = '📅 Reserva Pendiente'; estadoColor = '#9c27b0'; }
+                            else if (p.estado === 'reserva_atendida') { estadoTexto = '✅ Cliente Atendido'; estadoColor = '#ff5722'; }
+                            
+                            contenido += `
+                                <div class="stats-detail-item">
+                                    <div>
+                                        <div class="pedido-id">${p.id}</div>
+                                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                            <span style="color: ${estadoColor}; font-size: 0.85rem;">${estadoTexto}</span>
+                                            ${p.mesa ? `<span style="color: var(--info); font-size: 0.85rem;"><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>` : ''}
+                                            ${p.telefono ? `<span style="color: var(--success); font-size: 0.85rem;"><i class="fas fa-phone"></i> ${p.telefono}</span>` : ''}
+                                        </div>
+                                        <div class="pedido-hora" style="margin-top: 5px;">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div class="pedido-monto">Bs. ${(p.total || 0).toFixed(2)}</div>
+                                        <div style="font-size: 0.8rem; color: #999;">${p.items?.length || 0} items</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contenido += '</div>';
+                    }
+                    break;
+                    
+                case 'cobrados':
+                    titulo = 'Pedidos Cobrados Hoy';
+                    icono = 'fa-check-circle';
+                    
+                    const cobrados = pedidosHoy.filter(p => p.estado === 'cobrado' || p.estado === 'en_cocina' || p.estado === 'en_camino' || p.estado === 'reserva_pendiente' || p.estado === 'entregado' || p.estado === 'enviado' || p.estado === 'reserva_completada');
+                    
+                    const totalCobrado = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
+                    
+                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total cobrado hoy: <strong style="color: var(--primary); font-size: 1.2rem;">Bs. ${totalCobrado.toFixed(2)}</strong></p>`;
+                    
+                    if (cobrados.length === 0) {
+                        contenido += '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay cobros registrados hoy</p></div>';
+                    } else {
+                        contenido += '<div class="stats-detail-list">';
+                        cobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
+                            contenido += `
+                                <div class="stats-detail-item">
+                                    <div>
+                                        <div class="pedido-id">${p.id}</div>
+                                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                            ${p.mesa ? `<span style="color: var(--info);"><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>` : ''}
+                                            ${p.tipo === 'delivery' ? '<span style="color: var(--success);"><i class="fas fa-motorcycle"></i> Delivery</span>' : ''}
+                                            ${p.tipo === 'reserva' ? '<span style="color: #9c27b0;"><i class="fas fa-calendar-check"></i> Reserva</span>' : ''}
+                                        </div>
+                                        <div class="pedido-hora">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div class="pedido-monto">Bs. ${(p.total || 0).toFixed(2)}</div>
+                                        <div style="font-size: 0.8rem; color: #666;">${p.metodoPago || 'Pago Móvil'}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contenido += '</div>';
+                    }
+                    break;
+                    
+                case 'ventas':
+                    titulo = 'Ventas Totales';
+                    icono = 'fa-dollar-sign';
+                    
+                    const ventasDia = pedidosHoy.filter(p => p.estado !== 'pendiente' && p.estado !== 'rechazado');
+                    const totalVentas = ventasDia.reduce((sum, p) => sum + (p.total || 0), 0);
+                    
+                    let porEfectivo = 0, porPM = 0, porPV = 0;
+                    ventasDia.forEach(p => {
+                        if (p.metodoPago === 'mixto' && p.pagosMixtos) {
+                            p.pagosMixtos.forEach(pago => {
+                                if (pago.metodo === 'efectivo_bs') porEfectivo += pago.monto;
+                                else if (pago.metodo === 'efectivo_usd') porEfectivo += pago.monto * tasaEfectiva;
+                                else if (pago.metodo === 'pago_movil') porPM += pago.monto;
+                                else if (pago.metodo === 'punto_venta') porPV += pago.monto;
+                            });
+                        } else {
+                            if (p.metodoPago === 'efectivo') porEfectivo += p.total;
+                            else if (p.metodoPago === 'pago_movil') porPM += p.total;
+                            else if (p.metodoPago === 'punto_venta') porPV += p.total;
+                        }
+                    });
+                    
+                    contenido = `
+                        <p style="color: #666; margin-bottom: 15px;">Ventas totales del día: <strong style="color: var(--primary); font-size: 1.5rem;">Bs. ${totalVentas.toFixed(2)}</strong></p>
+                        
+                        <div style="background: #f8f8f8; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 15px; color: var(--secondary);"><i class="fas fa-chart-pie"></i> Desglose por método de pago:</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 1.5rem; color: var(--success); margin-bottom: 5px;"><i class="fas fa-money-bill-wave"></i></div>
+                                    <div style="font-size: 0.85rem; color: #666;">Efectivo</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porEfectivo.toFixed(2)}</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 1.5rem; color: var(--info); margin-bottom: 5px;"><i class="fas fa-mobile-alt"></i></div>
+                                    <div style="font-size: 0.85rem; color: #666;">Pago Móvil</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porPM.toFixed(2)}</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; grid-column: span 2;">
+                                    <div style="font-size: 1.5rem; color: var(--warning); margin-bottom: 5px;"><i class="fas fa-credit-card"></i></div>
+                                    <div style="font-size: 0.85rem; color: #666;">Punto de Venta</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porPV.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Últimas transacciones:</h4>
+                    `;
+                    
+                    ventasDia.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).forEach(p => {
+                        contenido += `
+                            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                                <div>
+                                    <div style="font-weight: 600;">${p.id}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                </div>
+                                <div style="font-weight: 700; color: var(--primary);">Bs. ${(p.total || 0).toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+                    contenido += '</div>';
+                    break;
+                    
+                case 'platillos':
+                    titulo = 'Platillos Más Vendidos';
+                    icono = 'fa-utensils';
+                    
+                    const ventas = pedidosHoy.filter(p => p.estado !== 'pendiente' && p.estado !== 'rechazado');
+                    
+                    const conteoPlatillos = {};
+                    let totalPlatillosVendidos = 0;
+                    
+                    ventas.forEach(p => {
+                        p.items?.forEach(item => {
+                            const cantidad = item.cantidad || 1;
+                            conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + cantidad;
+                            totalPlatillosVendidos += cantidad;
+                        });
+                    });
+                    
+                    const ranking = Object.entries(conteoPlatillos)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10);
+                    
+                    const maxVentas = ranking.length > 0 ? ranking[0][1] : 0;
+                    
+                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total platillos vendidos hoy: <strong style="color: var(--primary); font-size: 1.2rem;">${totalPlatillosVendidos}</strong></p>`;
+                    
+                    if (ranking.length === 0) {
+                        contenido += '<div class="empty-state"><i class="fas fa-utensils"></i><p>No hay ventas registradas hoy</p></div>';
+                    } else {
+                        contenido += '<div style="max-height: 400px; overflow-y: auto;">';
+                        ranking.forEach(([nombre, cantidad], index) => {
+                            const porcentaje = maxVentas > 0 ? (cantidad / maxVentas) * 100 : 0;
+                            contenido += `
+                                <div class="ranking-bar">
+                                    <div class="ranking-position">${index + 1}</div>
+                                    <div class="ranking-info">
+                                        <div class="ranking-name">${nombre}</div>
+                                        <div class="ranking-cantidad">${cantidad} vendido(s)</div>
+                                    </div>
+                                    <div class="ranking-bar-container">
+                                        <div class="ranking-bar-fill" style="width: ${porcentaje}%;"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contenido += '</div>';
+                    }
+                    break;
+            }
+            
+            document.getElementById('statsDetailTitle').innerHTML = `<i class="fas ${icono}"></i> ${titulo}`;
+            document.getElementById('statsDetailBody').innerHTML = contenido;
+            document.getElementById('statsDetailModal').classList.add('show');
+        }
+
+        // ==========================================
+        // RENDERIZADO DE PEDIDOS
+        // ==========================================
         function renderPedidos() {
             if (!sistemaData) return;
             const pedidos = sistemaData.pedidos || [];
             const hoy = new Date().toISOString().split('T')[0];
             const pedidosHoy = pedidos.filter(p => p.timestamp.startsWith(hoy));
             
-            // Separar por estado - CORREGIDO: incluir 'pendiente' y 'cobrado' en por cobrar
             const pendientes = pedidosHoy.filter(p => p.estado === 'pendiente');
             const cobrados = pedidosHoy.filter(p => p.estado === 'cobrado');
             const enCocina = pedidosHoy.filter(p => p.estado === 'en_cocina');
@@ -867,9 +1183,11 @@
             const reservaPendiente = pedidosHoy.filter(p => p.estado === 'reserva_pendiente');
             const reservaAtendida = pedidosHoy.filter(p => p.estado === 'reserva_atendida');
             
-            // Stats
-            document.getElementById('statPendientes').textContent = enCocina.length + enCamino.length + reservaPendiente.length + reservaAtendida.length;
-            document.getElementById('statCobrados').textContent = cobrados.length + enCocina.length + enCamino.length + reservaAtendida.length;
+            const totalEnPreparacion = enCocina.length + enCamino.length + reservaPendiente.length + reservaAtendida.length;
+            const totalCobrados = cobrados.length + enCocina.length + enCamino.length + reservaAtendida.length;
+            
+            document.getElementById('statPendientes').textContent = totalEnPreparacion;
+            document.getElementById('statCobrados').textContent = totalCobrados;
             
             const totalVentas = pedidosHoy
                 .filter(p => ['cobrado', 'en_cocina', 'en_camino', 'entregado', 'enviado', 'reserva_atendida', 'reserva_completada'].includes(p.estado))
@@ -881,22 +1199,18 @@
                 .reduce((sum, p) => sum + (p.items?.reduce((itemSum, item) => itemSum + (item.cantidad || 1), 0) || 0), 0);
             document.getElementById('statPlatillos').textContent = totalPlatillos;
             
-            // Badges de conteo
             document.getElementById('badgePorCobrar').textContent = pendientes.length;
-            document.getElementById('badgeEnPreparacion').textContent = enCocina.length + enCamino.length + reservaPendiente.length + reservaAtendida.length;
+            document.getElementById('badgeEnPreparacion').textContent = totalEnPreparacion;
             
-            // Renderizar pedidos por cobrar (originales)
             renderColumnaPorCobrar('colMesaPorCobrar', pendientes.filter(p => p.tipo === 'mesa' || !p.tipo), 'mesa');
             renderColumnaPorCobrar('colDeliveryPorCobrar', pendientes.filter(p => p.tipo === 'delivery'), 'delivery');
             renderColumnaPorCobrar('colReservaPorCobrar', pendientes.filter(p => p.tipo === 'reserva'), 'reserva');
             
-            // Renderizar pedidos en preparación (nuevos)
             renderColumnaEnPreparacion('colMesaEnCocina', enCocina, 'mesa');
             renderColumnaEnPreparacion('colDeliveryEnCamino', enCamino, 'delivery');
             renderColumnaEnPreparacion('colReservaPendiente', reservaPendiente.concat(reservaAtendida), 'reserva');
         }
 
-        // Renderizar pedidos por cobrar (con botones de cobro/rechazo)
         function renderColumnaPorCobrar(columnId, pedidos, tipo) {
             const col = document.getElementById(columnId);
             if (pedidos.length === 0) {
@@ -906,7 +1220,6 @@
             col.innerHTML = pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => crearCardPedidoPorCobrar(p, tipo)).join('');
         }
 
-        // Renderizar pedidos en preparación (con botones de entrega/envío/confirmación)
         function renderColumnaEnPreparacion(columnId, pedidos, tipo) {
             const col = document.getElementById(columnId);
             if (pedidos.length === 0) {
@@ -927,7 +1240,6 @@
                 timerText = minutosRestantes > 0 ? `<div class="timer-badge ${minutosRestantes <= 5 ? 'urgent' : ''}"><i class="fas fa-clock"></i> ${minutosRestantes}min restantes</div>` : '<div class="timer-badge urgent"><i class="fas fa-clock"></i> Tiempo agotado</div>';
             }
             
-            // CORREGIDO: El total ya viene en Bs desde el cliente, no multiplicar por tasa nuevamente
             let totalMostrar = pedido.total || 0;
             
             const itemsHtml = (pedido.items || []).map(item => {
@@ -938,7 +1250,6 @@
                     descuentoTexto = `<span class="ingredient-discount">-${item.descuentoPorIngredientes.toFixed(2)} Bs</span>`;
                 }
                 
-                // CORREGIDO: subtotal ya está en Bs
                 let subtotal = item.subtotal || 0;
                 
                 return `<div class="order-detail-row">
@@ -955,7 +1266,6 @@
                     ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
                 </div>${timerText}`;
                 
-                // Agregar visualización de comprobante si existe
                 if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview">
@@ -973,7 +1283,6 @@
                     ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
                 </div>`;
                 
-                // Agregar visualización de comprobante si existe
                 if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview">
@@ -990,11 +1299,23 @@
             
             const botonesRechazo = (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') ? `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')" id="btn-rechazar-${pedido.id}"><i class="fas fa-times"></i> Rechazar</button>` : '';
             
-            // Agregar ID único al botón de cobrar para control
-            return `<div class="order-card" id="card-${pedido.id}"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')" id="btn-cobrar-${pedido.id}"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
+            return `<div class="order-card" id="card-${pedido.id}">
+                <div class="order-card-header">
+                    <span class="order-id">${pedido.id}</span>
+                    <span class="order-time"><i class="fas fa-clock"></i> ${hora}</span>
+                </div>
+                ${extraInfo}
+                <div class="order-details">${itemsHtml}</div>
+                <div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div>
+                <div class="order-actions">
+                    <button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')" id="btn-cobrar-${pedido.id}">
+                        <i class="fas fa-check"></i> Cobrar
+                    </button>
+                    ${botonesRechazo}
+                </div>
+            </div>`;
         }
 
-        // Función para que el cajero/admin solicite el comprobante del cliente
         function solicitarComprobante(pedidoId) {
             const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
             const comprobante = comprobantes[pedidoId];
@@ -1009,7 +1330,6 @@
                 return null;
             }
             
-            // Mostrar en modal
             const modal = document.getElementById('comprobanteModal');
             const imgContainer = document.getElementById('comprobanteImagenContainer');
             const infoContainer = document.getElementById('comprobanteInfo');
@@ -1030,7 +1350,7 @@
                 infoHtml += `<div><strong>Fecha Reserva:</strong> ${new Date(pedido.fechaReserva).toLocaleDateString()}</div>`;
             }
             infoHtml += `<div><strong>Referencia:</strong> ${pedido.referencia}</div>`;
-            infoHtml += `<div><strong>Total:</strong> $${pedido.total.toFixed(2)}</div>`;
+            infoHtml += `<div><strong>Total:</strong> $${pedido.total?.toFixed(2)}</div>`;
             infoHtml += `<div><strong>Archivo:</strong> ${comprobante.nombre || 'comprobante.jpg'}</div>`;
             infoHtml += `</div>`;
             
@@ -1039,7 +1359,6 @@
             downloadLink.download = comprobante.nombre || 'comprobante.jpg';
             
             modal.classList.add('show');
-            
             return comprobante;
         }
 
@@ -1047,7 +1366,6 @@
             const fecha = new Date(pedido.timestamp);
             const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             
-            // CORREGIDO: El total ya viene en Bs desde el cliente
             let totalMostrar = pedido.total || 0;
             
             const itemsHtml = (pedido.items || []).map(item => {
@@ -1058,7 +1376,6 @@
                     descuentoTexto = `<span class="ingredient-discount">-${item.descuentoPorIngredientes.toFixed(2)} Bs</span>`;
                 }
                 
-                // CORREGIDO: subtotal ya está en Bs
                 let subtotal = item.subtotal || 0;
                 
                 return `<div class="order-detail-row">
@@ -1067,7 +1384,6 @@
                 </div>`;
             }).join('');
             
-            // Determinar estado y clase CSS
             let estadoClass = '';
             let estadoBadge = '';
             let botonAccion = '';
@@ -1113,7 +1429,6 @@
                     ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
                 </div>`;
                 
-                // Agregar visualización de comprobante si existe
                 if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview" style="margin-top: 10px;">
@@ -1135,7 +1450,6 @@
                     ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
                 </div>`;
                 
-                // Agregar visualización de comprobante si existe
                 if (pedido.tieneComprobante) {
                     extraInfo += `
                         <div class="comprobante-preview" style="margin-top: 10px;">
@@ -1163,9 +1477,10 @@
             </div>`;
         }
 
-        // Confirmación de entrega/envío/reserva
+        // ==========================================
+        // CONFIRMACIÓN DE ENTREGA/ENVÍO/RESERVA - CON MENSAJES AL CLIENTE
+        // ==========================================
         function mostrarConfirmacionEntrega(pedidoId, tipo) {
-            // Evitar múltiples clicks
             if (isProcessing) return;
             
             pedidoConfirmacion = sistemaData.pedidos.find(p => p.id === pedidoId);
@@ -1177,37 +1492,53 @@
             const title = document.getElementById('confirmEntregaTitle');
             const body = document.getElementById('confirmEntregaBody');
             
-            // CORREGIDO: El total ya viene en Bs
             const total = pedidoConfirmacion.total || 0;
             
             let titulo = '';
             let mensaje = '';
             let icono = '';
+            let notificacionCliente = { titulo: '', texto: '' };
             
             switch(tipo) {
                 case 'entrega':
-                    titulo = 'Confirmar Entrega';
+                    titulo = 'Confirmar Entrega en Mesa';
                     mensaje = '¿Confirmas que el pedido ha sido entregado al cliente en la mesa?';
                     icono = 'fa-check-circle';
                     header.className = 'modal-header entrega';
+                    notificacionCliente = {
+                        titulo: '🍽️ ¡Que aproveche!',
+                        texto: 'Tu pedido ha sido entregado en tu mesa. Esperamos que disfrutes cada bocado. ¡Gracias por elegir Saki Sushi!'
+                    };
                     break;
                 case 'envio':
-                    titulo = 'Confirmar Envío';
-                    mensaje = '¿Confirmas que el pedido ha sido enviado al cliente?';
+                    titulo = 'Confirmar Envío a Delivery';
+                    mensaje = '¿Confirmas que el pedido ha sido enviado al repartidor?';
                     icono = 'fa-motorcycle';
                     header.className = 'modal-header envio';
+                    notificacionCliente = {
+                        titulo: '🛵 ¡Tu delivery va en camino!',
+                        texto: 'El repartidor ya salió con tu pedido. Prepárate para disfrutar de tu comida.'
+                    };
                     break;
                 case 'reserva':
-                    titulo = 'Confirmar Asistencia';
+                    titulo = 'Confirmar Asistencia a Reserva';
                     mensaje = '¿Confirmas que el cliente ha llegado y está siendo atendido?';
                     icono = 'fa-user-check';
                     header.className = 'modal-header reserva';
+                    notificacionCliente = {
+                        titulo: '✅ ¡Cliente confirmado!',
+                        texto: 'Has llegado y estás siendo atendido. Por favor, espera en tu mesa asignada.'
+                    };
                     break;
                 case 'reserva_entrega':
-                    titulo = 'Confirmar Entrega';
+                    titulo = 'Confirmar Entrega de Reserva';
                     mensaje = '¿Confirmas que el pedido ha sido servido al cliente reservado?';
                     icono = 'fa-utensils';
                     header.className = 'modal-header entrega';
+                    notificacionCliente = {
+                        titulo: '🍽️ ¡Que aproveche!',
+                        texto: 'Tu pedido de reserva ha sido servido. Esperamos que disfrutes tu experiencia en Saki Sushi.'
+                    };
                     break;
             }
             
@@ -1235,6 +1566,11 @@
                     ${detallesExtras}
                     <div class="info-row"><span>Total:</span><span>Bs. ${total.toFixed(2)}</span></div>
                 </div>
+                <div style="background: #E8F5E9; border-left: 4px solid var(--success); padding: 15px; margin-top: 15px; border-radius: 8px;">
+                    <i class="fas fa-bell"></i> <strong>Notificación al cliente:</strong><br>
+                    <span style="color: var(--success);">${notificacionCliente.titulo}</span><br>
+                    <span style="font-size: 0.9rem; color: #666;">${notificacionCliente.texto}</span>
+                </div>
                 <div class="keyboard-hint">
                     <span><kbd>ENTER</kbd> para confirmar</span>
                     <span><kbd>ESC</kbd> para cancelar</span>
@@ -1242,84 +1578,78 @@
             `;
             
             modal.classList.add('show');
-            
-            setTimeout(() => {
-                document.getElementById('btnConfirmarAccion').focus();
-            }, 100);
+            setTimeout(() => document.getElementById('btnConfirmarAccion').focus(), 100);
         }
 
         async function ejecutarConfirmacion() {
-            // Prevenir ejecución múltiple
             if (isProcessing || !pedidoConfirmacion || !tipoConfirmacion) return;
             
-            // Bloquear botones inmediatamente
             setButtonsDisabled(true);
             
             queueOperation(async () => {
                 try {
-                    // Verificar que el pedido sigue existiendo y en estado válido
                     const pedidoActual = sistemaData.pedidos.find(p => p.id === pedidoConfirmacion.id);
                     if (!pedidoActual) {
                         mostrarNotificacion('Pedido no encontrado', 'error');
                         return;
                     }
                     
-                    // Verificar estado actual antes de cambiar
-                    const estadosValidos = {
-                        'entrega': ['en_cocina'],
-                        'envio': ['en_camino'],
-                        'reserva': ['reserva_pendiente'],
-                        'reserva_entrega': ['reserva_atendida']
-                    };
+                    let mensajeNotificacion = { titulo: '', texto: '', tipo: 'approved' };
                     
-                    if (!estadosValidos[tipoConfirmacion].includes(pedidoActual.estado)) {
-                        console.log(`Estado actual ${pedidoActual.estado} no válido para ${tipoConfirmacion}`);
-                    }
-                    
-                    // Actualizar estado secuencialmente con delays
                     switch(tipoConfirmacion) {
                         case 'entrega':
                             pedidoActual.estado = 'entregado';
                             pedidoActual.fechaEntrega = new Date().toISOString();
+                            mensajeNotificacion = {
+                                titulo: '🍽️ ¡Que aproveche!',
+                                texto: 'Tu pedido ha sido entregado en tu mesa. Esperamos que disfrutes cada bocado. ¡Gracias por elegir Saki Sushi!',
+                                tipo: 'approved'
+                            };
                             break;
                         case 'envio':
                             pedidoActual.estado = 'enviado';
                             pedidoActual.fechaEnvio = new Date().toISOString();
+                            mensajeNotificacion = {
+                                titulo: '🛵 ¡Tu delivery va en camino!',
+                                texto: 'El repartidor ya salió con tu pedido. Prepárate para disfrutar de tu comida.',
+                                tipo: 'approved'
+                            };
                             break;
                         case 'reserva':
                             pedidoActual.estado = 'reserva_atendida';
                             pedidoActual.fechaAsistencia = new Date().toISOString();
+                            mensajeNotificacion = {
+                                titulo: '✅ ¡Cliente confirmado!',
+                                texto: 'Has llegado y estás siendo atendido. Por favor, espera en tu mesa asignada.',
+                                tipo: 'approved'
+                            };
                             break;
                         case 'reserva_entrega':
                             pedidoActual.estado = 'reserva_completada';
                             pedidoActual.fechaCompletado = new Date().toISOString();
+                            mensajeNotificacion = {
+                                titulo: '🍽️ ¡Que aproveche!',
+                                texto: 'Tu pedido de reserva ha sido servido. Esperamos que disfrutes tu experiencia en Saki Sushi.',
+                                tipo: 'approved'
+                            };
                             break;
                     }
                     
-                    // Delay antes de guardar
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
-                    // Guardar cambios
                     await guardarCambios();
-                    
-                    // Delay después de guardar
                     await new Promise(resolve => setTimeout(resolve, 300));
                     
-                    // Cerrar modal
+                    agregarNotificacionCliente(
+                        pedidoActual.id, 
+                        mensajeNotificacion.tipo, 
+                        mensajeNotificacion.titulo, 
+                        mensajeNotificacion.texto
+                    );
+                    
                     cerrarModal('confirmEntregaModal');
+                    mostrarNotificacion('Estado actualizado. Cliente notificado.');
                     
-                    const mensajes = {
-                        'entrega': 'Pedido marcado como entregado',
-                        'envio': 'Pedido marcado como enviado',
-                        'reserva': 'Cliente confirmado y en atención',
-                        'reserva_entrega': 'Pedido de reserva completado'
-                    };
-                    
-                    mostrarNotificacion(mensajes[tipoConfirmacion]);
-                    
-                    // Delay antes de re-renderizar
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
                     renderPedidos();
                     
                 } catch (error) {
@@ -1333,97 +1663,64 @@
             });
         }
 
+        function agregarNotificacionCliente(pedidoId, tipo, titulo, mensaje) {
+            try {
+                const notificacion = {
+                    id: Date.now(),
+                    pedidoId: pedidoId,
+                    tipo: tipo,
+                    titulo: titulo,
+                    mensaje: mensaje,
+                    timestamp: new Date().toISOString(),
+                    leida: false
+                };
+                
+                let notificaciones = JSON.parse(localStorage.getItem('sakiNotificaciones') || '[]');
+                notificaciones.unshift(notificacion);
+                localStorage.setItem('sakiNotificaciones', JSON.stringify(notificaciones));
+                
+                console.log('📨 Notificación enviada al cliente:', notificacion);
+            } catch (e) {
+                console.error('Error guardando notificación:', e);
+            }
+        }
+
         function handleGlobalKeypress(e) {
             const modalConfirmacion = document.getElementById('confirmEntregaModal');
             if (modalConfirmacion.classList.contains('show')) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    ejecutarConfirmacion();
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    cerrarModal('confirmEntregaModal');
-                    pedidoConfirmacion = null;
-                    tipoConfirmacion = null;
-                }
+                if (e.key === 'Enter') { e.preventDefault(); ejecutarConfirmacion(); }
+                else if (e.key === 'Escape') { e.preventDefault(); cerrarModal('confirmEntregaModal'); pedidoConfirmacion = null; tipoConfirmacion = null; }
                 return;
             }
             
             const modalCobro = document.getElementById('cobroModal');
             if (modalCobro.classList.contains('show')) {
-                if (e.key === 'Escape') {
-                    closeModal('cobroModal');
-                }
+                if (e.key === 'Escape') closeModal('cobroModal');
                 return;
             }
             
             const modalRechazo = document.getElementById('rechazoModal');
             if (modalRechazo.classList.contains('show')) {
-                if (e.key === 'Escape') {
-                    closeModal('rechazoModal');
-                }
+                if (e.key === 'Escape') closeModal('rechazoModal');
                 return;
             }
             
             const modalComprobante = document.getElementById('comprobanteModal');
             if (modalComprobante.classList.contains('show')) {
-                if (e.key === 'Escape') {
-                    cerrarModal('comprobanteModal');
-                }
+                if (e.key === 'Escape') cerrarModal('comprobanteModal');
                 return;
             }
         }
 
-        // Renderizar Menú (sincronizado con Admin)
-        function renderMenuView() {
-            const container = document.getElementById('menuViewContainer');
-            if (!sistemaData || !sistemaData.menu) return;
-            
-            container.innerHTML = sistemaData.menu.map(item => {
-                const precioBs = ((item.precio || 0) * tasaEfectiva).toFixed(2);
-                
-                let disponible = item.disponible;
-                let stockReal = item.stock || 0;
-                
-                if (disponible && item.ingredientes) {
-                    let maxPlatillos = Infinity;
-                    Object.entries(item.ingredientes).forEach(([ingId, data]) => {
-                        const ing = sistemaData.inventario[ingId];
-                        if (ing) {
-                            // Usar la función de conversión del panel admin
-                            const disponibleIng = Math.floor(ing.stock / data.cantidad);
-                            maxPlatillos = Math.min(maxPlatillos, disponibleIng);
-                        } else {
-                            maxPlatillos = 0;
-                        }
-                    });
-                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
-                    stockReal = maxPlatillos;
-                    disponible = maxPlatillos > 0 && item.disponible;
-                }
-                
-                return `
-                    <div class="menu-item-card">
-                        ${item.imagen ? `<img src="${item.imagen}" class="menu-item-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div class="menu-item-img" style="display: none;"><i class="fas fa-image"></i></div>` : '<div class="menu-item-img"><i class="fas fa-image"></i></div>'}
-                        <div class="menu-item-info">
-                            <div class="menu-item-name">${item.nombre}</div>
-                            <div class="menu-item-desc">${item.descripcion || 'Sin descripción'}</div>
-                            <span class="badge ${disponible ? 'badge-success' : 'badge-danger'}">${disponible ? 'Disponible' : 'No disponible'}${disponible ? ` (${stockReal} unidades)` : ''}</span>
-                        </div>
-                        <div class="menu-item-price">Bs. ${precioBs}<br><small style="color: #666; font-size: 0.75rem;">$${(item.precio || 0).toFixed(2)}</small></div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Cobro con Múltiples Métodos de Pago
+        // ==========================================
+        // COBRO - CON DESCUENTO DE INVENTARIO (¡CORREGIDO!)
+        // ==========================================
         function mostrarCobro(pedidoId) {
-            // Evitar múltiples clicks
             if (isProcessing) return;
             
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
-            // CORREGIDO: El total ya viene en Bs desde el cliente, no multiplicar por tasa
             const summary = document.getElementById('cobroSummary');
             
             let itemsHtml = (currentPedido.items || []).map(item => {
@@ -1439,7 +1736,6 @@
                     </div>`;
                 }
                 
-                // CORREGIDO: subtotal ya está en Bs
                 let subtotal = item.subtotal || 0;
                 
                 return `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
@@ -1451,7 +1747,6 @@
                 </div>`;
             }).join('');
             
-            // CORREGIDO: El total ya viene en Bs
             totalPagar = currentPedido.total || 0;
             
             summary.innerHTML = `<div style="background: #f8f8f8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
@@ -1459,10 +1754,8 @@
                 ${itemsHtml}
             </div>`;
             
-            // Mostrar total
             document.getElementById('totalPagarDisplay').textContent = `Bs. ${totalPagar.toFixed(2)}`;
             
-            // Resetear pagos mixtos
             pagosMixtos = [];
             renderPagosMixtos();
             actualizarResumenPago();
@@ -1486,7 +1779,6 @@
                 { id: 'punto_venta', nombre: 'Punto de Venta', icono: 'fa-credit-card' }
             ];
             
-            // Filtrar métodos ya usados
             const usados = pagosMixtos.map(p => p.metodo);
             const disponibles = metodosDisponibles.filter(m => !usados.includes(m.id));
             
@@ -1560,7 +1852,6 @@
                 `;
             }).join('');
             
-            // Deshabilitar botón de agregar si ya hay 4
             document.getElementById('btnAddPayment').disabled = pagosMixtos.length >= 4;
         }
 
@@ -1578,7 +1869,7 @@
             const pago = pagosMixtos.find(p => p.id === id);
             if (pago) {
                 pago.metodo = nuevoMetodo;
-                pago.monto = 0; // Resetear monto al cambiar método
+                pago.monto = 0;
                 pago.referencia = '';
                 renderPagosMixtos();
                 actualizarResumenPago();
@@ -1609,7 +1900,6 @@
         function handlePaymentKeypress(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                // Si hay pendiente, agregar otro método
                 const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
                 const pendiente = totalPagar - totalRecibido;
                 
@@ -1645,7 +1935,6 @@
             const cambio = totalRecibido > totalPagar ? totalRecibido - totalPagar : 0;
             const faltante = totalRecibido < totalPagar ? totalPagar - totalRecibido : 0;
             
-            // Actualizar display de pendiente
             const remainingDisplay = document.getElementById('remainingDisplay');
             const remainingAmount = document.getElementById('remainingAmount');
             
@@ -1663,7 +1952,6 @@
                 remainingAmount.style.color = 'var(--danger)';
             }
             
-            // Mostrar resumen
             const summaryDiv = document.getElementById('paymentSummary');
             if (pagosMixtos.length > 0 && pagosMixtos.some(p => p.monto > 0)) {
                 summaryDiv.style.display = 'block';
@@ -1674,7 +1962,6 @@
                 }
                 document.getElementById('totalRecibido').textContent = resumenTexto;
                 
-                // Cambio
                 if (cambio > 0) {
                     document.getElementById('cambioRow').style.display = 'flex';
                     document.getElementById('cambioAmount').textContent = `Bs. ${cambio.toFixed(2)}`;
@@ -1682,7 +1969,6 @@
                     document.getElementById('cambioRow').style.display = 'none';
                 }
                 
-                // Faltante
                 if (faltante > 0) {
                     document.getElementById('faltanteRow').style.display = 'flex';
                     document.getElementById('faltanteAmount').textContent = `Bs. ${faltante.toFixed(2)}`;
@@ -1692,7 +1978,6 @@
                 } else {
                     document.getElementById('faltanteRow').style.display = 'none';
                     document.getElementById('specialOptions').style.display = 'none';
-                    // Resetear opciones especiales
                     document.getElementById('optNormal').checked = true;
                     toggleSpecialInput();
                 }
@@ -1700,7 +1985,6 @@
                 summaryDiv.style.display = 'none';
             }
             
-            // Habilitar/deshabilitar botón de confirmar
             const btnConfirmar = document.getElementById('btnConfirmarCobro');
             const hayMontoValido = pagosMixtos.some(p => p.monto > 0);
             const hayReferenciaValida = pagosMixtos.every(p => {
@@ -1714,17 +1998,18 @@
         }
 
         function toggleSpecialInput() {
-            const selected = document.querySelector('input[name="specialOption"]:checked').value;
+            const selected = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             document.getElementById('inputAfavor').classList.toggle('show', selected === 'afavor');
             document.getElementById('inputCondonacion').classList.toggle('show', selected === 'condonacion');
             document.getElementById('inputCasa').classList.toggle('show', selected === 'casa');
         }
 
+        // ==========================================
+        // CONFIRMAR COBRO - DESCUENTA STOCK Y ACTUALIZA ESTADÍSTICAS
+        // ==========================================
         async function confirmarCobro() {
-            // Prevenir ejecución múltiple
             if (isProcessing || !currentPedido || pagosMixtos.length === 0) return;
             
-            // Bloquear botón inmediatamente
             const btnConfirmar = document.getElementById('btnConfirmarCobro');
             btnConfirmar.disabled = true;
             
@@ -1745,14 +2030,48 @@
                     const diferencia = totalRecibido - totalPagar;
                     const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
                     
-                    // Verificar que el pedido sigue existiendo
                     const pedidoActual = sistemaData.pedidos.find(p => p.id === currentPedido.id);
                     if (!pedidoActual) {
                         mostrarNotificacion('Pedido no encontrado', 'error');
                         return;
                     }
                     
-                    // CORREGIDO: Determinar siguiente estado según tipo de pedido
+                    // 🟢 PASO 1: DESCONTAR STOCK DEL INVENTARIO REAL (¡CRÍTICO!)
+                    if (pedidoActual.items) {
+                        pedidoActual.items.forEach(item => {
+                            const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
+                            if (platillo && platillo.ingredientes) {
+                                Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
+                                    if (!item.personalizacion?.includes(ingKey)) {
+                                        if (sistemaData.inventario[ingKey]) {
+                                            const cantidadNecesaria = convertirUnidad(
+                                                ingData.cantidad * (item.cantidad || 1),
+                                                ingData.unidad || 'unidades',
+                                                sistemaData.inventario[ingKey].unidad || 'unidades'
+                                            );
+                                            sistemaData.inventario[ingKey].stock = Math.max(
+                                                0, 
+                                                (sistemaData.inventario[ingKey].stock || 0) - cantidadNecesaria
+                                            );
+                                            console.log(`🔴 Descontando ${cantidadNecesaria.toFixed(3)} de ${sistemaData.inventario[ingKey].nombre}. Stock restante: ${sistemaData.inventario[ingKey].stock.toFixed(3)}`);
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    // 🟢 PASO 2: DESCONTAR STOCK DE PLATILLOS
+                    pedidoActual.items?.forEach(item => {
+                        const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
+                        if (platillo) {
+                            platillo.stock = Math.max(0, (platillo.stock || 0) - (item.cantidad || 1));
+                            platillo.stockMaximo = platillo.stock;
+                            console.log(`📦 Stock de ${platillo.nombre}: ${platillo.stock + (item.cantidad || 1)} → ${platillo.stock}`);
+                        }
+                    });
+                    
+                    // 🟢 PASO 3: ACTUALIZAR ESTADO DEL PEDIDO
                     if (pedidoActual.tipo === 'delivery') {
                         pedidoActual.estado = 'en_camino';
                     } else if (pedidoActual.tipo === 'reserva') {
@@ -1763,8 +2082,6 @@
                     
                     pedidoActual.cajero = 'Cajero Principal';
                     pedidoActual.fechaCobro = new Date().toISOString();
-                    
-                    // Guardar información de pago mixto
                     pedidoActual.pagosMixtos = pagosMixtos.map(p => ({
                         metodo: p.metodo,
                         monto: p.monto,
@@ -1785,21 +2102,31 @@
                         pedidoActual.cambio = diferencia;
                     }
                     
-                    // Delay antes de guardar
+                    // 🟢 PASO 4: ENVIAR NOTIFICACIÓN AL CLIENTE
+                    let mensajeNotificacion = {
+                        titulo: '🎉 ¡Pago confirmado!',
+                        texto: '',
+                        tipo: 'approved'
+                    };
+                    
+                    if (pedidoActual.tipo === 'delivery') {
+                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. El repartidor saldrá pronto con tu pedido. ¡Gracias por elegir Saki Sushi!';
+                    } else if (pedidoActual.tipo === 'reserva') {
+                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. Tu reserva está confirmada. ¡Te esperamos en la fecha acordada!';
+                    } else {
+                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. Nuestros chefs comenzarán a preparar tu pedido inmediatamente.';
+                    }
+                    
+                    agregarNotificacionCliente(pedidoActual.id, mensajeNotificacion.tipo, mensajeNotificacion.titulo, mensajeNotificacion.texto);
+                    
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
-                    // Guardar cambios
                     await guardarCambios();
-                    
-                    // Delay después de guardar
                     await new Promise(resolve => setTimeout(resolve, 300));
                     
                     closeModal('cobroModal');
-                    mostrarNotificacion('Cobro procesado. Pedido en preparación.');
+                    mostrarNotificacion('✅ Cobro procesado. Stock descontado. Cliente notificado.');
                     
-                    // Delay antes de re-renderizar
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
                     renderPedidos();
                     
                 } catch (error) {
@@ -1810,11 +2137,24 @@
             });
         }
 
-        // Rechazo
-        function mostrarRechazo(pedidoId) {
-            // Evitar múltiples clicks
-            if (isProcessing) return;
+        function convertirUnidad(valor, desde, hacia) {
+            if (desde === hacia) return valor;
             
+            let enBase = valor;
+            if (desde === 'kilogramos') enBase = valor * 1000;
+            else if (desde === 'litros') enBase = valor * 1000;
+            
+            if (hacia === 'kilogramos') return enBase / 1000;
+            else if (hacia === 'litros') return enBase / 1000;
+            
+            return enBase;
+        }
+
+        // ==========================================
+        // RECHAZO
+        // ==========================================
+        function mostrarRechazo(pedidoId) {
+            if (isProcessing) return;
             pedidoRechazo = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (pedidoRechazo) {
                 document.getElementById('rechazoModal').classList.add('show');
@@ -1822,7 +2162,6 @@
         }
 
         async function confirmarRechazo() {
-            // Prevenir ejecución múltiple
             if (isProcessing || !pedidoRechazo) return;
             
             const razon = document.querySelector('input[name="rejectionReason"]:checked')?.value;
@@ -1831,12 +2170,10 @@
                 return; 
             }
             
-            // Bloquear botones inmediatamente
             setButtonsDisabled(true);
             
             queueOperation(async () => {
                 try {
-                    // Verificar que el pedido sigue existiendo
                     const pedidoActual = sistemaData.pedidos.find(p => p.id === pedidoRechazo.id);
                     if (!pedidoActual) {
                         mostrarNotificacion('Pedido no encontrado', 'error');
@@ -1847,35 +2184,21 @@
                     pedidoActual.razonRechazo = razon;
                     pedidoActual.fechaRechazo = new Date().toISOString();
                     
-                    // Restaurar stock
-                    if (pedidoActual.items) {
-                        pedidoActual.items.forEach(item => {
-                            const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
-                            if (platillo && platillo.ingredientes) {
-                                Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
-                                    if (!item.personalizacion?.includes(ingKey)) {
-                                        if (sistemaData.inventario[ingKey]) sistemaData.inventario[ingKey].stock += ingData.cantidad * (item.cantidad || 1);
-                                    }
-                                });
-                            }
-                        });
-                    }
+                    agregarNotificacionCliente(
+                        pedidoActual.id,
+                        'rejected',
+                        '❌ Pedido rechazado',
+                        `Motivo: ${traducirRazon(razon)}. Por favor, contacta al restaurante para más información.`
+                    );
                     
-                    // Delay antes de guardar
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
-                    // Guardar cambios
                     await guardarCambios();
-                    
-                    // Delay después de guardar
                     await new Promise(resolve => setTimeout(resolve, 300));
                     
                     closeModal('rechazoModal');
                     mostrarNotificacion('Pedido rechazado. Cliente notificado.');
                     
-                    // Delay antes de re-renderizar
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
                     renderPedidos();
                     
                 } catch (error) {
@@ -1888,9 +2211,70 @@
             });
         }
 
-        // Utilidades
-        function closeModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
-        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
+        function traducirRazon(razon) {
+            const razones = {
+                'referencia_invalida': 'Referencia de pago inválida o falsa',
+                'monto_insuficiente': 'Monto insuficiente',
+                'datos_incorrectos': 'Datos de contacto/dirección incorrectos',
+                'no_disponible': 'Producto no disponible',
+                'fuera_horario': 'Fuera de horario de delivery'
+            };
+            return razones[razon] || razon;
+        }
+
+        // ==========================================
+        // MENÚ
+        // ==========================================
+        function renderMenuView() {
+            const container = document.getElementById('menuViewContainer');
+            if (!sistemaData || !sistemaData.menu) return;
+            
+            container.innerHTML = sistemaData.menu.map(item => {
+                const precioBs = ((item.precio || 0) * tasaEfectiva).toFixed(2);
+                
+                let disponible = item.disponible;
+                let stockReal = item.stock || 0;
+                
+                if (disponible && item.ingredientes) {
+                    let maxPlatillos = Infinity;
+                    Object.entries(item.ingredientes).forEach(([ingId, data]) => {
+                        const ing = sistemaData.inventario[ingId];
+                        if (ing) {
+                            const disponibleIng = Math.floor(ing.stock / (data.cantidad || 1));
+                            maxPlatillos = Math.min(maxPlatillos, disponibleIng);
+                        } else {
+                            maxPlatillos = 0;
+                        }
+                    });
+                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
+                    stockReal = maxPlatillos;
+                    disponible = maxPlatillos > 0 && item.disponible;
+                }
+                
+                return `
+                    <div class="menu-item-card">
+                        ${item.imagen ? `<img src="${item.imagen}" class="menu-item-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div class="menu-item-img" style="display: none;"><i class="fas fa-image"></i></div>` : '<div class="menu-item-img"><i class="fas fa-image"></i></div>'}
+                        <div class="menu-item-info">
+                            <div class="menu-item-name">${item.nombre}</div>
+                            <div class="menu-item-desc">${item.descripcion || 'Sin descripción'}</div>
+                            <span class="badge ${disponible ? 'badge-success' : 'badge-danger'}">${disponible ? 'Disponible' : 'No disponible'}${disponible ? ` (${stockReal} unidades)` : ''}</span>
+                        </div>
+                        <div class="menu-item-price">Bs. ${precioBs}<br><small style="color: #666; font-size: 0.75rem;">$${(item.precio || 0).toFixed(2)}</small></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // UTILIDADES
+        // ==========================================
+        function closeModal(modalId) { 
+            document.getElementById(modalId).classList.remove('show'); 
+        }
+        
+        function cerrarModal(modalId) { 
+            document.getElementById(modalId).classList.remove('show'); 
+        }
         
         function mostrarNotificacion(mensaje, tipo = 'success') {
             const notif = document.getElementById('notification');
@@ -1916,13 +2300,14 @@
             try {
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_CONFIG.API_KEY },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY 
+                    },
                     body: JSON.stringify(sistemaData)
                 });
                 
                 if (!response.ok) throw new Error('Error al guardar');
-                
-                // Pequeño delay después de guardar exitosamente
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
             } catch (error) { 
