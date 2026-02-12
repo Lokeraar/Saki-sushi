@@ -135,6 +135,7 @@
         .plato-img { width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem; margin-right: 1rem; }
         .ingredient-tag { display: inline-flex; align-items: center; gap: 0.25rem; background: var(--bg-hover); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-right: 0.5rem; margin-bottom: 0.25rem; font-size: 0.75rem; }
         
+        /* Ingredient Status Tooltip */
         .ingredient-status-tooltip {
             position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
             cursor: help; margin-left: 0.5rem;
@@ -161,8 +162,22 @@
         .status-icon.available { color: var(--success); }
         .status-icon.unavailable { color: var(--danger); }
         
-        .ingrediente-plato-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; background: var(--bg-dark); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); }
-        @media (max-width: 768px) { .ingrediente-plato-row { grid-template-columns: 1fr; } }
+        .ingrediente-plato-row { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr 1fr auto; 
+            gap: 0.5rem; 
+            margin-bottom: 0.5rem; 
+            align-items: center; 
+            background: var(--bg-dark); 
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+            border: 1px solid var(--border); 
+        }
+        @media (max-width: 768px) { 
+            .ingrediente-plato-row { 
+                grid-template-columns: 1fr; 
+            } 
+        }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
         .modal.active { display: flex; }
@@ -221,6 +236,7 @@
         .chart-container { background: var(--bg-dark); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
         .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
         
+        /* User Management */
         .user-list { margin-top: 1rem; }
         .user-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-dark); border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border); }
         .user-role { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; background: var(--primary); color: white; }
@@ -344,6 +360,169 @@
                     <input type="number" step="0.01" class="form-input" id="tasaInicialInput" placeholder="0.00" style="font-size: 1.5rem; text-align: center; font-weight: 700;" onkeypress="handleTasaKeypress(event)">
                 </div>
                 <button class="btn btn-primary" onclick="guardarTasaInicial()" style="width: 100%; justify-content: center;">Guardar y Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación Detener Aumento -->
+    <div id="modal-confirmar-detener" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3 style="margin-bottom: 1rem;">¿Detener Aumento Diario?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Vas a desactivar el aumento diario. A partir de ahora deberás cambiar el precio de la tasa manualmente. El sistema no aplicará incrementos automáticos hasta que vuelvas a activar esta opción.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-confirmar-detener')">Cancelar</button><button class="btn-header btn-danger" onclick="confirmarDetenerAumento()">Sí, Detener</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Reactivar Aumento -->
+    <div id="modal-reactivar" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div class="alert-icon" style="color: var(--success);"><i class="fas fa-check-circle"></i></div>
+                <h3 style="margin-bottom: 1rem;">¿Reactivar Aumento Diario?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">El aumento diario será activado. El sistema aplicará automáticamente el incremento a partir de mañana, usando el porcentaje especificado en el campo 'aumento diario'.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-reactivar')">Cancelar</button><button class="btn-header btn-success" onclick="confirmarReactivarAumento()">Sí, Activar</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Password para desbloquear stock -->
+    <div id="modal-password" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header"><h3>Desbloquear Stock</h3><button class="close-btn" onclick="cerrarModal('modal-password')">&times;</button></div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contraseña de administrador:</p>
+                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña" onkeypress="handlePasswordModalKeypress(event)"></div>
+                <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contraseña incorrecta</div>
+            </div>
+            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn-header btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
+        </div>
+    </div>
+
+    <!-- Modal QR Ampliado -->
+    <div id="modal-qr-ampliado" class="modal">
+        <div class="modal-content" style="max-width: 600px; text-align: center;">
+            <div class="modal-header"><h3 id="titulo-qr-ampliado">Código QR</h3><button class="close-btn" onclick="cerrarModal('modal-qr-ampliado')">&times;</button></div>
+            <div class="modal-body"><div id="qr-ampliado-container" style="display: flex; justify-content: center; padding: 2rem;"></div><p id="url-qr-ampliado" style="color: var(--text-secondary); word-break: break-all; margin-top: 1rem;"></p></div>
+            <div class="modal-footer" style="justify-content: center;"><button class="btn-header btn-primary" onclick="descargarQR()"><i class="fas fa-download"></i> Descargar QR</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Plato -->
+    <div id="modal-platillo" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="titulo-platillo-modal">Nuevo Platillo o Producto</h3><button class="close-btn" onclick="cerrarModal('modal-platillo')">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label class="form-label">Imagen del Platillo</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="edit-imagen-file" accept="image/*" onchange="handleImagenPlato(this)">
+                        <input type="hidden" id="edit-imagen-url">
+                        <label for="edit-imagen-file" class="file-input-label" id="label-imagen-plato">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; display: block;"></i>
+                            Haz clic para subir imagen o arrastra aquí
+                        </label>
+                    </div>
+                    <div id="preview-imagen-plato"></div>
+                    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                        <input type="text" class="form-input" id="edit-imagen-link" placeholder="O pega aquí el link de la imagen" onchange="previewImagenLink(this.value)" onkeypress="handleModalKeypress(event)">
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Nombre del Platillo</label><input type="text" class="form-input" id="edit-nombre" onkeypress="handleModalKeypress(event)"></div>
+                <div class="form-group">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" id="edit-categoria" onchange="handleCategoryChange()">
+                        <option value="entradas">Entradas</option>
+                        <option value="sushi">Sushi</option>
+                        <option value="rolls">Rolls</option>
+                        <option value="tragos">Tragos/Bebidas</option>
+                        <option value="pokes">Pokes</option>
+                        <option value="ensaladas">Ensaladas</option>
+                        <option value="china">Comida China</option>
+                        <option value="japonesa">Comida Japonesa</option>
+                        <option value="ninos">Para Niños</option>
+                        <option value="ejecutivo">Combo Ejecutivo</option>
+                    </select>
+                </div>
+                <div class="form-group" id="subcategoria-container" style="display: none;">
+                    <label class="form-label">Subcategoría</label>
+                    <select class="form-select" id="edit-subcategoria"></select>
+                </div>
+                <div class="form-group"><label class="form-label">Precio en USD ($)</label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="edit-precio-usd" onkeypress="handleModalKeypress(event)"></div></div>
+                <div class="form-group"><label class="form-label">Descripción (incluye piezas de cada ingrediente)</label><textarea class="form-textarea" id="edit-descripcion" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..." onkeypress="handleModalKeypress(event)"></textarea></div>
+                <div class="form-group">
+                    <label class="form-label">Ingredientes del Platillo</label>
+                    <div id="edit-ingredientes-container"><p style="color: var(--text-secondary);">Ningún ingrediente agregado</p></div>
+                    <button class="btn-header btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;"><i class="fas fa-plus"></i> Agregar Ingrediente</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Calculado (auto)</label>
+                    <div class="stock-calculated" id="stock-calculado">Agrega ingredientes para calcular</div>
+                </div>
+                <div class="form-group"><label class="form-label">Disponible</label><label class="toggle-plato"><input type="checkbox" id="edit-disponible" checked><span class="slider-plato"></span></label></div>
+            </div>
+            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-platillo')">Cancelar</button><button class="btn-header btn-primary" onclick="guardarPlatillo()">Guardar Cambios</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Ingrediente -->
+    <div id="modal-ingrediente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="titulo-ingrediente">Nuevo Ingrediente o Producto</h3><button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="ingrediente-id">
+                <div class="form-group"><label class="form-label">Nombre del Ingrediente</label><input type="text" class="form-input" id="ingrediente-nombre" placeholder="Ej: Salmón fresco" onkeypress="handleIngredienteKeypress(event)"></div>
+                
+                <div class="form-group password-field">
+                    <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
+                    <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
+                    <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()"><span><i class="fas fa-lock"></i> Click para desbloquear</span></div>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <label class="form-label">Mercancía Nueva a Agregar</label>
+                            <input type="number" step="0.001" class="form-input" id="ingrediente-nuevo" placeholder="0" oninput="syncUnidades('nuevo')" onkeypress="handleIngredienteKeypress(event)">
+                        </div>
+                        <div style="padding-bottom: 0.75rem; color: var(--text-secondary);"><i class="fas fa-exchange-alt"></i></div>
+                        <div style="flex: 1;">
+                            <label class="form-label">Unidad de Medida</label>
+                            <select class="form-select" id="ingrediente-unidad" onchange="cambiarUnidadSistema()">
+                                <option value="unidades">Unidades/Piezas</option>
+                                <option value="kilogramos">Kilogramos</option>
+                                <option value="litros">Litros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Stock será: <strong id="stock-total-preview">0</strong> <span id="unidad-preview">unidades</span></div>
+                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);" id="conversion-display"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Stock Mínimo (alerta): <span id="unidad-minimo" style="color: var(--text-secondary);">unidades</span></label>
+                    <input type="number" step="0.001" class="form-input" id="ingrediente-minimo" placeholder="10" onkeypress="handleIngredienteKeypress(event)">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Precio de Costo del Producto ($) <span class="help-tooltip" data-tooltip="Precio al que se compró este ingrediente. Use la calculadora para dividir el costo total entre la cantidad comprada."><i class="fas fa-info-circle"></i></span></label>
+                    <div class="calculadora-costo">
+                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Costo Total Compra ($):</span><input type="number" step="0.01" class="form-input" id="calc-costo-total" placeholder="0.00" style="width: 150px;" oninput="calcularCostoUnitario()" onkeypress="handleIngredienteKeypress(event)"></div>
+                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Cantidad Comprada:</span><input type="number" step="0.001" class="form-input" id="calc-cantidad" placeholder="0" style="width: 150px;" oninput="calcularCostoUnitario()" onkeypress="handleIngredienteKeypress(event)"><span id="calc-unidad-display" style="font-size: 0.875rem; color: var(--text-secondary);">unidades</span></div>
+                        <div class="calculadora-result" id="calc-resultado" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-card); border-radius: 0.25rem;">Costo Unitario: $<span id="calc-precio-unitario">0.00</span> por <span id="calc-unidad-result">unidad</span></div>
+                    </div>
+                    <div class="input-group" style="margin-top: 0.5rem;"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-costo" placeholder="Precio unitario calculado o manual" onkeypress="handleIngredienteKeypress(event)"></div>
+                </div>
+
+                <div class="form-group"><label class="form-label">Precio Unitario de Venta ($) <span class="help-tooltip" data-tooltip="Precio que se deduce al cliente cuando no incluye este ingrediente."><i class="fas fa-info-circle"></i></span></label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-precio-venta" placeholder="0.00" onkeypress="handleIngredienteKeypress(event)"></div></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-header btn-secondary" onclick="cerrarModal('modal-ingrediente')">Cancelar</button>
+                <button class="btn-header btn-danger" onclick="eliminarIngrediente()" id="btnEliminarIngrediente" style="display: none;"><i class="fas fa-trash"></i> Eliminar</button>
+                <button class="btn-header btn-primary" onclick="guardarIngrediente()">Guardar Ingrediente</button>
             </div>
         </div>
     </div>
@@ -605,158 +784,6 @@
         </div>
     </div>
 
-    <!-- Modal Plato -->
-    <div id="modal-platillo" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="titulo-platillo-modal">Nuevo Platillo o Producto</h3><button class="close-btn" onclick="cerrarModal('modal-platillo')">&times;</button></div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-id">
-                <div class="form-group">
-                    <label class="form-label">Imagen del Platillo</label>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="edit-imagen-file" accept="image/*" onchange="handleImagenPlato(this)">
-                        <input type="hidden" id="edit-imagen-url">
-                        <label for="edit-imagen-file" class="file-input-label" id="label-imagen-plato">
-                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; display: block;"></i>
-                            Haz clic para subir imagen o arrastra aquí
-                        </label>
-                    </div>
-                    <div id="preview-imagen-plato"></div>
-                    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
-                        <input type="text" class="form-input" id="edit-imagen-link" placeholder="O pega aquí el link de la imagen" onchange="previewImagenLink(this.value)" onkeypress="handleModalKeypress(event)">
-                    </div>
-                </div>
-                <div class="form-group"><label class="form-label">Nombre del Platillo</label><input type="text" class="form-input" id="edit-nombre" onkeypress="handleModalKeypress(event)"></div>
-                <div class="form-group">
-                    <label class="form-label">Categoría</label>
-                    <select class="form-select" id="edit-categoria" onchange="handleCategoryChange()">
-                        <option value="entradas">Entradas</option>
-                        <option value="sushi">Sushi</option>
-                        <option value="rolls">Rolls</option>
-                        <option value="tragos">Tragos/Bebidas</option>
-                        <option value="pokes">Pokes</option>
-                        <option value="ensaladas">Ensaladas</option>
-                        <option value="china">Comida China</option>
-                        <option value="japonesa">Comida Japonesa</option>
-                        <option value="ninos">Para Niños</option>
-                        <option value="ejecutivo">Combo Ejecutivo</option>
-                    </select>
-                </div>
-                <div class="form-group" id="subcategoria-container" style="display: none;">
-                    <label class="form-label">Subcategoría</label>
-                    <select class="form-select" id="edit-subcategoria"></select>
-                </div>
-                <div class="form-group"><label class="form-label">Precio en USD ($)</label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="edit-precio-usd" onkeypress="handleModalKeypress(event)"></div></div>
-                <div class="form-group"><label class="form-label">Descripción (incluye piezas de cada ingrediente)</label><textarea class="form-textarea" id="edit-descripcion" placeholder="Ej: Incluye 5 piezas de salmón, 3 piezas de atún..." onkeypress="handleModalKeypress(event)"></textarea></div>
-                <div class="form-group"><label class="form-label">Ingredientes del Platillo</label><div id="edit-ingredientes-container"><p style="color: var(--text-secondary);">Ningún ingrediente agregado</p></div><button class="btn-header btn-secondary btn-small" onclick="agregarIngredienteAPlato()" style="margin-top: 0.5rem;"><i class="fas fa-plus"></i> Agregar Ingrediente</button></div>
-                <div class="form-group"><label class="form-label">Stock Calculado (auto)</label><div class="stock-calculated" id="stock-calculado">Agrega ingredientes para calcular</div></div>
-                <div class="form-group"><label class="form-label">Disponible</label><label class="toggle-plato"><input type="checkbox" id="edit-disponible" checked><span class="slider-plato"></span></label></div>
-            </div>
-            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-platillo')">Cancelar</button><button class="btn-header btn-primary" onclick="guardarPlatillo()">Guardar Cambios</button></div>
-        </div>
-    </div>
-
-    <!-- Modal Ingrediente -->
-    <div id="modal-ingrediente" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="titulo-ingrediente">Nuevo Ingrediente o Producto</h3><button class="close-btn" onclick="cerrarModal('modal-ingrediente')">&times;</button></div>
-            <div class="modal-body">
-                <input type="hidden" id="ingrediente-id">
-                <div class="form-group"><label class="form-label">Nombre del Ingrediente</label><input type="text" class="form-input" id="ingrediente-nombre" placeholder="Ej: Salmón fresco" onkeypress="handleIngredienteKeypress(event)"></div>
-                
-                <div class="form-group password-field">
-                    <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
-                    <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
-                    <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()"><span><i class="fas fa-lock"></i> Click para desbloquear</span></div>
-                </div>
-
-                <div class="form-group">
-                    <div style="display: flex; gap: 1rem; align-items: flex-end;">
-                        <div style="flex: 1;">
-                            <label class="form-label">Mercancía Nueva a Agregar</label>
-                            <input type="number" step="0.001" class="form-input" id="ingrediente-nuevo" placeholder="0" oninput="syncUnidades('nuevo')" onkeypress="handleIngredienteKeypress(event)">
-                        </div>
-                        <div style="padding-bottom: 0.75rem; color: var(--text-secondary);"><i class="fas fa-exchange-alt"></i></div>
-                        <div style="flex: 1;">
-                            <label class="form-label">Unidad de Medida</label>
-                            <select class="form-select" id="ingrediente-unidad" onchange="cambiarUnidadSistema()">
-                                <option value="unidades">Unidades/Piezas</option>
-                                <option value="kilogramos">Kilogramos</option>
-                                <option value="litros">Litros</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Stock será: <strong id="stock-total-preview">0</strong> <span id="unidad-preview">Unidades/Piezas</span></div>
-                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);" id="conversion-display"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Stock Mínimo (alerta): <span id="unidad-minimo" style="color: var(--text-secondary);">Unidades/Piezas</span></label>
-                    <input type="number" step="0.001" class="form-input" id="ingrediente-minimo" placeholder="10" onkeypress="handleIngredienteKeypress(event)">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Precio de Costo del Producto ($) <span class="help-tooltip" data-tooltip="Precio al que se compró este ingrediente. Use la calculadora para dividir el costo total entre la cantidad comprada."><i class="fas fa-info-circle"></i></span></label>
-                    <div class="calculadora-costo">
-                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Costo Total Compra ($):</span><input type="number" step="0.01" class="form-input" id="calc-costo-total" placeholder="0.00" style="width: 150px;" oninput="calcularCostoUnitario()" onkeypress="handleIngredienteKeypress(event)"></div>
-                        <div class="calculadora-row"><span style="font-size: 0.875rem; min-width: 150px;">Cantidad Comprada:</span><input type="number" step="0.001" class="form-input" id="calc-cantidad" placeholder="0" style="width: 150px;" oninput="calcularCostoUnitario()" onkeypress="handleIngredienteKeypress(event)"><span id="calc-unidad-display" style="font-size: 0.875rem; color: var(--text-secondary);">Unidades/Piezas</span></div>
-                        <div class="calculadora-result" id="calc-resultado" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-card); border-radius: 0.25rem;">Costo Unitario: $<span id="calc-precio-unitario">0.00</span> por <span id="calc-unidad-result">unidad</span></div>
-                    </div>
-                    <div class="input-group" style="margin-top: 0.5rem;"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-costo" placeholder="Precio unitario calculado o manual" onkeypress="handleIngredienteKeypress(event)"></div>
-                </div>
-
-                <div class="form-group"><label class="form-label">Precio Unitario de Venta ($) <span class="help-tooltip" data-tooltip="Precio que se deduce al cliente cuando no incluye este ingrediente."><i class="fas fa-info-circle"></i></span></label><div class="input-group"><span class="input-prefix">$</span><input type="number" step="0.01" class="form-input" id="ingrediente-precio-venta" placeholder="0.00" onkeypress="handleIngredienteKeypress(event)"></div></div>
-            </div>
-            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-ingrediente')">Cancelar</button><button class="btn-header btn-danger" onclick="eliminarIngrediente()" id="btnEliminarIngrediente" style="display: none;"><i class="fas fa-trash"></i> Eliminar</button><button class="btn-header btn-primary" onclick="guardarIngrediente()">Guardar Ingrediente</button></div>
-        </div>
-    </div>
-
-    <!-- Modal Password -->
-    <div id="modal-password" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header"><h3>Desbloquear Stock</h3><button class="close-btn" onclick="cerrarModal('modal-password')">&times;</button></div>
-            <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contraseña de administrador:</p>
-                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña" onkeypress="handlePasswordModalKeypress(event)"></div>
-                <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contraseña incorrecta</div>
-            </div>
-            <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn-header btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
-        </div>
-    </div>
-
-    <!-- Modal Confirmación Detener Aumento -->
-    <div id="modal-confirmar-detener" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-body" style="text-align: center; padding: 2rem;">
-                <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h3 style="margin-bottom: 1rem;">¿Detener Aumento Diario?</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Vas a desactivar el aumento diario. A partir de ahora deberás cambiar el precio de la tasa manualmente. El sistema no aplicará incrementos automáticos hasta que vuelvas a activar esta opción.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-confirmar-detener')">Cancelar</button><button class="btn-header btn-danger" onclick="confirmarDetenerAumento()">Sí, Detener</button></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Reactivar Aumento -->
-    <div id="modal-reactivar" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-body" style="text-align: center; padding: 2rem;">
-                <div class="alert-icon" style="color: var(--success);"><i class="fas fa-check-circle"></i></div>
-                <h3 style="margin-bottom: 1rem;">¿Reactivar Aumento Diario?</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">El aumento diario será activado. El sistema aplicará automáticamente el incremento a partir de mañana, usando el porcentaje especificado en el campo 'aumento diario'.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-reactivar')">Cancelar</button><button class="btn-header btn-success" onclick="confirmarReactivarAumento()">Sí, Activar</button></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal QR Ampliado -->
-    <div id="modal-qr-ampliado" class="modal">
-        <div class="modal-content" style="max-width: 600px; text-align: center;">
-            <div class="modal-header"><h3 id="titulo-qr-ampliado">Código QR</h3><button class="close-btn" onclick="cerrarModal('modal-qr-ampliado')">&times;</button></div>
-            <div class="modal-body"><div id="qr-ampliado-container" style="display: flex; justify-content: center; padding: 2rem;"></div><p id="url-qr-ampliado" style="color: var(--text-secondary); word-break: break-all; margin-top: 1rem;"></p></div>
-            <div class="modal-footer" style="justify-content: center;"><button class="btn-header btn-primary" onclick="descargarQR()"><i class="fas fa-download"></i> Descargar QR</button></div>
-        </div>
-    </div>
-
     <!-- Notification Toast -->
     <div class="notification" id="notification"><span id="notification-text">Operación completada</span></div>
 
@@ -788,7 +815,7 @@
             ventas: { diarias: [], semanales: [], mensuales: [] },
             notificaciones: [],
             codigosQR: [],
-            usuarios: [] // { id, nombre, username, password, rol, activo }
+            usuarios: []
         };
 
         let stockDesbloqueado = false;
@@ -823,19 +850,6 @@
                 { id: 'churrasco', name: 'Churrasco' }
             ]
         };
-
-        // ==========================================
-        // FUNCIÓN DE CONVERSIÓN DE UNIDADES
-        // ==========================================
-        function convertirValorExistente(valor, unidadOrigen) {
-            // Convierte gramos a kilogramos y mililitros a litros
-            if (unidadOrigen === 'gramos') {
-                return valor / 1000;
-            } else if (unidadOrigen === 'mililitros') {
-                return valor / 1000;
-            }
-            return valor;
-        }
 
         // ==========================================
         // LOGIN Y AUTENTICACIÓN
@@ -890,7 +904,9 @@
             location.reload();
         }
 
-        // Recuperación de contraseña
+        // ==========================================
+        // RECUPERACIÓN DE CONTRASEÑA
+        // ==========================================
         function showRecovery() {
             document.getElementById('loginStep').classList.remove('active');
             document.getElementById('recoveryEmailStep').classList.add('active');
@@ -915,17 +931,11 @@
                 return;
             }
             
-            // Generar código de 6 dígitos
             currentRecoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
-            
-            // Simular envío de correo (en producción, aquí iría la llamada al servidor de correo)
             console.log(`Código de recuperación para ${email}: ${currentRecoveryCode}`);
             
-            // Mostrar mensaje de éxito y pasar al siguiente paso
             document.getElementById('recoveryEmailStep').classList.remove('active');
             document.getElementById('recoveryCodeStep').classList.add('active');
-            
-            // Enfocar primer input del código
             document.querySelector('.recovery-code input').focus();
             
             mostrarNotificacion('Código enviado a tu correo electrónico');
@@ -981,37 +991,18 @@
                     if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
                     if (!datos.codigosQR) datos.codigosQR = [];
                     if (!datos.usuarios) datos.usuarios = [];
-                    
-                    // Convertir unidades antiguas de platillos existentes
-                    convertirUnidadesPlatillos();
                 }
             } catch (error) { console.error('Error cargando datos:', error); }
         }
 
-        function convertirUnidadesPlatillos() {
-            // Recorrer todos los platillos y convertir unidades antiguas
-            datos.menu.forEach(platillo => {
-                if (platillo.ingredientes) {
-                    Object.keys(platillo.ingredientes).forEach(ingKey => {
-                        const ingData = platillo.ingredientes[ingKey];
-                        // Si existe unidadAntigua o detectamos por cantidad
-                        if (ingData.unidad === 'gramos') {
-                            ingData.cantidad = convertirValorExistente(ingData.cantidad, 'gramos');
-                            ingData.unidad = 'kilogramos';
-                        } else if (ingData.unidad === 'mililitros') {
-                            ingData.cantidad = convertirValorExistente(ingData.cantidad, 'mililitros');
-                            ingData.unidad = 'litros';
-                        } else if (!ingData.unidad) {
-                            // Asignar unidad por defecto según la cantidad
-                            if (ingData.cantidad >= 1) {
-                                ingData.unidad = 'unidades';
-                            } else {
-                                ingData.unidad = 'kilogramos';
-                            }
-                        }
-                    });
-                }
-            });
+        async function guardarDatos() {
+            try {
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+                    body: JSON.stringify(datos)
+                });
+            } catch (error) { console.error('Error guardando:', error); }
         }
 
         // ==========================================
@@ -1198,15 +1189,10 @@
         function convertirUnidad(valor, desde, hacia) {
             if (desde === hacia) return valor;
             
-            // Convertir a base primero
             let enBase = valor;
-            if (desde === 'kilogramos') enBase = valor * 1000; // a gramos
-            else if (desde === 'litros') enBase = valor * 1000; // a ml
-            else if (desde === 'gramos') enBase = valor; // gramos
-            else if (desde === 'mililitros') enBase = valor; // mililitros
-            else if (desde === 'unidades') enBase = valor; // unidades
+            if (desde === 'kilogramos') enBase = valor * 1000;
+            else if (desde === 'litros') enBase = valor * 1000;
             
-            // Convertir de base a destino
             if (hacia === 'kilogramos') return enBase / 1000;
             else if (hacia === 'litros') return enBase / 1000;
             
@@ -1216,7 +1202,6 @@
         function formatearUnidad(valor, unidad) {
             if (unidad === 'kilogramos' && valor < 1) return (valor * 1000).toFixed(0) + ' g';
             if (unidad === 'litros' && valor < 1) return (valor * 1000).toFixed(0) + ' ml';
-            if (unidad === 'unidades') return valor.toFixed(0) + ' Unidades/Piezas';
             return valor.toFixed(3) + ' ' + unidad;
         }
 
@@ -1225,17 +1210,14 @@
                 return (valor * 1000).toFixed(0) + ' gramos';
             } else if (unidad === 'litros' && valor < 1) {
                 return (valor * 1000).toFixed(0) + ' mililitros';
-            } else if (unidad === 'unidades') {
-                return valor.toFixed(0) + ' Unidades/Piezas';
             }
-            return valor.toFixed(3) + ' ' + unidad;
+            return valor + ' ' + unidad;
         }
 
         function syncUnidades(origen) {
             const nuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
             const unidad = document.getElementById('ingrediente-unidad').value;
             
-            // Mostrar conversión
             let conversionText = '';
             if (unidad === 'kilogramos') {
                 conversionText = `= ${(nuevo * 1000).toFixed(0)} gramos`;
@@ -1244,21 +1226,287 @@
             }
             document.getElementById('conversion-display').textContent = conversionText;
             
-            // Sincronizar con calculadora
             document.getElementById('calc-cantidad').value = nuevo;
-            document.getElementById('calc-unidad-display').textContent = unidad === 'unidades' ? 'Unidades/Piezas' : unidad;
+            document.getElementById('calc-unidad-display').textContent = unidad;
             calcularCostoUnitario();
             calcularStockTotal();
         }
 
         function cambiarUnidadSistema() {
             const unidad = document.getElementById('ingrediente-unidad').value;
-            const displayUnidad = unidad === 'unidades' ? 'Unidades/Piezas' : unidad;
-            document.getElementById('calc-unidad-display').textContent = displayUnidad;
-            document.getElementById('calc-unidad-result').textContent = displayUnidad;
-            document.getElementById('unidad-minimo').textContent = displayUnidad;
-            document.getElementById('unidad-preview').textContent = displayUnidad;
+            document.getElementById('calc-unidad-display').textContent = unidad;
+            document.getElementById('calc-unidad-result').textContent = unidad;
+            document.getElementById('unidad-minimo').textContent = unidad;
+            document.getElementById('unidad-preview').textContent = unidad;
             syncUnidades('nuevo');
+        }
+
+        // ==========================================
+        // GESTIÓN DE INVENTARIO - CORAZÓN DEL CAMBIO
+        // ==========================================
+        async function guardarIngrediente() {
+            const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
+            const unidad = document.getElementById('ingrediente-unidad').value;
+            
+            let stockActual = parseFloat(document.getElementById('ingrediente-stock').value) || 0;
+            const stockNuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
+            const stockFinal = stockActual + stockNuevo;
+            
+            const precioCosto = parseFloat(document.getElementById('ingrediente-costo').value) || 0;
+            const precioVenta = parseFloat(document.getElementById('ingrediente-precio-venta').value) || 0;
+            
+            // Guardar ingrediente
+            datos.inventario[id] = {
+                nombre: document.getElementById('ingrediente-nombre').value,
+                stock: stockFinal,
+                unidad: unidad,
+                minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
+                precioCosto: precioCosto,
+                precioUnitario: precioVenta,
+                costoBs: precioCosto * (datos.config.tasaEfectiva || 0),
+                precioVentaBs: precioVenta * (datos.config.tasaEfectiva || 0)
+            };
+            
+            cerrarModal('modal-ingrediente');
+            
+            // ***** ACTUALIZACIÓN AUTOMÁTICA DE STOCK EN PLATILLOS *****
+            // Recalcular stock de todos los platillos que usan este ingrediente
+            recalcularStockPlatillosPorIngrediente(id);
+            
+            // Guardar cambios en JSONBin
+            await guardarDatos();
+            
+            // Actualizar todas las vistas
+            renderizarInventario();
+            renderizarMenu(); // Esto actualiza el stock visible en Gestión de Platillos
+            actualizarDashboard();
+            
+            mostrarNotificacion('Ingrediente guardado correctamente. Stock de platillos actualizado.');
+        }
+
+        // NUEVA FUNCIÓN: Recalcula el stock de todos los platillos afectados por un ingrediente
+        function recalcularStockPlatillosPorIngrediente(ingredienteId) {
+            let platillosActualizados = 0;
+            
+            datos.menu.forEach(platillo => {
+                if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
+                    // Recalcular stock máximo disponible para este platillo
+                    let maxPlatillos = Infinity;
+                    let hayIngredientesDisponibles = true;
+                    
+                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
+                        const ing = datos.inventario[ingId];
+                        if (ing) {
+                            const cantidadNecesaria = convertirUnidad(
+                                data.cantidad || 0, 
+                                data.unidad || 'unidades', 
+                                ing.unidad
+                            );
+                            if (cantidadNecesaria > 0) {
+                                const disponible = Math.floor(ing.stock / cantidadNecesaria);
+                                maxPlatillos = Math.min(maxPlatillos, disponible);
+                            }
+                        } else {
+                            // Si no existe el ingrediente en inventario, no se puede preparar
+                            if (data.obligatorio) {
+                                maxPlatillos = 0;
+                                hayIngredientesDisponibles = false;
+                            }
+                        }
+                    });
+                    
+                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
+                    
+                    // Actualizar stock del platillo
+                    const stockAnterior = platillo.stock || 0;
+                    platillo.stock = maxPlatillos;
+                    
+                    // Si antes estaba agotado y ahora tiene stock, reactivar
+                    if (stockAnterior === 0 && maxPlatillos > 0) {
+                        platillo.disponible = true;
+                    }
+                    
+                    platillosActualizados++;
+                }
+            });
+            
+            if (platillosActualizados > 0) {
+                console.log(`Stock recalculado para ${platillosActualizados} platillo(s)`);
+            }
+        }
+
+        // Versión sobrecargada para recalcular todos los platillos (útil después de cambios masivos)
+        function recalcularStockTodosPlatillos() {
+            let platillosActualizados = 0;
+            
+            datos.menu.forEach(platillo => {
+                if (platillo.ingredientes && Object.keys(platillo.ingredientes).length > 0) {
+                    let maxPlatillos = Infinity;
+                    
+                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
+                        const ing = datos.inventario[ingId];
+                        if (ing) {
+                            const cantidadNecesaria = convertirUnidad(
+                                data.cantidad || 0, 
+                                data.unidad || 'unidades', 
+                                ing.unidad
+                            );
+                            if (cantidadNecesaria > 0) {
+                                const disponible = Math.floor(ing.stock / cantidadNecesaria);
+                                maxPlatillos = Math.min(maxPlatillos, disponible);
+                            }
+                        } else {
+                            if (data.obligatorio) {
+                                maxPlatillos = 0;
+                            }
+                        }
+                    });
+                    
+                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
+                    
+                    const stockAnterior = platillo.stock || 0;
+                    platillo.stock = maxPlatillos;
+                    
+                    if (stockAnterior === 0 && maxPlatillos > 0) {
+                        platillo.disponible = true;
+                    }
+                    
+                    platillosActualizados++;
+                }
+            });
+            
+            return platillosActualizados;
+        }
+
+        async function eliminarIngrediente() {
+            const id = document.getElementById('ingrediente-id').value;
+            if (!id || !datos.inventario[id]) return;
+            
+            const enUso = datos.menu.some(p => p.ingredientes && p.ingredientes[id]);
+            if (enUso) {
+                alert('No se puede eliminar: este ingrediente está siendo usado en platillos. Elimínalo de los platillos primero.');
+                return;
+            }
+            
+            if (!confirm('¿Eliminar este ingrediente permanentemente?')) return;
+            
+            delete datos.inventario[id];
+            cerrarModal('modal-ingrediente');
+            await guardarDatos();
+            renderizarInventario();
+            mostrarNotificacion('Ingrediente eliminado');
+        }
+
+        function desbloquearStock() {
+            document.getElementById('modal-password').classList.add('active');
+            document.getElementById('admin-password').value = '';
+            document.getElementById('password-error').style.display = 'none';
+            document.getElementById('admin-password').focus();
+        }
+
+        function handlePasswordModalKeypress(e) {
+            if (e.key === 'Enter') verificarPassword();
+            else if (e.key === 'Escape') cerrarModal('modal-password');
+        }
+
+        function verificarPassword() {
+            if (document.getElementById('admin-password').value === datos.config.adminPassword) {
+                stockDesbloqueado = true;
+                document.getElementById('ingrediente-stock').disabled = false;
+                document.getElementById('stock-overlay').style.display = 'none';
+                cerrarModal('modal-password');
+                document.getElementById('ingrediente-stock').focus();
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+            }
+        }
+
+        function calcularStockTotal() {
+            const actual = parseFloat(document.getElementById('ingrediente-stock').value) || 0;
+            const nuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
+            const unidad = document.getElementById('ingrediente-unidad').value;
+            
+            document.getElementById('stock-total-preview').textContent = (actual + nuevo).toFixed(3);
+        }
+
+        function calcularCostoUnitario() {
+            const costoTotal = parseFloat(document.getElementById('calc-costo-total').value) || 0;
+            const cantidad = parseFloat(document.getElementById('calc-cantidad').value) || 0;
+            
+            if (costoTotal > 0 && cantidad > 0) {
+                const unitario = costoTotal / cantidad;
+                document.getElementById('calc-precio-unitario').textContent = unitario.toFixed(2);
+                document.getElementById('calc-resultado').style.display = 'block';
+                document.getElementById('ingrediente-costo').value = unitario.toFixed(2);
+            } else {
+                document.getElementById('calc-resultado').style.display = 'none';
+            }
+        }
+
+        function abrirModalIngrediente() {
+            document.getElementById('ingrediente-id').value = '';
+            document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente o Producto';
+            document.getElementById('ingrediente-nombre').value = '';
+            document.getElementById('ingrediente-stock').value = '0';
+            document.getElementById('ingrediente-stock').disabled = true;
+            document.getElementById('stock-overlay').style.display = 'flex';
+            stockDesbloqueado = false;
+            document.getElementById('ingrediente-nuevo').value = '';
+            document.getElementById('ingrediente-minimo').value = '';
+            document.getElementById('ingrediente-costo').value = '';
+            document.getElementById('ingrediente-precio-venta').value = '';
+            document.getElementById('ingrediente-unidad').value = 'unidades';
+            document.getElementById('btnEliminarIngrediente').style.display = 'none';
+            document.getElementById('unidad-minimo').textContent = 'unidades';
+            document.getElementById('unidad-preview').textContent = 'unidades';
+            
+            document.getElementById('calc-costo-total').value = '';
+            document.getElementById('calc-cantidad').value = '';
+            document.getElementById('calc-resultado').style.display = 'none';
+            
+            calcularStockTotal();
+            document.getElementById('modal-ingrediente').classList.add('active');
+            document.getElementById('ingrediente-nombre').focus();
+        }
+
+        function editarIngrediente(id) {
+            const ing = datos.inventario[id];
+            if (!ing) return;
+            
+            document.getElementById('ingrediente-id').value = id;
+            document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente o Producto';
+            document.getElementById('ingrediente-nombre').value = ing.nombre;
+            document.getElementById('ingrediente-stock').value = ing.stock;
+            document.getElementById('ingrediente-stock').disabled = true;
+            document.getElementById('stock-overlay').style.display = 'flex';
+            stockDesbloqueado = false;
+            document.getElementById('ingrediente-nuevo').value = '';
+            document.getElementById('ingrediente-minimo').value = ing.minimo;
+            document.getElementById('ingrediente-costo').value = ing.precioCosto || '';
+            document.getElementById('ingrediente-precio-venta').value = ing.precioUnitario || '';
+            document.getElementById('ingrediente-unidad').value = ing.unidad || 'unidades';
+            document.getElementById('btnEliminarIngrediente').style.display = 'inline-flex';
+            
+            document.getElementById('unidad-minimo').textContent = ing.unidad || 'unidades';
+            document.getElementById('unidad-preview').textContent = ing.unidad || 'unidades';
+            
+            calcularStockTotal();
+            document.getElementById('modal-ingrediente').classList.add('active');
+        }
+
+        function handleIngredienteKeypress(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputs = document.querySelectorAll('#modal-ingrediente .form-input, #modal-ingrediente .form-select');
+                const currentIndex = Array.from(inputs).indexOf(e.target);
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                } else {
+                    guardarIngrediente();
+                }
+            } else if (e.key === 'Escape') {
+                cerrarModal('modal-ingrediente');
+            }
         }
 
         // ==========================================
@@ -1337,7 +1585,6 @@
             document.getElementById('edit-precio-usd').value = platillo.precio;
             document.getElementById('edit-disponible').checked = platillo.disponible;
             
-            // Manejar subcategoría
             if (platillo.subcategoria && SUBCATEGORIAS[platillo.categoria]) {
                 handleCategoryChange();
                 document.getElementById('edit-subcategoria').value = platillo.subcategoria;
@@ -1345,7 +1592,6 @@
                 document.getElementById('subcategoria-container').style.display = 'none';
             }
             
-            // Imagen
             if (platillo.imagen) {
                 document.getElementById('edit-imagen-url').value = platillo.imagen;
                 document.getElementById('edit-imagen-link').value = platillo.imagen;
@@ -1364,24 +1610,11 @@
             if (platillo.ingredientes) {
                 Object.entries(platillo.ingredientes).forEach(([key, val]) => {
                     const ingInfo = datos.inventario[key];
-                    // Asegurar unidad correcta (convertir si es necesario)
-                    let unidad = val.unidad || 'unidades';
-                    let cantidad = val.cantidad;
-                    
-                    // Convertir unidades antiguas
-                    if (unidad === 'gramos') {
-                        cantidad = cantidad / 1000;
-                        unidad = 'kilogramos';
-                    } else if (unidad === 'mililitros') {
-                        cantidad = cantidad / 1000;
-                        unidad = 'litros';
-                    }
-                    
                     ingredientesPlato.push({
                         id: key,
                         nombre: ingInfo ? ingInfo.nombre : key,
-                        cantidad: cantidad,
-                        unidad: unidad,
+                        cantidad: val.cantidad,
+                        unidad: ingInfo ? ingInfo.unidad : 'unidades',
                         obligatorio: val.obligatorio || false
                     });
                 });
@@ -1405,10 +1638,9 @@
                     <input type="number" step="0.001" class="form-input" value="${ing.cantidad}" placeholder="Cantidad" onchange="cambiarCantidadPlato(${index}, this.value)">
                     <select class="form-select" onchange="cambiarUnidadPlato(${index}, this.value)">
                         <option value="unidades" ${ing.unidad === 'unidades' ? 'selected' : ''}>Unidades/Piezas</option>
-                        <option value="kilogramos" ${ing.unidad === 'kilogramos' ? 'selected' : ''}>Kg</option>
+                        <option value="kilogramos" ${ing.unidad === 'kilogramos' ? 'selected' : ''}>Kilogramos</option>
                         <option value="litros" ${ing.unidad === 'litros' ? 'selected' : ''}>Litros</option>
                     </select>
-                    <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem;"><input type="checkbox" ${ing.obligatorio ? 'checked' : ''} onchange="toggleObligatorio(${index}, this.checked)"> Oblig.</label>
                     <button class="btn-header btn-danger btn-small" onclick="eliminarIngredientePlato(${index})"><i class="fas fa-trash"></i></button>
                 </div>
             `).join('');
@@ -1434,11 +1666,7 @@
         function cambiarUnidadPlato(index, unidad) { 
             ingredientesPlato[index].unidad = unidad; 
         }
-        
-        function toggleObligatorio(index, obligatorio) { 
-            ingredientesPlato[index].obligatorio = obligatorio; 
-        }
-        
+
         function eliminarIngredientePlato(index) { 
             ingredientesPlato.splice(index, 1); 
             renderIngredientesPlato(); 
@@ -1456,8 +1684,10 @@
                 if (ingEnInv) {
                     const [_, ingInfo] = ingEnInv;
                     const cantidadNecesaria = convertirUnidad(ing.cantidad, ing.unidad, ingInfo.unidad);
-                    const disponible = Math.floor(ingInfo.stock / cantidadNecesaria);
-                    maxPlatillos = Math.min(maxPlatillos, disponible);
+                    if (cantidadNecesaria > 0) {
+                        const disponible = Math.floor(ingInfo.stock / cantidadNecesaria);
+                        maxPlatillos = Math.min(maxPlatillos, disponible);
+                    }
                 } else {
                     maxPlatillos = 0;
                 }
@@ -1470,7 +1700,6 @@
         function handleModalKeypress(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                // Mover al siguiente campo o guardar si es el último
                 const inputs = document.querySelectorAll('#modal-platillo .form-input, #modal-platillo .form-textarea, #modal-platillo .form-select');
                 const currentIndex = Array.from(inputs).indexOf(e.target);
                 if (currentIndex < inputs.length - 1) {
@@ -1491,8 +1720,8 @@
                 const ingId = ing.id || 'ing_manual_' + (ing.nombre || 'desconocido').toLowerCase().replace(/\s+/g, '_');
                 ingredientesObj[ingId] = { 
                     cantidad: ing.cantidad, 
-                    unidad: ing.unidad,
-                    obligatorio: ing.obligatorio 
+                    obligatorio: ing.obligatorio,
+                    unidad: ing.unidad || 'unidades'
                 };
                 
                 if (!datos.inventario[ingId] && ing.nombre) {
@@ -1507,19 +1736,22 @@
                 }
             });
             
-            let stockCalculado = Infinity;
+            // Calcular stock máximo basado en ingredientes
+            let maxPlatillos = Infinity;
             ingredientesPlato.forEach(ing => {
                 const ingEnInv = Object.entries(datos.inventario).find(([_, i]) => i.nombre.toLowerCase() === (ing.nombre || ing.id).toLowerCase());
                 if (ingEnInv) {
                     const [_, ingInfo] = ingEnInv;
                     const cantidadNecesaria = convertirUnidad(ing.cantidad, ing.unidad, ingInfo.unidad);
-                    const disponible = Math.floor(ingInfo.stock / cantidadNecesaria);
-                    stockCalculado = Math.min(stockCalculado, disponible);
+                    if (cantidadNecesaria > 0) {
+                        const disponible = Math.floor(ingInfo.stock / cantidadNecesaria);
+                        maxPlatillos = Math.min(maxPlatillos, disponible);
+                    }
                 } else {
-                    stockCalculado = 0;
+                    maxPlatillos = 0;
                 }
             });
-            if (stockCalculado === Infinity || stockCalculado < 0) stockCalculado = 0;
+            if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
             
             const platillo = {
                 id: id,
@@ -1529,11 +1761,11 @@
                 descripcion: document.getElementById('edit-descripcion').value,
                 imagen: document.getElementById('edit-imagen-url').value,
                 ingredientes: ingredientesObj,
-                stock: stockCalculado,
+                stock: maxPlatillos,
+                stockMaximo: maxPlatillos,
                 disponible: document.getElementById('edit-disponible').checked
             };
             
-            // Agregar subcategoría si existe
             const subcatContainer = document.getElementById('subcategoria-container');
             if (subcatContainer.style.display !== 'none') {
                 platillo.subcategoria = document.getElementById('edit-subcategoria').value;
@@ -1567,215 +1799,6 @@
         }
 
         // ==========================================
-        // GESTIÓN DE INVENTARIO
-        // ==========================================
-        function abrirModalIngrediente() {
-            document.getElementById('ingrediente-id').value = '';
-            document.getElementById('titulo-ingrediente').textContent = 'Nuevo Ingrediente o Producto';
-            document.getElementById('ingrediente-nombre').value = '';
-            document.getElementById('ingrediente-stock').value = '0';
-            document.getElementById('ingrediente-stock').disabled = true;
-            document.getElementById('stock-overlay').style.display = 'flex';
-            stockDesbloqueado = false;
-            document.getElementById('ingrediente-nuevo').value = '';
-            document.getElementById('ingrediente-minimo').value = '';
-            document.getElementById('ingrediente-costo').value = '';
-            document.getElementById('ingrediente-precio-venta').value = '';
-            document.getElementById('ingrediente-unidad').value = 'unidades';
-            document.getElementById('btnEliminarIngrediente').style.display = 'none';
-            document.getElementById('unidad-minimo').textContent = 'Unidades/Piezas';
-            document.getElementById('unidad-preview').textContent = 'Unidades/Piezas';
-            
-            document.getElementById('calc-costo-total').value = '';
-            document.getElementById('calc-cantidad').value = '';
-            document.getElementById('calc-resultado').style.display = 'none';
-            
-            calcularStockTotal();
-            document.getElementById('modal-ingrediente').classList.add('active');
-            document.getElementById('ingrediente-nombre').focus();
-        }
-
-        function editarIngrediente(id) {
-            const ing = datos.inventario[id];
-            if (!ing) return;
-            
-            document.getElementById('ingrediente-id').value = id;
-            document.getElementById('titulo-ingrediente').textContent = 'Editar Ingrediente o Producto';
-            document.getElementById('ingrediente-nombre').value = ing.nombre;
-            document.getElementById('ingrediente-stock').value = ing.stock;
-            document.getElementById('ingrediente-stock').disabled = true;
-            document.getElementById('stock-overlay').style.display = 'flex';
-            stockDesbloqueado = false;
-            document.getElementById('ingrediente-nuevo').value = '';
-            document.getElementById('ingrediente-minimo').value = ing.minimo;
-            document.getElementById('ingrediente-costo').value = ing.precioCosto || '';
-            document.getElementById('ingrediente-precio-venta').value = ing.precioUnitario || '';
-            document.getElementById('ingrediente-unidad').value = ing.unidad || 'unidades';
-            document.getElementById('btnEliminarIngrediente').style.display = 'inline-flex';
-            
-            const displayUnidad = ing.unidad === 'unidades' ? 'Unidades/Piezas' : ing.unidad;
-            document.getElementById('unidad-minimo').textContent = displayUnidad;
-            document.getElementById('unidad-preview').textContent = displayUnidad;
-            
-            calcularStockTotal();
-            document.getElementById('modal-ingrediente').classList.add('active');
-        }
-
-        function handleIngredienteKeypress(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const inputs = document.querySelectorAll('#modal-ingrediente .form-input, #modal-ingrediente .form-select');
-                const currentIndex = Array.from(inputs).indexOf(e.target);
-                if (currentIndex < inputs.length - 1) {
-                    inputs[currentIndex + 1].focus();
-                } else {
-                    guardarIngrediente();
-                }
-            } else if (e.key === 'Escape') {
-                cerrarModal('modal-ingrediente');
-            }
-        }
-
-        async function guardarIngrediente() {
-            const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
-            const unidad = document.getElementById('ingrediente-unidad').value;
-            
-            let stockActual = parseFloat(document.getElementById('ingrediente-stock').value) || 0;
-            const stockNuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
-            const stockFinal = stockActual + stockNuevo;
-            
-            const precioCosto = parseFloat(document.getElementById('ingrediente-costo').value) || 0;
-            const precioVenta = parseFloat(document.getElementById('ingrediente-precio-venta').value) || 0;
-            
-            const ingredienteAnterior = datos.inventario[id];
-            const stockAnterior = ingredienteAnterior ? ingredienteAnterior.stock : 0;
-            
-            datos.inventario[id] = {
-                nombre: document.getElementById('ingrediente-nombre').value,
-                stock: stockFinal,
-                unidad: unidad,
-                minimo: parseFloat(document.getElementById('ingrediente-minimo').value) || 0,
-                precioCosto: precioCosto,
-                precioUnitario: precioVenta,
-                costoBs: precioCosto * (datos.config.tasaEfectiva || 0),
-                precioVentaBs: precioVenta * (datos.config.tasaEfectiva || 0)
-            };
-            
-            cerrarModal('modal-ingrediente');
-            
-            // Si se agregó stock nuevo, verificar platillos agotados
-            if (stockNuevo > 0 && stockAnterior === 0) {
-                await reactivarPlatillosPorIngrediente(id);
-            }
-            
-            await guardarDatos();
-            renderizarInventario();
-            renderizarMenu();
-            mostrarNotificacion('Ingrediente guardado correctamente');
-        }
-
-        async function reactivarPlatillosPorIngrediente(ingredienteId) {
-            let platillosReactivados = 0;
-            
-            datos.menu.forEach(platillo => {
-                if (platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
-                    // Recalcular stock del platillo
-                    let maxPlatillos = Infinity;
-                    
-                    Object.entries(platillo.ingredientes).forEach(([ingId, data]) => {
-                        const ing = datos.inventario[ingId];
-                        if (ing) {
-                            const cantidadNecesaria = convertirUnidad(data.cantidad, data.unidad || 'unidades', ing.unidad);
-                            const disponible = Math.floor(ing.stock / cantidadNecesaria);
-                            maxPlatillos = Math.min(maxPlatillos, disponible);
-                        } else if (data.obligatorio) {
-                            maxPlatillos = 0;
-                        }
-                    });
-                    
-                    if (maxPlatillos === Infinity || maxPlatillos < 0) maxPlatillos = 0;
-                    
-                    // Si antes estaba agotado y ahora tiene stock, reactivar
-                    if (platillo.stock === 0 && maxPlatillos > 0) {
-                        platillo.disponible = true;
-                        platillosReactivados++;
-                    }
-                    platillo.stock = maxPlatillos;
-                }
-            });
-            
-            if (platillosReactivados > 0) {
-                mostrarNotificacion(`${platillosReactivados} platillo(s) reactivado(s) por nueva mercancía`);
-            }
-        }
-
-        async function eliminarIngrediente() {
-            const id = document.getElementById('ingrediente-id').value;
-            if (!id || !datos.inventario[id]) return;
-            
-            // Verificar si está en uso
-            const enUso = datos.menu.some(p => p.ingredientes && p.ingredientes[id]);
-            if (enUso) {
-                alert('No se puede eliminar: este ingrediente está siendo usado en platillos. Elimínalo de los platillos primero.');
-                return;
-            }
-            
-            if (!confirm('¿Eliminar este ingrediente permanentemente?')) return;
-            
-            delete datos.inventario[id];
-            cerrarModal('modal-ingrediente');
-            await guardarDatos();
-            renderizarInventario();
-            mostrarNotificacion('Ingrediente eliminado');
-        }
-
-        function desbloquearStock() {
-            document.getElementById('modal-password').classList.add('active');
-            document.getElementById('admin-password').value = '';
-            document.getElementById('password-error').style.display = 'none';
-            document.getElementById('admin-password').focus();
-        }
-
-        function handlePasswordModalKeypress(e) {
-            if (e.key === 'Enter') verificarPassword();
-            else if (e.key === 'Escape') cerrarModal('modal-password');
-        }
-
-        function verificarPassword() {
-            if (document.getElementById('admin-password').value === datos.config.adminPassword) {
-                stockDesbloqueado = true;
-                document.getElementById('ingrediente-stock').disabled = false;
-                document.getElementById('stock-overlay').style.display = 'none';
-                cerrarModal('modal-password');
-                document.getElementById('ingrediente-stock').focus();
-            } else {
-                document.getElementById('password-error').style.display = 'block';
-            }
-        }
-
-        function calcularStockTotal() {
-            const actual = parseFloat(document.getElementById('ingrediente-stock').value) || 0;
-            const nuevo = parseFloat(document.getElementById('ingrediente-nuevo').value) || 0;
-            const unidad = document.getElementById('ingrediente-unidad').value;
-            
-            document.getElementById('stock-total-preview').textContent = (actual + nuevo).toFixed(3);
-        }
-
-        function calcularCostoUnitario() {
-            const costoTotal = parseFloat(document.getElementById('calc-costo-total').value) || 0;
-            const cantidad = parseFloat(document.getElementById('calc-cantidad').value) || 0;
-            
-            if (costoTotal > 0 && cantidad > 0) {
-                const unitario = costoTotal / cantidad;
-                document.getElementById('calc-precio-unitario').textContent = unitario.toFixed(2);
-                document.getElementById('calc-resultado').style.display = 'block';
-                document.getElementById('ingrediente-costo').value = unitario.toFixed(2);
-            } else {
-                document.getElementById('calc-resultado').style.display = 'none';
-            }
-        }
-
-        // ==========================================
         // GESTIÓN DE USUARIOS CAJEROS
         // ==========================================
         function handleNewUserKeypress(e) {
@@ -1792,7 +1815,6 @@
                 return;
             }
             
-            // Verificar si username ya existe
             if (datos.usuarios.some(u => u.username === username)) {
                 mostrarNotificacion('El nombre de usuario ya existe', 'error');
                 return;
@@ -2025,7 +2047,6 @@
             document.getElementById('ticket-promedio').textContent = '$' + ticketPromedio.toFixed(2);
             document.getElementById('platillo-top').textContent = platilloTop ? platilloTop[0] : '-';
             
-            // Tabla de ventas con cajero
             const tbody = document.getElementById('ventas-body');
             tbody.innerHTML = pedidosCobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => {
                 const totalBs = ((p.total || 0) * (datos.config.tasaEfectiva || 0)).toFixed(2);
@@ -2036,7 +2057,10 @@
         }
 
         function generarGraficas(pedidos) {
-            Object.values(charts).forEach(c => c.destroy());
+            if (charts.ventas) charts.ventas.destroy();
+            if (charts.categorias) charts.categorias.destroy();
+            if (charts.metodos) charts.metodos.destroy();
+            if (charts.horas) charts.horas.destroy();
             
             const ventasPorDia = {};
             for (let i = 6; i >= 0; i--) {
@@ -2101,14 +2125,12 @@
                 let ingredientesStatusHtml = '';
                 
                 if (item.ingredientes) {
-                    // Tags de ingredientes
                     ingredientesHtml = Object.entries(item.ingredientes).map(([key, val]) => {
                         const ingInfo = datos.inventario[key];
-                        const displayCantidad = formatearCantidadParaMostrar(val.cantidad, val.unidad || 'unidades');
+                        const displayCantidad = formatearCantidadParaMostrar(val.cantidad, ingInfo ? ingInfo.unidad : 'unidades');
                         return `<span class="ingredient-tag">${ingInfo ? ingInfo.nombre : key}: ${displayCantidad}</span>`;
                     }).join('');
                     
-                    // Status tooltip
                     const ingredientesStatus = Object.entries(item.ingredientes).map(([key, val]) => {
                         const ingInfo = datos.inventario[key];
                         const disponible = ingInfo && ingInfo.stock > 0;
@@ -2140,11 +2162,18 @@
                                 ${item.imagen ? `<img src="${item.imagen}" class="plato-img" onerror="this.style.display='none'">` : '<div class="plato-img" style="background: var(--bg-hover); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);"><i class="fas fa-image"></i></div>'}
                                 <div>
                                     <div class="plato-title">${item.nombre}</div>
-                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">$${(item.precio || 0).toFixed(2)} = ${precioBs} Bs. | Stock: ${item.stock || 0} unidades ${ingredientesStatusHtml}</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                        $${(item.precio || 0).toFixed(2)} = ${precioBs} Bs. 
+                                        | Stock: <span id="stock-platillo-${item.id}">${item.stock || 0}</span> unidades 
+                                        ${ingredientesStatusHtml}
+                                    </div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <label class="toggle-plato" style="margin-right: 1rem;"><input type="checkbox" ${item.disponible ? 'checked' : ''} onchange="toggleDisponible('${item.id}', this.checked)"><span class="slider-plato"></span></label>
+                                <label class="toggle-plato" style="margin-right: 1rem;">
+                                    <input type="checkbox" ${item.disponible ? 'checked' : ''} onchange="toggleDisponible('${item.id}', this.checked)">
+                                    <span class="slider-plato"></span>
+                                </label>
                                 <button class="btn-header btn-secondary btn-small" onclick="editarPlatillo('${item.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="btn-header btn-danger btn-small" onclick="eliminarPlatillo('${item.id}')"><i class="fas fa-trash"></i></button>
                             </div>
@@ -2164,7 +2193,6 @@
                 const percent = ing.minimo > 0 ? (ing.stock / (ing.minimo * 3)) * 100 : 100;
                 const isLow = ing.stock <= ing.minimo;
                 const costoBs = ing.precioCosto ? (ing.precioCosto * (datos.config.tasaEfectiva || 0)).toFixed(2) : '0.00';
-                const displayUnidad = ing.unidad === 'unidades' ? 'Unidades/Piezas' : ing.unidad;
                 
                 return `
                     <div class="ingredient-item">
@@ -2179,7 +2207,9 @@
                             </div>
                             <div class="stock-bar"><div class="stock-fill ${isLow ? 'danger' : percent < 50 ? 'warning' : ''}" style="width: ${Math.min(percent, 100)}%"></div></div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem;"><button class="btn-header btn-small btn-secondary" onclick="editarIngrediente('${id}')"><i class="fas fa-edit"></i></button></div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-header btn-small btn-secondary" onclick="editarIngrediente('${id}')"><i class="fas fa-edit"></i></button>
+                        </div>
                     </div>
                 `;
             }).join('') || '<p style="color: var(--text-secondary); text-align: center;">No hay ingredientes registrados</p>';
@@ -2200,7 +2230,6 @@
             Object.values(datos.inventario).forEach(ing => { if (ing.stock <= ing.minimo) alertas++; });
             document.getElementById('alertas-stock').textContent = alertas;
             
-            // Pedidos recientes
             const recientes = datos.pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
             document.getElementById('pedidos-recientes').innerHTML = recientes.map(p => `
                 <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
@@ -2209,7 +2238,6 @@
                 </div>
             `).join('') || '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay pedidos recientes</p>';
             
-            // Stock crítico
             const criticos = Object.entries(datos.inventario).filter(([_, ing]) => ing.stock <= ing.minimo);
             document.getElementById('stock-critico').innerHTML = criticos.map(([id, ing]) => {
                 const percent = ing.minimo > 0 ? (ing.stock / ing.minimo) * 100 : 0;
@@ -2235,48 +2263,14 @@
             renderizarQRs();
             actualizarDisplayTasa();
             
-            // Cargar valores en config
             document.getElementById('recoveryEmailConfig').value = datos.config.recoveryEmail || '';
         }
 
         function recalcularCostos() {
-            actualizarPreciosPlatillos();
+            recalcularStockTodosPlatillos();
             guardarDatos();
             actualizarUI();
-            mostrarNotificacion('Costos recalculados según tasa actual');
-        }
-
-        function actualizarPreciosPlatillos() {
-            Object.keys(datos.inventario).forEach(key => {
-                const ing = datos.inventario[key];
-                if (ing.precioCosto) ing.costoBs = ing.precioCosto * datos.config.tasaEfectiva;
-                if (ing.precioUnitario) ing.precioVentaBs = ing.precioUnitario * datos.config.tasaEfectiva;
-            });
-            
-            datos.menu.forEach(plato => {
-                if (plato.ingredientes) {
-                    let costoTotalIngredientes = 0;
-                    Object.entries(plato.ingredientes).forEach(([ingId, data]) => {
-                        const ing = datos.inventario[ingId];
-                        if (ing && ing.precioUnitario) {
-                            // Convertir cantidad según unidad del ingrediente
-                            const cantidadConvertida = convertirUnidad(data.cantidad, data.unidad || 'unidades', ing.unidad);
-                            costoTotalIngredientes += ing.precioUnitario * cantidadConvertida;
-                        }
-                    });
-                    plato.costoIngredientes = costoTotalIngredientes;
-                }
-            });
-        }
-
-        async function guardarDatos() {
-            try {
-                await fetch(JSONBIN_URL, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-                    body: JSON.stringify(datos)
-                });
-            } catch (error) { console.error('Error guardando:', error); }
+            mostrarNotificacion('Costos y stock recalculados según tasa actual');
         }
 
         async function guardarTodo() {
