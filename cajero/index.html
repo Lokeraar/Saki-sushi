@@ -20,7 +20,6 @@
         .tasa-display { display: flex; align-items: center; gap: 1rem; color: white; font-size: 1.1rem; }
         .tasa-value { font-size: 2rem; font-weight: 700; background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 0.5rem; }
         .tasa-input { width: 120px; padding: 0.5rem; border: 2px solid rgba(255,255,255,0.3); border-radius: 0.5rem; background: rgba(255,255,255,0.1); color: white; font-size: 1.1rem; font-weight: 600; text-align: center; }
-        .tasa-input::placeholder { color: rgba(255,255,255,0.6); }
         .btn-tasa { background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; transition: var(--transition); }
         .btn-tasa:hover { background: white; color: var(--primary); }
         
@@ -143,7 +142,53 @@
         .modal-body { padding: 25px; }
         .modal-footer { padding: 25px; border-top: 2px solid #f0f0f0; display: flex; gap: 15px; }
         
-        /* Payment Mix Styles */
+        /* Estilos para visualización de comprobante */
+        .comprobante-preview {
+            margin-top: 15px;
+            background: #f8f8f8;
+            border: 2px solid var(--info);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .comprobante-img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+        }
+        .comprobante-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--info);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .btn-ver-comprobante {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .btn-ver-comprobante:hover {
+            background: #1565C0;
+            transform: translateY(-2px);
+        }
+        
         .payment-mix-container { margin-bottom: 25px; }
         .payment-mix-item { 
             background: #f8f8f8; 
@@ -317,7 +362,6 @@
         .badge-success { background: #E8F5E9; color: var(--success); }
         .badge-danger { background: #FFEBEE; color: var(--danger); }
         
-        /* Modal de confirmación de entrega */
         .confirm-modal .modal-header { background: linear-gradient(135deg, var(--info), #1565C0); }
         .confirm-modal .modal-header.entrega { background: linear-gradient(135deg, var(--success), #2E7D32); }
         .confirm-modal .modal-header.envio { background: linear-gradient(135deg, var(--info), #1565C0); }
@@ -346,7 +390,6 @@
             font-family: monospace;
         }
         
-        /* Ingredient discount display */
         .ingredient-discount {
             background: #E8F5E9;
             color: var(--success);
@@ -410,6 +453,26 @@
             <div class="modal-footer">
                 <button class="btn-modal secondary" onclick="cerrarModal('confirmEntregaModal')">Cancelar (ESC)</button>
                 <button class="btn-modal primary" id="btnConfirmarAccion" onclick="ejecutarConfirmacion()">Confirmar (ENTER)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Visualización de Comprobante -->
+    <div class="modal-overlay" id="comprobanteModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--info), #1565C0);">
+                <h2><i class="fas fa-receipt"></i> Comprobante de Pago</h2>
+                <button class="modal-close" onclick="cerrarModal('comprobanteModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div id="comprobanteImagenContainer" style="margin-bottom: 20px;"></div>
+                <div id="comprobanteInfo" style="background: #f8f8f8; padding: 20px; border-radius: 10px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="cerrarModal('comprobanteModal')">Cerrar</button>
+                <a id="comprobanteDownloadLink" class="btn-modal primary" download="comprobante.jpg" style="text-decoration: none; text-align: center;">
+                    <i class="fas fa-download"></i> Descargar
+                </a>
             </div>
         </div>
     </div>
@@ -573,7 +636,9 @@
     </div>
 
     <script>
-        // Configuración JSONBin
+        // ==========================================
+        // CONFIGURACIÓN JSONBin
+        // ==========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
             API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
@@ -659,7 +724,6 @@
                 const diffTime = Math.abs(hoy - inicio);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
-                // Calcular aumento acumulado
                 const porcentajeTotal = aumentoDiario * diffDays;
                 return tasaBase * (1 + (porcentajeTotal / 100));
             }
@@ -797,14 +861,12 @@
             const itemsHtml = (pedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
                 
-                // Calcular subtotal considerando descuento por ingredientes
                 let subtotal = (item.subtotal || 0);
                 let descuentoTexto = '';
                 
                 if (item.descuentoPorIngredientes && item.descuentoPorIngredientes > 0) {
                     const descuentoBs = item.descuentoPorIngredientes * tasaEfectiva;
                     descuentoTexto = `<span class="ingredient-discount">-${descuentoBs.toFixed(2)} Bs</span>`;
-                    // El subtotal ya viene con descuento aplicado desde el cliente
                 }
                 
                 subtotal = subtotal * tasaEfectiva;
@@ -816,14 +878,48 @@
                 </div>`;
             }).join('');
             
-            // Usar el total calculado o el guardado (el calculado es más preciso)
+            // Usar el total calculado o el guardado
             const totalMostrar = totalCalculado > 0 ? totalCalculado : (pedido.total || 0) * tasaEfectiva;
             
             let extraInfo = '';
             if (pedido.tipo === 'delivery') {
-                extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;"><div><i class="fas fa-map-marker-alt"></i> ${pedido.direccion}</div><div><i class="fas fa-phone"></i> ${pedido.telefono}</div>${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}</div>${timerText}`;
+                extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <div><i class="fas fa-map-marker-alt"></i> ${pedido.direccion}</div>
+                    <div><i class="fas fa-phone"></i> ${pedido.telefono}</div>
+                    ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
+                </div>${timerText}`;
+                
+                // Agregar visualización de comprobante si existe
+                if (pedido.comprobanteBase64) {
+                    extraInfo += `
+                        <div class="comprobante-preview">
+                            <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
+                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" alt="Comprobante">
+                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                                <i class="fas fa-search-plus"></i> Ver Comprobante
+                            </button>
+                        </div>
+                    `;
+                }
             } else if (pedido.tipo === 'reserva') {
-                extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;"><div><i class="fas fa-user"></i> ${pedido.clienteNombre || 'No especificado'}</div><div><i class="fas fa-calendar"></i> ${pedido.fechaReserva ? new Date(pedido.fechaReserva).toLocaleDateString() : 'No especificada'}</div>${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}</div>`;
+                extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <div><i class="fas fa-user"></i> ${pedido.clienteNombre || 'No especificado'}</div>
+                    <div><i class="fas fa-calendar"></i> ${pedido.fechaReserva ? new Date(pedido.fechaReserva).toLocaleDateString() : 'No especificada'}</div>
+                    ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
+                </div>`;
+                
+                // Agregar visualización de comprobante si existe
+                if (pedido.comprobanteBase64) {
+                    extraInfo += `
+                        <div class="comprobante-preview">
+                            <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
+                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" alt="Comprobante">
+                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                                <i class="fas fa-search-plus"></i> Ver Comprobante
+                            </button>
+                        </div>
+                    `;
+                }
             } else {
                 extraInfo = `<div style="margin-bottom: 10px; font-weight: 700; color: var(--info);"><i class="fas fa-chair"></i> Mesa #${pedido.mesa || '--'}</div>`;
             }
@@ -831,6 +927,40 @@
             const botonesRechazo = (pedido.tipo === 'delivery' || pedido.tipo === 'reserva') ? `<button class="btn btn-rechazar" onclick="mostrarRechazo('${pedido.id}')"><i class="fas fa-times"></i> Rechazar</button>` : '';
             
             return `<div class="order-card"><div class="order-card-header"><span class="order-id">${pedido.id}</span><span class="order-time"><i class="fas fa-clock"></i> ${hora}</span></div>${extraInfo}<div class="order-details">${itemsHtml}</div><div class="order-total">Total: Bs. ${totalMostrar.toFixed(2)}</div><div class="order-actions"><button class="btn btn-cobrar" onclick="mostrarCobro('${pedido.id}')"><i class="fas fa-check"></i> Cobrar</button>${botonesRechazo}</div></div>`;
+        }
+
+        function verComprobante(pedidoId) {
+            const pedido = sistemaData.pedidos.find(p => p.id === pedidoId);
+            if (!pedido || !pedido.comprobanteBase64) return;
+            
+            const modal = document.getElementById('comprobanteModal');
+            const imgContainer = document.getElementById('comprobanteImagenContainer');
+            const infoContainer = document.getElementById('comprobanteInfo');
+            const downloadLink = document.getElementById('comprobanteDownloadLink');
+            
+            imgContainer.innerHTML = `<img src="${pedido.comprobanteBase64}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #ddd;" alt="Comprobante de pago">`;
+            
+            let infoHtml = `<h4 style="margin-bottom: 15px; color: var(--secondary);">Detalles del Comprobante</h4>`;
+            infoHtml += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">`;
+            infoHtml += `<div><strong>Pedido:</strong> ${pedido.id}</div>`;
+            infoHtml += `<div><strong>Tipo:</strong> ${pedido.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</div>`;
+            if (pedido.tipo === 'delivery') {
+                infoHtml += `<div><strong>Teléfono:</strong> ${pedido.telefono}</div>`;
+                infoHtml += `<div><strong>Dirección:</strong> ${pedido.direccion}</div>`;
+            } else {
+                infoHtml += `<div><strong>Cliente:</strong> ${pedido.clienteNombre}</div>`;
+                infoHtml += `<div><strong>Fecha Reserva:</strong> ${new Date(pedido.fechaReserva).toLocaleDateString()}</div>`;
+            }
+            infoHtml += `<div><strong>Referencia:</strong> ${pedido.referencia}</div>`;
+            infoHtml += `<div><strong>Total:</strong> $${pedido.total.toFixed(2)}</div>`;
+            infoHtml += `<div><strong>Archivo:</strong> ${pedido.comprobanteNombre || 'comprobante.jpg'}</div>`;
+            infoHtml += `</div>`;
+            
+            infoContainer.innerHTML = infoHtml;
+            downloadLink.href = pedido.comprobanteBase64;
+            downloadLink.download = pedido.comprobanteNombre || 'comprobante.jpg';
+            
+            modal.classList.add('show');
         }
 
         function crearCardPedidoEnPreparacion(pedido, tipo) {
@@ -901,6 +1031,19 @@
                     <div><strong><i class="fas fa-phone"></i> Teléfono:</strong> ${pedido.telefono}</div>
                     ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
                 </div>`;
+                
+                // Agregar visualización de comprobante si existe
+                if (pedido.comprobanteBase64) {
+                    extraInfo += `
+                        <div class="comprobante-preview" style="margin-top: 10px;">
+                            <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
+                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" style="max-height: 100px;" alt="Comprobante">
+                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                                <i class="fas fa-search-plus"></i> Ver Completo
+                            </button>
+                        </div>
+                    `;
+                }
             } else if (pedido.tipo === 'reserva') {
                 const fechaReserva = pedido.fechaReserva ? new Date(pedido.fechaReserva) : null;
                 const hoy = new Date();
@@ -911,6 +1054,19 @@
                     <div><strong><i class="fas fa-calendar"></i> Fecha Reserva:</strong> ${fechaReserva ? fechaReserva.toLocaleDateString() : 'No especificada'} ${esHoy ? '<span style="color: #9c27b0; font-weight: bold;">(HOY)</span>' : ''}</div>
                     ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
                 </div>`;
+                
+                // Agregar visualización de comprobante si existe
+                if (pedido.comprobanteBase64) {
+                    extraInfo += `
+                        <div class="comprobante-preview" style="margin-top: 10px;">
+                            <span class="comprobante-label"><i class="fas fa-file-image"></i> Comprobante de Pago</span>
+                            <img src="${pedido.comprobanteBase64}" class="comprobante-img" style="max-height: 100px;" alt="Comprobante">
+                            <button class="btn-ver-comprobante" onclick="verComprobante('${pedido.id}')">
+                                <i class="fas fa-search-plus"></i> Ver Completo
+                            </button>
+                        </div>
+                    `;
+                }
             } else {
                 extraInfo = `<div style="margin: 10px 0; font-weight: 700; color: var(--info); background: #E3F2FD; padding: 10px; border-radius: 8px;"><i class="fas fa-chair"></i> Mesa #${pedido.mesa || '--'}</div>`;
             }
@@ -928,7 +1084,7 @@
             </div>`;
         }
 
-        // NUEVA FUNCIONALIDAD: Confirmación de entrega/envío/reserva
+        // Confirmación de entrega/envío/reserva
         function mostrarConfirmacionEntrega(pedidoId, tipo) {
             pedidoConfirmacion = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!pedidoConfirmacion) return;
@@ -1083,6 +1239,14 @@
                 }
                 return;
             }
+            
+            const modalComprobante = document.getElementById('comprobanteModal');
+            if (modalComprobante.classList.contains('show')) {
+                if (e.key === 'Escape') {
+                    cerrarModal('comprobanteModal');
+                }
+                return;
+            }
         }
 
         // Renderizar Menú (sincronizado con Admin)
@@ -1101,6 +1265,7 @@
                     Object.entries(item.ingredientes).forEach(([ingId, data]) => {
                         const ing = sistemaData.inventario[ingId];
                         if (ing) {
+                            // Usar la función de conversión del panel admin
                             const disponibleIng = Math.floor(ing.stock / data.cantidad);
                             maxPlatillos = Math.min(maxPlatillos, disponibleIng);
                         } else {
