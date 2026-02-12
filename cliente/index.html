@@ -2122,12 +2122,11 @@
         // ==========================================
         // CONFIGURACIÓN JSONBIN.IO - CORREGIDA
         // ==========================================
-        const JSONBIN_CONFIG = {
-            // ⚠️ IMPORTANTE: Reemplaza este ID con el de tu nuevo bin
-            BIN_ID: '69879d6e43b1c97be96d2b13',
-            API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
-            BASE_URL: 'https://api.jsonbin.io/v3/b'
-        };
+		const JSONBIN_CONFIG = {
+			BIN_ID: '69879d6e43b1c97be96d2b13',
+			API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
+			BASE_URL: 'https://api.jsonbin.io/v3/b'
+		};
 
         // ==========================================
         // VARIABLES GLOBALES
@@ -2432,96 +2431,144 @@
             return pedido;
         }
 
-        async function guardarPedido(pedido) {
-            try {
-                // Redondear todos los valores numéricos
-                pedido.total = Number(pedido.total.toFixed(2));
-                pedido.items.forEach(item => {
-                    item.precioEnBs = Number(item.precioEnBs.toFixed(2));
-                    item.subtotal = Number(item.subtotal.toFixed(2));
-                    item.descuentoPorIngredientes = Number(item.descuentoPorIngredientes.toFixed(2));
-                });
+async function guardarPedido(pedido) {
+    try {
+        // Redondear todos los valores numéricos
+        pedido.total = Number(pedido.total.toFixed(2));
+        pedido.items.forEach(item => {
+            item.precioEnBs = Number(item.precioEnBs.toFixed(2));
+            item.subtotal = Number(item.subtotal.toFixed(2));
+            item.descuentoPorIngredientes = Number(item.descuentoPorIngredientes.toFixed(2));
+        });
 
-                // Preparar datos para guardar
-                const dataToSave = {
-                    menu: sistemaData?.menu || [],
-                    inventario: sistemaData?.inventario || {},
-                    pedidos: sistemaData?.pedidos || [],
-                    config: sistemaData?.config || { 
-                        tasaCambio: 400,
-                        aumentoDiario: 0,
-                        aumentoActivo: false 
-                    }
+        // IMPORTANTE: Primero obtener los datos actuales de JSONbin
+        // para evitar sobrescribir pedidos de otros usuarios
+        let dataActual;
+        try {
+            const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                method: 'GET',
+                headers: {
+                    'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+                    'X-Bin-Meta': 'false'
+                }
+            });
+            
+            if (getResponse.ok) {
+                dataActual = await getResponse.json();
+            } else {
+                // Si no podemos leer, usamos los datos locales como fallback
+                dataActual = sistemaData || {
+                    menu: [],
+                    inventario: {},
+                    pedidos: [],
+                    config: { tasaCambio: 400 }
                 };
-                
-                // Agregar el nuevo pedido
-                dataToSave.pedidos.push(pedido);
-                
-                console.log('📤 Enviando pedido a JSONbin:', {
-                    id: pedido.id,
-                    total: pedido.total,
-                    items: pedido.items.length,
-                    totalPedidos: dataToSave.pedidos.length
-                });
+            }
+        } catch (e) {
+            console.warn('No se pudo obtener datos actualizados, usando caché local');
+            dataActual = sistemaData || {
+                menu: [],
+                inventario: {},
+                pedidos: [],
+                config: { tasaCambio: 400 }
+            };
+        }
 
-                const url = `https://api.jsonbin.io/v3/b/${JSONBIN_CONFIG.BIN_ID}`;
-                
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY,
-                        'X-Bin-Versioning': 'false'
-                    },
-                    body: JSON.stringify(dataToSave)
-                });
+        // Preparar datos para guardar (usando los datos más recientes)
+        const dataToSave = {
+            menu: dataActual.menu || sistemaData?.menu || [],
+            inventario: dataActual.inventario || sistemaData?.inventario || {},
+            pedidos: dataActual.pedidos || sistemaData?.pedidos || [],
+            config: dataActual.config || sistemaData?.config || { 
+                tasaCambio: 400,
+                aumentoDiario: 0,
+                aumentoActivo: false 
+            }
+        };
+        
+        // Agregar el nuevo pedido al array de pedidos
+        dataToSave.pedidos.push(pedido);
+        
+        console.log('📤 Enviando pedido a JSONbin:', {
+            id: pedido.id,
+            total: pedido.total,
+            items: pedido.items.length,
+            totalPedidos: dataToSave.pedidos.length
+        });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Error HTTP:', response.status, errorText);
-                    
-                    if (response.status === 404) {
-                        throw new Error('BIN_NOT_FOUND');
-                    } else if (response.status === 429) {
-                        throw new Error('RATE_LIMIT');
-                    } else if (response.status === 401 || response.status === 403) {
-                        throw new Error('AUTH_ERROR');
-                    } else {
-                        throw new Error(`HTTP_${response.status}`);
-                    }
-                }
+        // CORRECCIÓN DEFINITIVA: URL correcta sin espacios
+        const url = `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`;
+        
+        console.log('URL de solicitud:', url);
+        console.log('Tamaño de datos:', JSON.stringify(dataToSave).length, 'bytes');
 
-                const result = await response.json();
-                console.log('✅ Pedido guardado exitosamente:', result);
-                
-                // Actualizar caché
-                sistemaData = dataToSave;
-                localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
-                lastSyncTime = Date.now();
-                
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Error en guardarPedido:', error.message);
-                
-                let mensajeError = 'Error al procesar el pedido. ';
-                
-                if (error.message === 'BIN_NOT_FOUND') {
-                    mensajeError += 'El bin de JSONbin no existe. Verifica el ID.';
-                } else if (error.message === 'RATE_LIMIT') {
-                    mensajeError += 'Demasiadas solicitudes. Espera 1 minuto.';
-                } else if (error.message === 'AUTH_ERROR') {
-                    mensajeError += 'Error de autenticación con JSONbin.';
-                } else if (error.message.includes('HTTP_')) {
-                    mensajeError += 'Error de conexión con el servidor.';
-                } else {
-                    mensajeError += 'Verifica tu conexión a internet.';
-                }
-                
-                showToast(mensajeError, 'error');
-                return false;
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                // NOTA: Eliminado X-JSON-Path porque JSONbin v3 no lo necesita
+                // y a veces causa problemas. El PUT reemplaza todo el documento.
+            },
+            body: JSON.stringify(dataToSave)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error HTTP:', response.status, errorText);
+            
+            if (response.status === 404) {
+                throw new Error('BIN_NOT_FOUND');
+            } else if (response.status === 429) {
+                throw new Error('RATE_LIMIT');
+            } else if (response.status === 401 || response.status === 403) {
+                throw new Error('AUTH_ERROR');
+            } else if (response.status === 422) {
+                throw new Error('INVALID_DATA: ' + errorText);
+            } else if (response.status === 413) {
+                throw new Error('PAYLOAD_TOO_LARGE');
+            } else {
+                throw new Error(`HTTP_${response.status}: ${errorText}`);
             }
         }
+
+        const result = await response.json();
+        console.log('✅ Pedido guardado exitosamente:', result);
+        
+        // Actualizar caché local con los datos más recientes
+        sistemaData = dataToSave;
+        localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
+        lastSyncTime = Date.now();
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Error en guardarPedido:', error.message);
+        
+        let mensajeError = 'Error al procesar el pedido. ';
+        
+        if (error.message === 'BIN_NOT_FOUND') {
+            mensajeError += 'El bin de JSONbin no existe. Verifica el ID.';
+        } else if (error.message === 'RATE_LIMIT') {
+            mensajeError += 'Demasiadas solicitudes. Espera 1 minuto.';
+        } else if (error.message === 'AUTH_ERROR') {
+            mensajeError += 'Error de autenticación con JSONbin.';
+        } else if (error.message === 'PAYLOAD_TOO_LARGE') {
+            mensajeError += 'El pedido es muy grande. Contacta soporte.';
+        } else if (error.message.includes('INVALID_DATA')) {
+            mensajeError += 'Datos inválidos. Revisa la estructura.';
+        } else if (error.message.includes('HTTP_')) {
+            mensajeError += 'Error de conexión con el servidor.';
+        } else if (error.message.includes('Failed to fetch')) {
+            mensajeError += 'Sin conexión a internet.';
+        } else {
+            mensajeError += 'Verifica tu conexión a internet.';
+        }
+        
+        showToast(mensajeError, 'error');
+        return false;
+    }
+}
 
         // ==========================================
         // SISTEMA DE NOTIFICACIONES
