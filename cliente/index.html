@@ -1302,6 +1302,14 @@
             font-weight: 700;
         }
 
+        .thank-you .payment-info-text {
+            font-size: 1rem;
+            margin-top: 10px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+
         /* Footer - 3 columns */
         .footer {
             background: var(--secondary);
@@ -1765,6 +1773,24 @@
             .search-container { margin: 20px 15px; }
             .reference-digit { width: 45px; height: 45px; font-size: 1.4rem; }
         }
+
+        /* Warning text for payment timeout */
+        .payment-warning-text {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border: 2px solid var(--warning);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .payment-warning-text i {
+            color: var(--warning);
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
@@ -1901,13 +1927,9 @@
 
         <div class="thank-you" id="thankYouMessage">
             <h3><i class="fas fa-check-circle"></i> ¡Pedido Confirmado!</h3>
-            <p>Tu pedido ha sido procesado, estará listo lo antes posible</p>
+            <p id="thankYouText">Tu pedido ha sido procesado, estará listo lo antes posible</p>
             <p class="japanese">Gokōnyū arigatō gozaimasu</p>
-            <p style="font-size: 1rem; margin-top: 10px;">Por favor, pasa a caja a realizar tu pago</p>
-            <div class="payment-timer" style="margin-top: 20px;">
-                <p>Tiempo restante para pagar:</p>
-                <div class="timer-display" id="paymentTimer">20:00</div>
-            </div>
+            <div id="thankYouExtraContent"></div>
         </div>
 
         <!-- Footer -->
@@ -1962,6 +1984,12 @@
                 <button class="modal-close" onclick="closeModal('deliveryModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
+                <!-- Advertencia de tiempo de pago -->
+                <div class="payment-warning-text">
+                    <i class="fas fa-clock"></i>
+                    Tienes 20 minutos para realizar el pago, de lo contrario tu pedido será cancelado
+                </div>
+                
                 <div class="payment-info">
                     <h3>Datos de Pago - Pago Móvil</h3>
                     <div class="payment-detail"><span>Banco:</span> <strong>Banco de Venezuela</strong></div>
@@ -2031,6 +2059,12 @@
                 <button class="modal-close" onclick="closeModal('reservaModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
+                <!-- Advertencia de tiempo de pago -->
+                <div class="payment-warning-text">
+                    <i class="fas fa-clock"></i>
+                    Tienes 20 minutos para realizar el pago, de lo contrario tu reserva será cancelada
+                </div>
+                
                 <div class="payment-info">
                     <h3>Datos de Pago - Pago Móvil</h3>
                     <div class="payment-detail"><span>Banco:</span> <strong>Banco de Venezuela</strong></div>
@@ -2119,8 +2153,8 @@
     </div>
 
     <script>
-        <!-- // ========================================= -->
-        // CONFIGURACIÓN JSONBIN.IO - CORREGIDA
+        // =========================================
+        // CONFIGURACIÓN JSONBin.IO - CORREGIDA
         // ==========================================
 		const JSONBIN_CONFIG = {
 			BIN_ID: '69879d6e43b1c97be96d2b13',
@@ -2139,7 +2173,6 @@
         let isInRestaurant = false;
         let tableNumber = null;
         let selectedDate = null;
-        let paymentTimer = null;
         let sessionId = null;
         let pedidosCliente = [];
         let searchTerm = '';
@@ -2153,6 +2186,9 @@
         let stockCache = {};
         let lastStockUpdate = 0;
         const STOCK_CACHE_DURATION = 5000;
+
+        // Timers para pedidos online (delivery/reserva)
+        let pedidosConTimer = {}; // { pedidoId: { timerId, startTime, tipo } }
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2299,6 +2335,9 @@
                 renderMenu();
                 updateOrderSummary();
                 actualizarEstadoSync('online');
+                
+                // Iniciar verificación de pedidos y timers
+                iniciarVerificacionPedidos();
             } catch (error) {
                 console.error('Error inicializando app:', error);
                 showToast('Error al cargar. Verifica tu conexión.', 'error');
@@ -2607,27 +2646,16 @@
 			}
 		}
 
-		// Función para que el cajero/admin solicite el comprobante
-		function solicitarComprobante(pedidoId) {
-			const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
-			const comprobante = comprobantes[pedidoId];
-			
-			if (!comprobante) {
-				showToast('No se encontró comprobante para este pedido', 'error');
-				return null;
-			}
-			
-			if (!comprobante.disponible) {
-				showToast('El comprobante era muy grande y no se guardó. Solicitar por WhatsApp.', 'warning');
-				return null;
-			}
-			
-			return comprobante;
-		}
-
         // ==========================================
-        // SISTEMA DE NOTIFICACIONES
+        // SISTEMA DE NOTIFICACIONES Y TIMERS
         // ==========================================
+        
+        function iniciarVerificacionPedidos() {
+            // Verificar cada 10 segundos
+            setInterval(verificarNotificacionesManual, 10000);
+            // Primera verificación inmediata
+            verificarNotificacionesManual();
+        }
         
         async function verificarNotificacionesManual() {
             if (!sessionId || pedidosCliente.length === 0) return;
@@ -2641,15 +2669,30 @@
                     const pedidoActualizado = sistemaData.pedidos?.find(p => p.id === pedidoCliente.id);
                     
                     if (pedidoActualizado && pedidoActualizado.estado !== pedidoCliente.estado) {
+                        const estadoAnterior = pedidoCliente.estado;
                         pedidoCliente.estado = pedidoActualizado.estado;
                         pedidoCliente.razonRechazo = pedidoActualizado.razonRechazo;
                         pedidoCliente.metodoPago = pedidoActualizado.metodoPago;
                         
-                        if (pedidoActualizado.estado === 'cobrado') {
-                            agregarNotificacion(pedidoCliente.id, 'approved', '¡Pedido aprobado!', 'Tu pedido ha sido cobrado y está en preparación.');
-                        } else if (pedidoActualizado.estado === 'rechazado') {
+                        // Generar mensaje según el cambio de estado
+                        const mensaje = generarMensajeNotificacion(estadoAnterior, pedidoActualizado.estado, pedidoActualizado.tipo);
+                        
+                        if (pedidoActualizado.estado === 'rechazado') {
                             const razon = pedidoActualizado.razonRechazo || 'Sin especificar';
                             agregarNotificacion(pedidoCliente.id, 'rejected', 'Pedido rechazado', `Motivo: ${traducirRazon(razon)}`);
+                            // Cancelar timer si existe
+                            cancelarTimerPedido(pedidoCliente.id);
+                        } else if (mensaje) {
+                            const tipo = pedidoActualizado.estado === 'cobrado' || 
+                                         pedidoActualizado.estado === 'en_cocina' || 
+                                         pedidoActualizado.estado === 'en_camino' || 
+                                         pedidoActualizado.estado === 'reserva_pendiente' ? 'approved' : 'pending';
+                            agregarNotificacion(pedidoCliente.id, tipo, mensaje.titulo, mensaje.texto);
+                        }
+                        
+                        // Si es pedido QR y fue cobrado, actualizar vista
+                        if (isInRestaurant && pedidoActualizado.estado === 'en_cocina') {
+                            actualizarVistaPedidoCobrado();
                         }
                         
                         hayCambios = true;
@@ -2664,6 +2707,87 @@
             } catch (error) {
                 console.error('Error verificando notificaciones:', error);
             }
+        }
+        
+        function generarMensajeNotificacion(estadoAnterior, estadoNuevo, tipo) {
+            const mensajes = {
+                'pendiente': {
+                    'cobrado': {
+                        titulo: '¡Pago confirmado! 🎉',
+                        texto: tipo === 'delivery' ? 'Tu pedido ha sido cobrado y pronto saldrá en camino.' : 
+                               tipo === 'reserva' ? 'Tu reserva ha sido confirmada. ¡Te esperamos!' : 
+                               'Tu pedido ha sido cobrado y está en preparación.'
+                    },
+                    'en_cocina': {
+                        titulo: '¡En preparación! 👨‍🍳',
+                        texto: 'Tu pedido está siendo preparado por nuestros chefs. ¡Estará listo pronto!'
+                    },
+                    'en_camino': {
+                        titulo: '¡En camino! 🛵',
+                        texto: 'Tu delivery va en camino. ¡Prepara tu paladar!'
+                    },
+                    'reserva_pendiente': {
+                        titulo: '¡Reserva confirmada! 📅',
+                        texto: 'Tu reserva ha sido confirmada. ¡Te esperamos en la fecha acordada!'
+                    },
+                    'reserva_atendida': {
+                        titulo: '¡Cliente confirmado! ✅',
+                        texto: 'Has llegado y estás siendo atendido. ¡Buen provecho!'
+                    }
+                },
+                'cobrado': {
+                    'en_cocina': {
+                        titulo: '¡En preparación! 👨‍🍳',
+                        texto: 'Tu pedido está siendo preparado por nuestros chefs. ¡Estará listo pronto!'
+                    },
+                    'en_camino': {
+                        titulo: '¡En camino! 🛵',
+                        texto: 'Tu delivery va en camino. ¡Prepara tu paladar!'
+                    },
+                    'reserva_pendiente': {
+                        titulo: '¡Reserva confirmada! 📅',
+                        texto: 'Tu reserva ha sido confirmada. ¡Te esperamos en la fecha acordada!'
+                    }
+                },
+                'en_cocina': {
+                    'entregado': {
+                        titulo: '¡Pedido entregado! 🍽️',
+                        texto: 'Tu pedido ha sido entregado. ¡Esperamos que disfrutes cada bocado!'
+                    }
+                },
+                'en_camino': {
+                    'enviado': {
+                        titulo: '¡Pedido entregado! 🍽️',
+                        texto: 'Tu delivery ha sido entregado. ¡Esperamos que disfrutes cada bocado!'
+                    }
+                },
+                'reserva_pendiente': {
+                    'reserva_atendida': {
+                        titulo: '¡Cliente confirmado! ✅',
+                        texto: 'Has llegado y estás siendo atendido. ¡Buen provecho!'
+                    }
+                },
+                'reserva_atendida': {
+                    'reserva_completada': {
+                        titulo: '¡Pedido completado! 🎉',
+                        texto: 'Tu pedido de reserva ha sido servido. ¡Esperamos que vuelvas pronto!'
+                    }
+                }
+            };
+            
+            if (mensajes[estadoAnterior] && mensajes[estadoAnterior][estadoNuevo]) {
+                return mensajes[estadoAnterior][estadoNuevo];
+            }
+            
+            // Mensajes genéricos para otros estados
+            if (estadoNuevo === 'entregado' || estadoNuevo === 'enviado' || estadoNuevo === 'reserva_completada') {
+                return {
+                    titulo: '¡Pedido completado! 🎉',
+                    texto: 'Tu pedido ha sido finalizado. ¡Gracias por elegir Saki Sushi!'
+                };
+            }
+            
+            return null;
         }
 
         function traducirRazon(razon) {
@@ -2765,6 +2889,109 @@
             if (panel.classList.contains('show')) {
                 verificarNotificacionesManual();
                 renderizarNotificaciones();
+            }
+        }
+        
+        // Funciones para manejo de timers de pedidos online
+        function iniciarTimerPedido(pedidoId, tipo) {
+            // Cancelar timer existente si hay
+            cancelarTimerPedido(pedidoId);
+            
+            const startTime = Date.now();
+            const timerId = setTimeout(() => {
+                cancelarPedidoPorTimeout(pedidoId);
+            }, 20 * 60 * 1000); // 20 minutos
+            
+            pedidosConTimer[pedidoId] = {
+                timerId: timerId,
+                startTime: startTime,
+                tipo: tipo
+            };
+            
+            console.log(`⏱️ Timer iniciado para pedido ${pedidoId} (${tipo})`);
+        }
+        
+        function cancelarTimerPedido(pedidoId) {
+            if (pedidosConTimer[pedidoId]) {
+                clearTimeout(pedidosConTimer[pedidoId].timerId);
+                delete pedidosConTimer[pedidoId];
+                console.log(`⏱️ Timer cancelado para pedido ${pedidoId}`);
+            }
+        }
+        
+        async function cancelarPedidoPorTimeout(pedidoId) {
+            console.log(`⏱️ Cancelando pedido ${pedidoId} por timeout`);
+            
+            try {
+                await sincronizarUnaVez();
+                
+                const pedido = sistemaData.pedidos?.find(p => p.id === pedidoId);
+                if (!pedido) {
+                    console.log(`Pedido ${pedidoId} no encontrado`);
+                    return;
+                }
+                
+                // Solo cancelar si sigue pendiente
+                if (pedido.estado !== 'pendiente') {
+                    console.log(`Pedido ${pedidoId} ya no está pendiente, estado: ${pedido.estado}`);
+                    return;
+                }
+                
+                // Restaurar stock
+                if (pedido.items) {
+                    pedido.items.forEach(item => {
+                        const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
+                        if (platillo && platillo.ingredientes) {
+                            Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
+                                if (!item.personalizacion?.includes(ingKey)) {
+                                    if (sistemaData.inventario[ingKey]) {
+                                        sistemaData.inventario[ingKey].stock += ingData.cantidad * (item.cantidad || 1);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Marcar como cancelado por timeout
+                pedido.estado = 'cancelado_timeout';
+                pedido.fechaCancelacion = new Date().toISOString();
+                pedido.motivoCancelacion = 'Tiempo de pago excedido (20 minutos)';
+                
+                await guardarCambiosSistema();
+                
+                // Notificar al cliente
+                agregarNotificacion(pedidoId, 'rejected', 'Pedido cancelado', 'Se agotó el tiempo de pago (20 minutos). Los ingredientes han sido liberados.');
+                
+                // Limpiar de pedidos del cliente
+                pedidosCliente = pedidosCliente.filter(p => p.id !== pedidoId);
+                
+                showToast('Tu pedido fue cancelado por exceder el tiempo de pago', 'error');
+                
+            } catch (error) {
+                console.error('Error cancelando pedido por timeout:', error);
+            }
+        }
+        
+        async function guardarCambiosSistema() {
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(sistemaData)
+                });
+                
+                if (!response.ok) throw new Error('Error al guardar');
+                
+                localStorage.setItem('sakiMenuCache', JSON.stringify(sistemaData));
+                lastSyncTime = Date.now();
+                
+            } catch (error) {
+                console.error('Error guardando cambios:', error);
+                throw error;
             }
         }
 
@@ -3552,35 +3779,49 @@
                 pedidosCliente.push({
                     id: pedido.id,
                     estado: 'pendiente',
-                    timestamp: pedido.timestamp
+                    timestamp: pedido.timestamp,
+                    tipo: 'mesa'
                 });
                 
-                document.getElementById('thankYouMessage').classList.add('show');
-                document.getElementById('restaurantOrderSection').classList.remove('show');
+                // Personalizar mensaje de agradecimiento para QR
+                const thankYouDiv = document.getElementById('thankYouMessage');
+                const thankYouText = document.getElementById('thankYouText');
+                const extraContent = document.getElementById('thankYouExtraContent');
                 
-                let minutes = 20;
-                let seconds = 0;
-                if (paymentTimer) clearInterval(paymentTimer);
-                paymentTimer = setInterval(() => {
-                    if (seconds === 0) {
-                        if (minutes === 0) {
-                            clearInterval(paymentTimer);
-                            return;
-                        }
-                        minutes--;
-                        seconds = 59;
-                    } else {
-                        seconds--;
-                    }
-                    document.getElementById('paymentTimer').textContent = 
-                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }, 1000);
+                thankYouText.textContent = 'Tu pedido ha sido enviado a cocina';
+                extraContent.innerHTML = `
+                    <div class="payment-info-text">
+                        <i class="fas fa-info-circle"></i> 
+                        Por favor, espera en tu mesa. El mesero te traerá tu pedido cuando esté listo.
+                    </div>
+                `;
+                
+                thankYouDiv.classList.add('show');
+                document.getElementById('restaurantOrderSection').classList.remove('show');
                 
                 limpiarPedido();
                 agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido está pendiente de confirmación por el cajero.');
                 showToast('¡Pedido enviado exitosamente!', 'success');
             } else {
                 showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
+            }
+        }
+        
+        // Función para actualizar vista cuando el pedido QR fue cobrado
+        function actualizarVistaPedidoCobrado() {
+            const thankYouDiv = document.getElementById('thankYouMessage');
+            if (thankYouDiv.classList.contains('show')) {
+                // Actualizar mensaje si el pedido fue cobrado
+                const thankYouText = document.getElementById('thankYouText');
+                const extraContent = document.getElementById('thankYouExtraContent');
+                
+                thankYouText.textContent = '¡Tu pedido está en preparación!';
+                extraContent.innerHTML = `
+                    <div class="payment-info-text" style="background: rgba(56, 142, 60, 0.3);">
+                        <i class="fas fa-fire"></i> 
+                        El cajero ha confirmado tu pedido. Nuestros chefs están preparando tu comida.
+                    </div>
+                `;
             }
         }
 
@@ -3731,15 +3972,32 @@
                 pedidosCliente.push({
                     id: pedido.id,
                     estado: 'pendiente',
-                    timestamp: pedido.timestamp
+                    timestamp: pedido.timestamp,
+                    tipo: 'delivery'
                 });
+                
+                // Iniciar timer de 20 minutos para este pedido
+                iniciarTimerPedido(pedido.id, 'delivery');
                 
                 limpiarPedido();
                 
-                document.getElementById('thankYouMessage').classList.add('show');
+                // Personalizar mensaje para delivery (sin timer visual)
+                const thankYouDiv = document.getElementById('thankYouMessage');
+                const thankYouText = document.getElementById('thankYouText');
+                const extraContent = document.getElementById('thankYouExtraContent');
+                
+                thankYouText.textContent = 'Tu pedido de delivery ha sido recibido';
+                extraContent.innerHTML = `
+                    <div class="payment-info-text">
+                        <i class="fas fa-clock"></i> 
+                        Estamos verificando tu pago. Te notificaremos cuando tu pedido esté en camino.
+                    </div>
+                `;
+                
+                thankYouDiv.classList.add('show');
                 document.getElementById('onlineOrderOptions').classList.remove('show');
                 
-                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 25 minutos para completar el pago.');
+                agregarNotificacion(pedido.id, 'pending', 'Pedido enviado', 'Tu pedido de delivery está pendiente de confirmación. Tienes 20 minutos para que se verifique el pago.');
                 showToast('¡Pedido de delivery enviado exitosamente!', 'success');
             } else {
                 showToast('Error al procesar el pedido. Intenta nuevamente.', 'error');
@@ -3836,15 +4094,32 @@
                 pedidosCliente.push({
                     id: pedido.id,
                     estado: 'pendiente',
-                    timestamp: pedido.timestamp
+                    timestamp: pedido.timestamp,
+                    tipo: 'reserva'
                 });
+                
+                // Iniciar timer de 20 minutos para esta reserva
+                iniciarTimerPedido(pedido.id, 'reserva');
                 
                 limpiarPedido();
                 
-                document.getElementById('thankYouMessage').classList.add('show');
+                // Personalizar mensaje para reserva (sin timer visual)
+                const thankYouDiv = document.getElementById('thankYouMessage');
+                const thankYouText = document.getElementById('thankYouText');
+                const extraContent = document.getElementById('thankYouExtraContent');
+                
+                thankYouText.textContent = 'Tu reserva ha sido recibida';
+                extraContent.innerHTML = `
+                    <div class="payment-info-text">
+                        <i class="fas fa-clock"></i> 
+                        Estamos verificando tu pago. Te notificaremos cuando tu reserva sea confirmada.
+                    </div>
+                `;
+                
+                thankYouDiv.classList.add('show');
                 document.getElementById('onlineOrderOptions').classList.remove('show');
                 
-                agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación.');
+                agregarNotificacion(pedido.id, 'pending', 'Reserva enviada', 'Tu reserva está pendiente de confirmación. Tienes 20 minutos para que se verifique el pago.');
                 showToast('¡Reserva enviada exitosamente!', 'success');
             } else {
                 showToast('Error al procesar la reserva. Intenta nuevamente.', 'error');
@@ -3944,7 +4219,10 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            if (paymentTimer) clearInterval(paymentTimer);
+            // Limpiar timers al cerrar página
+            Object.values(pedidosConTimer).forEach(timerData => {
+                if (timerData.timerId) clearTimeout(timerData.timerId);
+            });
         });
     </script>
 </body>
