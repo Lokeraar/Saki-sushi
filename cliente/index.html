@@ -2154,13 +2154,13 @@
 
     <script>
         // =========================================
-        // CONFIGURACIÓN JSONBin.IO - CORREGIDA
-        // ==========================================
-		const JSONBIN_CONFIG = {
-			BIN_ID: '69879d6e43b1c97be96d2b13',
-			API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
-			BASE_URL: 'https://api.jsonbin.io/v3/b'
-		};
+        // CONFIGURACIÓN JSONBin.io
+        // =========================================
+        const JSONBIN_CONFIG = {
+            BIN_ID: '69879d6e43b1c97be96d2b13',
+            API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
+            BASE_URL: 'https://api.jsonbin.io/v3/b'
+        };
 
         // ==========================================
         // VARIABLES GLOBALES
@@ -2188,7 +2188,7 @@
         const STOCK_CACHE_DURATION = 5000;
 
         // Timers para pedidos online (delivery/reserva)
-        let pedidosConTimer = {}; // { pedidoId: { timerId, startTime, tipo } }
+        let pedidosConTimer = {};
 
         // ==========================================
         // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
@@ -2336,7 +2336,6 @@
                 updateOrderSummary();
                 actualizarEstadoSync('online');
                 
-                // Iniciar verificación de pedidos y timers
                 iniciarVerificacionPedidos();
             } catch (error) {
                 console.error('Error inicializando app:', error);
@@ -2426,9 +2425,90 @@
         }
 
         // ==========================================
-        // FUNCIONES CORREGIDAS PARA GUARDAR PEDIDOS
+        // FUNCIONES CORREGIDAS PARA RESERVAR STOCK
         // ==========================================
+        function calcularReservadoConCache(ingredienteId) {
+            const ahora = Date.now();
+            
+            if (ahora - lastStockUpdate > STOCK_CACHE_DURATION) {
+                stockCache = {};
+                lastStockUpdate = ahora;
+            }
+            
+            if (stockCache[ingredienteId] !== undefined) {
+                return stockCache[ingredienteId];
+            }
+            
+            // CALCULAR RESERVADO REAL: SUMAR TODOS LOS PEDIDOS PENDIENTES Y CONFIRMADOS (COBRADOS/EN COCINA/EN CAMINO)
+            let total = 0;
+            
+            // 1. Sumar reservas de pedidos pendientes en el sistema
+            if (sistemaData && sistemaData.pedidos) {
+                sistemaData.pedidos.forEach(pedido => {
+                    // Solo considerar pedidos que están en estado de reserva de stock
+                    if (pedido.estado === 'pendiente' || 
+                        pedido.estado === 'cobrado' || 
+                        pedido.estado === 'en_cocina' || 
+                        pedido.estado === 'en_camino' || 
+                        pedido.estado === 'reserva_pendiente' || 
+                        pedido.estado === 'reserva_atendida') {
+                        
+                        pedido.items?.forEach(item => {
+                            if (item.personalizacion && !item.personalizacion.includes(ingredienteId)) {
+                                // El ingrediente NO fue removido, por lo tanto se consume
+                                const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
+                                if (platillo && platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
+                                    const cantidadIngrediente = platillo.ingredientes[ingredienteId].cantidad || 0;
+                                    total += cantidadIngrediente * (item.cantidad || 1);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // 2. Sumar reservas de instancias locales (pedido actual no enviado aún)
+            menuItems.forEach(item => {
+                if (item.instances && item.ingredients && item.ingredients[ingredienteId]) {
+                    item.instances.forEach(inst => {
+                        if (!inst.removedIngredients.includes(ingredienteId) && inst.confirmada === true) {
+                            total += item.ingredients[ingredienteId].cantidad || 0;
+                        }
+                    });
+                }
+            });
+            
+            stockCache[ingredienteId] = total;
+            return total;
+        }
 
+        function verificarIngredientesPrincipales(item) {
+            if (!item.ingredients || Object.keys(item.ingredients).length === 0) {
+                return { disponible: true, faltantes: [] };
+            }
+            
+            const faltantes = [];
+            let disponible = true;
+            
+            Object.entries(item.ingredients).forEach(([key, ingData]) => {
+                if (!ingData.obligatorio) {
+                    const stockIng = sistemaData?.inventario?.[key]?.stock || 0;
+                    const reservado = calcularReservadoConCache(key);
+                    const stockReal = stockIng - reservado;
+                    
+                    if (stockReal <= 0) {
+                        faltantes.push(sistemaData?.inventario?.[key]?.nombre || key);
+                        disponible = false;
+                    }
+                }
+            });
+            
+            return { disponible, faltantes };
+        }
+
+        // ==========================================
+        // CREACIÓN DE PEDIDO - SOLO RESERVA, NO DESCUENTA
+        // ==========================================
         function crearPedidoBase() {
             const pedido = {
                 id: 'PED-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
@@ -2470,190 +2550,244 @@
             return pedido;
         }
 
-		async function guardarPedido(pedido) {
-			try {
-				// SEPARAR EL COMPROBANTE DEL PEDIDO
-				// El comprobante en base64 es muy grande, lo guardamos aparte
-				const comprobanteBase64 = pedido.comprobanteBase64;
-				const comprobanteNombre = pedido.comprobanteNombre;
-				
-				// Crear versión del pedido SIN el comprobante para JSONbin
-				const pedidoParaJSONbin = {
-					id: pedido.id,
-					timestamp: pedido.timestamp,
-					estado: pedido.estado,
-					tipo: pedido.tipo,
-					items: pedido.items.map(item => ({
-						platilloId: item.platilloId,
-						nombre: item.nombre,
-						cantidad: item.cantidad,
-						personalizacion: item.personalizacion,
-						precioUnitarioUSD: Number(item.precioUnitarioUSD.toFixed(2)),
-						precioEnBs: Number(item.precioEnBs.toFixed(2)),
-						subtotal: Number(item.subtotal.toFixed(2)),
-						descuentoPorIngredientes: Number((item.descuentoPorIngredientes || 0).toFixed(2)),
-						tasaCambioAplicada: item.tasaCambioAplicada
-					})),
-					total: Number(pedido.total.toFixed(2)),
-					metodoPago: pedido.metodoPago || 'pago_movil',
-					cajero: pedido.cajero || null,
-					tiempoPreparacion: pedido.tiempoPreparacion || null,
-					origen: pedido.origen || 'cliente_web',
-					// Datos específicos según tipo
-					mesa: pedido.mesa || null,
-					direccion: pedido.direccion || null,
-					telefono: pedido.telefono || null,
-					referencia: pedido.referencia || null,
-					fechaReserva: pedido.fechaReserva || null,
-					clienteNombre: pedido.clienteNombre || null,
-					// IMPORTANTE: Solo indicamos que existe comprobante, no el contenido
-					tieneComprobante: !!comprobanteBase64,
-					comprobanteNombre: comprobanteNombre || null
-				};
+        async function guardarPedido(pedido) {
+            try {
+                // Separar el comprobante
+                const comprobanteBase64 = pedido.comprobanteBase64;
+                const comprobanteNombre = pedido.comprobanteNombre;
+                
+                // Crear versión del pedido SIN el comprobante para JSONbin
+                const pedidoParaJSONbin = {
+                    id: pedido.id,
+                    timestamp: pedido.timestamp,
+                    estado: pedido.estado,
+                    tipo: pedido.tipo,
+                    items: pedido.items.map(item => ({
+                        platilloId: item.platilloId,
+                        nombre: item.nombre,
+                        cantidad: item.cantidad,
+                        personalizacion: item.personalizacion,
+                        precioUnitarioUSD: Number(item.precioUnitarioUSD.toFixed(2)),
+                        precioEnBs: Number(item.precioEnBs.toFixed(2)),
+                        subtotal: Number(item.subtotal.toFixed(2)),
+                        descuentoPorIngredientes: Number((item.descuentoPorIngredientes || 0).toFixed(2)),
+                        tasaCambioAplicada: item.tasaCambioAplicada
+                    })),
+                    total: Number(pedido.total.toFixed(2)),
+                    metodoPago: pedido.metodoPago || 'pago_movil',
+                    cajero: pedido.cajero || null,
+                    tiempoPreparacion: pedido.tiempoPreparacion || null,
+                    origen: pedido.origen || 'cliente_web',
+                    mesa: pedido.mesa || null,
+                    direccion: pedido.direccion || null,
+                    telefono: pedido.telefono || null,
+                    referencia: pedido.referencia || null,
+                    fechaReserva: pedido.fechaReserva || null,
+                    clienteNombre: pedido.clienteNombre || null,
+                    tieneComprobante: !!comprobanteBase64,
+                    comprobanteNombre: comprobanteNombre || null
+                };
 
-				console.log('📤 Preparando pedido para JSONbin:', pedidoParaJSONbin.id);
-				console.log('📎 Tiene comprobante:', pedidoParaJSONbin.tieneComprobante);
+                console.log('📤 Preparando pedido para JSONbin:', pedidoParaJSONbin.id);
 
-				// Obtener datos actuales de JSONbin
-				let dataActual;
-				try {
-					const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
-						method: 'GET',
-						headers: {
-							'X-Master-Key': JSONBIN_CONFIG.API_KEY,
-							'X-Bin-Meta': 'false'
-						}
-					});
-					
-					if (getResponse.ok) {
-						dataActual = await getResponse.json();
-					} else {
-						dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
-					}
-				} catch (e) {
-					dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
-				}
+                // Obtener datos actuales de JSONbin
+                let dataActual;
+                try {
+                    const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Master-Key': JSONBIN_CONFIG.API_KEY,
+                            'X-Bin-Meta': 'false'
+                        }
+                    });
+                    
+                    if (getResponse.ok) {
+                        dataActual = await getResponse.json();
+                    } else {
+                        dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
+                    }
+                } catch (e) {
+                    dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
+                }
 
-				// Preparar datos para guardar
-				const dataToSave = {
-					menu: dataActual.menu || [],
-					inventario: dataActual.inventario || {},
-					pedidos: [...(dataActual.pedidos || []), pedidoParaJSONbin],
-					config: dataActual.config || { tasaCambio: 400, aumentoDiario: 0, aumentoActivo: false }
-				};
+                // Preparar datos para guardar
+                const dataToSave = {
+                    menu: dataActual.menu || [],
+                    inventario: dataActual.inventario || {},
+                    pedidos: [...(dataActual.pedidos || []), pedidoParaJSONbin],
+                    config: dataActual.config || { tasaCambio: 400, aumentoDiario: 0, aumentoActivo: false }
+                };
 
-				// Verificar tamaño
-				const payloadSize = JSON.stringify(dataToSave).length;
-				console.log('📊 Tamaño payload:', (payloadSize/1024).toFixed(2), 'KB');
+                // Verificar tamaño
+                const payloadSize = JSON.stringify(dataToSave).length;
+                console.log('📊 Tamaño payload:', (payloadSize/1024).toFixed(2), 'KB');
 
-				if (payloadSize > 900000) {
-					throw new Error('PAYLOAD_TOO_LARGE: El pedido excede 900KB. Reduce items o contacta soporte.');
-				}
+                if (payloadSize > 900000) {
+                    throw new Error('PAYLOAD_TOO_LARGE: El pedido excede 900KB. Reduce items o contacta soporte.');
+                }
 
-				// Guardar en JSONbin
-				const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Master-Key': JSONBIN_CONFIG.API_KEY
-					},
-					body: JSON.stringify(dataToSave)
-				});
+                // Guardar en JSONbin
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(dataToSave)
+                });
 
-				if (!response.ok) {
-					const errorText = await response.text();
-					console.error('❌ Error HTTP:', response.status, errorText);
-					
-					if (response.status === 413 || payloadSize > 1000000) {
-						throw new Error('PAYLOAD_TOO_LARGE: La imagen o el pedido es muy grande para JSONbin.');
-					} else if (response.status === 404) {
-						throw new Error('BIN_NOT_FOUND');
-					} else if (response.status === 429) {
-						throw new Error('RATE_LIMIT');
-					} else if (response.status === 401 || response.status === 403) {
-						throw new Error('AUTH_ERROR');
-					} else {
-						throw new Error(`HTTP_${response.status}: ${errorText}`);
-					}
-				}
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Error HTTP:', response.status, errorText);
+                    
+                    if (response.status === 413 || payloadSize > 1000000) {
+                        throw new Error('PAYLOAD_TOO_LARGE: La imagen o el pedido es muy grande para JSONbin.');
+                    } else if (response.status === 404) {
+                        throw new Error('BIN_NOT_FOUND');
+                    } else if (response.status === 429) {
+                        throw new Error('RATE_LIMIT');
+                    } else if (response.status === 401 || response.status === 403) {
+                        throw new Error('AUTH_ERROR');
+                    } else {
+                        throw new Error(`HTTP_${response.status}: ${errorText}`);
+                    }
+                }
 
-				const result = await response.json();
-				console.log('✅ Pedido guardado en JSONbin:', result);
+                const result = await response.json();
+                console.log('✅ Pedido guardado en JSONbin:', result);
 
-				// GUARDAR COMPROBANTE EN LOCALSTORAGE (del cliente)
-				if (comprobanteBase64 && pedidoParaJSONbin.tieneComprobante) {
-					try {
-						const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
-						
-						// Verificar tamaño del comprobante
-						const comprobanteSize = comprobanteBase64.length;
-						console.log('📎 Tamaño comprobante:', (comprobanteSize/1024).toFixed(2), 'KB');
-						
-						if (comprobanteSize > 5000000) { // 5MB límite para localStorage
-							console.warn('⚠️ Comprobante muy grande para localStorage');
-							// Guardar solo metadatos
-							comprobantes[pedido.id] = {
-								nombre: comprobanteNombre,
-								timestamp: new Date().toISOString(),
-								error: 'Archivo muy grande (>5MB)',
-								disponible: false
-							};
-						} else {
-							comprobantes[pedido.id] = {
-								base64: comprobanteBase64,
-								nombre: comprobanteNombre,
-								timestamp: new Date().toISOString(),
-								disponible: true
-							};
-						}
-						
-						localStorage.setItem('sakiComprobantes', JSON.stringify(comprobantes));
-						console.log('💾 Comprobante guardado en localStorage del cliente');
-						
-					} catch (e) {
-						console.error('❌ Error guardando comprobante:', e);
-					}
-				}
-				
-				// Actualizar caché del sistema
-				sistemaData = dataToSave;
-				localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
-				lastSyncTime = Date.now();
-				
-				return true;
-				
-			} catch (error) {
-				console.error('❌ Error en guardarPedido:', error);
-				
-				let mensajeError = 'Error al procesar el pedido. ';
-				
-				if (error.message.includes('PAYLOAD_TOO_LARGE')) {
-					mensajeError = '⚠️ La imagen es muy grande. Intenta con una foto más pequeña (máx 500KB) o sin comprobante.';
-				} else if (error.message === 'BIN_NOT_FOUND') {
-					mensajeError += 'El bin no existe.';
-				} else if (error.message === 'RATE_LIMIT') {
-					mensajeError += 'Límite de 10000 solicitudes/día alcanzado.';
-				} else if (error.message === 'AUTH_ERROR') {
-					mensajeError += 'API Key inválida.';
-				} else if (error.message.includes('Failed to fetch')) {
-					mensajeError += 'Sin conexión a internet.';
-				} else {
-					mensajeError += error.message || 'Error desconocido.';
-				}
-				
-				showToast(mensajeError, 'error');
-				return false;
-			}
-		}
+                // GUARDAR COMPROBANTE EN LOCALSTORAGE (del cliente)
+                if (comprobanteBase64 && pedidoParaJSONbin.tieneComprobante) {
+                    try {
+                        const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
+                        
+                        const comprobanteSize = comprobanteBase64.length;
+                        console.log('📎 Tamaño comprobante:', (comprobanteSize/1024).toFixed(2), 'KB');
+                        
+                        if (comprobanteSize > 5000000) {
+                            console.warn('⚠️ Comprobante muy grande para localStorage');
+                            comprobantes[pedido.id] = {
+                                nombre: comprobanteNombre,
+                                timestamp: new Date().toISOString(),
+                                error: 'Archivo muy grande (>5MB)',
+                                disponible: false
+                            };
+                        } else {
+                            comprobantes[pedido.id] = {
+                                base64: comprobanteBase64,
+                                nombre: comprobanteNombre,
+                                timestamp: new Date().toISOString(),
+                                disponible: true
+                            };
+                        }
+                        
+                        localStorage.setItem('sakiComprobantes', JSON.stringify(comprobantes));
+                        console.log('💾 Comprobante guardado en localStorage del cliente');
+                        
+                    } catch (e) {
+                        console.error('❌ Error guardando comprobante:', e);
+                    }
+                }
+                
+                // Actualizar caché del sistema
+                sistemaData = dataToSave;
+                localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
+                lastSyncTime = Date.now();
+                
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Error en guardarPedido:', error);
+                
+                let mensajeError = 'Error al procesar el pedido. ';
+                
+                if (error.message.includes('PAYLOAD_TOO_LARGE')) {
+                    mensajeError = '⚠️ La imagen es muy grande. Intenta con una foto más pequeña (máx 500KB) o sin comprobante.';
+                } else if (error.message === 'BIN_NOT_FOUND') {
+                    mensajeError += 'El bin no existe.';
+                } else if (error.message === 'RATE_LIMIT') {
+                    mensajeError += 'Límite de 10000 solicitudes/día alcanzado.';
+                } else if (error.message === 'AUTH_ERROR') {
+                    mensajeError += 'API Key inválida.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    mensajeError += 'Sin conexión a internet.';
+                } else {
+                    mensajeError += error.message || 'Error desconocido.';
+                }
+                
+                showToast(mensajeError, 'error');
+                return false;
+            }
+        }
 
         // ==========================================
-        // SISTEMA DE NOTIFICACIONES Y TIMERS
+        // CANCELACIÓN DE PEDIDO - LIBERA STOCK RESERVADO
         // ==========================================
-        
+        async function cancelarPedidoPorTimeout(pedidoId) {
+            console.log(`⏱️ Cancelando pedido ${pedidoId} por timeout`);
+            
+            try {
+                await sincronizarUnaVez();
+                
+                const pedido = sistemaData.pedidos?.find(p => p.id === pedidoId);
+                if (!pedido) {
+                    console.log(`Pedido ${pedidoId} no encontrado`);
+                    return;
+                }
+                
+                // Solo cancelar si sigue pendiente
+                if (pedido.estado !== 'pendiente') {
+                    console.log(`Pedido ${pedidoId} ya no está pendiente, estado: ${pedido.estado}`);
+                    return;
+                }
+                
+                // Marcar como cancelado por timeout
+                pedido.estado = 'cancelado_timeout';
+                pedido.fechaCancelacion = new Date().toISOString();
+                pedido.motivoCancelacion = 'Tiempo de pago excedido (20 minutos)';
+                
+                await guardarCambiosSistema();
+                
+                // Notificar al cliente
+                agregarNotificacion(pedidoId, 'rejected', 'Pedido cancelado', 'Se agotó el tiempo de pago (20 minutos). Los ingredientes han sido liberados.');
+                
+                // Limpiar de pedidos del cliente
+                pedidosCliente = pedidosCliente.filter(p => p.id !== pedidoId);
+                
+                showToast('Tu pedido fue cancelado por exceder el tiempo de pago', 'error');
+                
+            } catch (error) {
+                console.error('Error cancelando pedido por timeout:', error);
+            }
+        }
+
+        async function guardarCambiosSistema() {
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(sistemaData)
+                });
+                
+                if (!response.ok) throw new Error('Error al guardar');
+                
+                localStorage.setItem('sakiMenuCache', JSON.stringify(sistemaData));
+                lastSyncTime = Date.now();
+                
+            } catch (error) {
+                console.error('Error guardando cambios:', error);
+                throw error;
+            }
+        }
+
+        // ==========================================
+        // SISTEMA DE NOTIFICACIONES
+        // ==========================================
         function iniciarVerificacionPedidos() {
-            // Verificar cada 10 segundos
             setInterval(verificarNotificacionesManual, 10000);
-            // Primera verificación inmediata
             verificarNotificacionesManual();
         }
         
@@ -2674,13 +2808,11 @@
                         pedidoCliente.razonRechazo = pedidoActualizado.razonRechazo;
                         pedidoCliente.metodoPago = pedidoActualizado.metodoPago;
                         
-                        // Generar mensaje según el cambio de estado
                         const mensaje = generarMensajeNotificacion(estadoAnterior, pedidoActualizado.estado, pedidoActualizado.tipo);
                         
                         if (pedidoActualizado.estado === 'rechazado') {
                             const razon = pedidoActualizado.razonRechazo || 'Sin especificar';
                             agregarNotificacion(pedidoCliente.id, 'rejected', 'Pedido rechazado', `Motivo: ${traducirRazon(razon)}`);
-                            // Cancelar timer si existe
                             cancelarTimerPedido(pedidoCliente.id);
                         } else if (mensaje) {
                             const tipo = pedidoActualizado.estado === 'cobrado' || 
@@ -2690,7 +2822,6 @@
                             agregarNotificacion(pedidoCliente.id, tipo, mensaje.titulo, mensaje.texto);
                         }
                         
-                        // Si es pedido QR y fue cobrado, actualizar vista
                         if (isInRestaurant && pedidoActualizado.estado === 'en_cocina') {
                             actualizarVistaPedidoCobrado();
                         }
@@ -2723,8 +2854,8 @@
                         texto: 'Tu pedido está siendo preparado por nuestros chefs. ¡Estará listo pronto!'
                     },
                     'en_camino': {
-                        titulo: '¡En camino! 🛵',
-                        texto: 'Tu delivery va en camino. ¡Prepara tu paladar!'
+                        titulo: '¡En camino! 🤤',
+                        texto: 'Tu pedido fue confirmado. ¡Prepara tu paladar!'
                     },
                     'reserva_pendiente': {
                         titulo: '¡Reserva confirmada! 📅',
@@ -2779,11 +2910,10 @@
                 return mensajes[estadoAnterior][estadoNuevo];
             }
             
-            // Mensajes genéricos para otros estados
             if (estadoNuevo === 'entregado' || estadoNuevo === 'enviado' || estadoNuevo === 'reserva_completada') {
                 return {
                     titulo: '¡Pedido completado! 🎉',
-                    texto: 'Tu pedido ha sido finalizado. ¡Gracias por elegir Saki Sushi!'
+                    texto: 'Tu pedido ha sido confirmado y se encuentra en preparación, el delivery se comunicará pronto con usted ¡Gracias por elegir Saki Sushi!'
                 };
             }
             
@@ -2854,9 +2984,7 @@
             }
             
             container.innerHTML = notificaciones.map(notif => `
-                <div class="notification-item ${notif.tipo} ${notif.leida ? '' : 'unread'}" 
-                     style="${notif.leida ? 'opacity: 0.7;' : 'font-weight: 600;'}"
-                     onclick="marcarNotificacionLeida(${notif.id})">
+                <div class="notification-item ${notif.tipo}" onclick="marcarNotificacionLeida(${notif.id})">
                     <div>
                         <div class="notification-status ${notif.tipo}">
                             <i class="fas fa-${notif.tipo === 'approved' ? 'check-circle' : notif.tipo === 'rejected' ? 'times-circle' : 'clock'}"></i>
@@ -2894,13 +3022,12 @@
         
         // Funciones para manejo de timers de pedidos online
         function iniciarTimerPedido(pedidoId, tipo) {
-            // Cancelar timer existente si hay
             cancelarTimerPedido(pedidoId);
             
             const startTime = Date.now();
             const timerId = setTimeout(() => {
                 cancelarPedidoPorTimeout(pedidoId);
-            }, 20 * 60 * 1000); // 20 minutos
+            }, 20 * 60 * 1000);
             
             pedidosConTimer[pedidoId] = {
                 timerId: timerId,
@@ -2917,92 +3044,6 @@
                 delete pedidosConTimer[pedidoId];
                 console.log(`⏱️ Timer cancelado para pedido ${pedidoId}`);
             }
-        }
-        
-        async function cancelarPedidoPorTimeout(pedidoId) {
-            console.log(`⏱️ Cancelando pedido ${pedidoId} por timeout`);
-            
-            try {
-                await sincronizarUnaVez();
-                
-                const pedido = sistemaData.pedidos?.find(p => p.id === pedidoId);
-                if (!pedido) {
-                    console.log(`Pedido ${pedidoId} no encontrado`);
-                    return;
-                }
-                
-                // Solo cancelar si sigue pendiente
-                if (pedido.estado !== 'pendiente') {
-                    console.log(`Pedido ${pedidoId} ya no está pendiente, estado: ${pedido.estado}`);
-                    return;
-                }
-                
-                // Restaurar stock
-                if (pedido.items) {
-                    pedido.items.forEach(item => {
-                        const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
-                        if (platillo && platillo.ingredientes) {
-                            Object.entries(platillo.ingredientes).forEach(([ingKey, ingData]) => {
-                                if (!item.personalizacion?.includes(ingKey)) {
-                                    if (sistemaData.inventario[ingKey]) {
-                                        sistemaData.inventario[ingKey].stock += ingData.cantidad * (item.cantidad || 1);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Marcar como cancelado por timeout
-                pedido.estado = 'cancelado_timeout';
-                pedido.fechaCancelacion = new Date().toISOString();
-                pedido.motivoCancelacion = 'Tiempo de pago excedido (20 minutos)';
-                
-                await guardarCambiosSistema();
-                
-                // Notificar al cliente
-                agregarNotificacion(pedidoId, 'rejected', 'Pedido cancelado', 'Se agotó el tiempo de pago (20 minutos). Los ingredientes han sido liberados.');
-                
-                // Limpiar de pedidos del cliente
-                pedidosCliente = pedidosCliente.filter(p => p.id !== pedidoId);
-                
-                showToast('Tu pedido fue cancelado por exceder el tiempo de pago', 'error');
-                
-            } catch (error) {
-                console.error('Error cancelando pedido por timeout:', error);
-            }
-        }
-        
-        async function guardarCambiosSistema() {
-            try {
-                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
-                    },
-                    body: JSON.stringify(sistemaData)
-                });
-                
-                if (!response.ok) throw new Error('Error al guardar');
-                
-                localStorage.setItem('sakiMenuCache', JSON.stringify(sistemaData));
-                lastSyncTime = Date.now();
-                
-            } catch (error) {
-                console.error('Error guardando cambios:', error);
-                throw error;
-            }
-        }
-
-        // ==========================================
-        // SINCRONIZACIÓN MANUAL
-        // ==========================================
-        async function sincronizarManual() {
-            showToast('Sincronizando menú...', 'success');
-            await sincronizarUnaVez();
-            renderMenu();
-            showToast('Menú actualizado', 'success');
         }
 
         // ==========================================
@@ -3106,60 +3147,6 @@
         function buscarPlatillos() {
             searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             renderMenu();
-        }
-
-        // ==========================================
-        // CÁLCULO DE STOCK CON CACHÉ
-        // ==========================================
-        function calcularReservadoConCache(ingredienteId) {
-            const ahora = Date.now();
-            
-            if (ahora - lastStockUpdate > STOCK_CACHE_DURATION) {
-                stockCache = {};
-                lastStockUpdate = ahora;
-            }
-            
-            if (stockCache[ingredienteId] !== undefined) {
-                return stockCache[ingredienteId];
-            }
-            
-            let total = 0;
-            menuItems.forEach(item => {
-                if (item.instances && item.ingredients && item.ingredients[ingredienteId]) {
-                    item.instances.forEach(inst => {
-                        if (!inst.removedIngredients.includes(ingredienteId)) {
-                            total += item.ingredients[ingredienteId].cantidad || 0;
-                        }
-                    });
-                }
-            });
-            
-            stockCache[ingredienteId] = total;
-            return total;
-        }
-
-        function verificarIngredientesPrincipales(item) {
-            if (!item.ingredients || Object.keys(item.ingredients).length === 0) {
-                return { disponible: true, faltantes: [] };
-            }
-            
-            const faltantes = [];
-            let disponible = true;
-            
-            Object.entries(item.ingredients).forEach(([key, ingData]) => {
-                if (!ingData.obligatorio) {
-                    const stockIng = sistemaData?.inventario?.[key]?.stock || 0;
-                    const reservado = calcularReservadoConCache(key);
-                    const stockReal = stockIng - reservado;
-                    
-                    if (stockReal <= 0) {
-                        faltantes.push(sistemaData?.inventario?.[key]?.nombre || key);
-                        disponible = false;
-                    }
-                }
-            });
-            
-            return { disponible, faltantes };
         }
 
         // ==========================================
@@ -3783,7 +3770,6 @@
                     tipo: 'mesa'
                 });
                 
-                // Personalizar mensaje de agradecimiento para QR
                 const thankYouDiv = document.getElementById('thankYouMessage');
                 const thankYouText = document.getElementById('thankYouText');
                 const extraContent = document.getElementById('thankYouExtraContent');
@@ -3807,11 +3793,9 @@
             }
         }
         
-        // Función para actualizar vista cuando el pedido QR fue cobrado
         function actualizarVistaPedidoCobrado() {
             const thankYouDiv = document.getElementById('thankYouMessage');
             if (thankYouDiv.classList.contains('show')) {
-                // Actualizar mensaje si el pedido fue cobrado
                 const thankYouText = document.getElementById('thankYouText');
                 const extraContent = document.getElementById('thankYouExtraContent');
                 
@@ -3976,12 +3960,10 @@
                     tipo: 'delivery'
                 });
                 
-                // Iniciar timer de 20 minutos para este pedido
                 iniciarTimerPedido(pedido.id, 'delivery');
                 
                 limpiarPedido();
                 
-                // Personalizar mensaje para delivery (sin timer visual)
                 const thankYouDiv = document.getElementById('thankYouMessage');
                 const thankYouText = document.getElementById('thankYouText');
                 const extraContent = document.getElementById('thankYouExtraContent');
@@ -4098,12 +4080,10 @@
                     tipo: 'reserva'
                 });
                 
-                // Iniciar timer de 20 minutos para esta reserva
                 iniciarTimerPedido(pedido.id, 'reserva');
                 
                 limpiarPedido();
                 
-                // Personalizar mensaje para reserva (sin timer visual)
                 const thankYouDiv = document.getElementById('thankYouMessage');
                 const thankYouText = document.getElementById('thankYouText');
                 const extraContent = document.getElementById('thankYouExtraContent');
@@ -4200,6 +4180,16 @@
         }
 
         // ==========================================
+        // SINCRONIZACIÓN MANUAL
+        // ==========================================
+        async function sincronizarManual() {
+            showToast('Sincronizando menú...', 'success');
+            await sincronizarUnaVez();
+            renderMenu();
+            showToast('Menú actualizado', 'success');
+        }
+
+        // ==========================================
         // EVENT LISTENERS
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
@@ -4219,7 +4209,6 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            // Limpiar timers al cerrar página
             Object.values(pedidosConTimer).forEach(timerData => {
                 if (timerData.timerId) clearTimeout(timerData.timerId);
             });
