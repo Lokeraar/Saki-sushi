@@ -1748,6 +1748,12 @@
     </style>
 </head>
 <body>
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <h2>Procesando...</h2>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
@@ -2141,8 +2147,6 @@
             if (isInitialized) return;
             isInitialized = true;
             
-            showLoading();
-            
             // Verificar si hay mesa en URL
             const urlParams = new URLSearchParams(window.location.search);
             const mesaUrl = urlParams.get('mesa');
@@ -2178,19 +2182,16 @@
                         sincronizarAutomatica();
                     }, 180000);
                     
-                    hideLoading();
                 }).catch(() => {
                     renderSidebar();
                     renderMenu();
                     updateOrderSummary();
                     actualizarEstadoSync('offline');
-                    hideLoading();
                 });
             } catch (error) {
                 console.error('Error inicializando app:', error);
                 showToast('Error al cargar. Verifica tu conexión.', 'error');
                 actualizarEstadoSync('offline');
-                hideLoading();
             }
         }
 
@@ -3625,8 +3626,6 @@
             
             const exito = await guardarPedido(pedido);
             
-            hideLoading();
-            
             if (exito) {
                 pedidosCliente.push({
                     id: pedido.id,
@@ -3792,8 +3791,6 @@
             
             const exito = await guardarPedido(pedido);
             
-            hideLoading();
-            
             if (exito) {
                 const deliveryDireccion = document.getElementById('deliveryDireccion');
                 if (deliveryDireccion) deliveryDireccion.value = '';
@@ -3909,9 +3906,7 @@
             closeModal('reservaModal');
             showLoading();
             
-            const exito = await guardarPedido(pedido);
-            
-            hideLoading();
+            const exito = await guardarPedido(pedido);          
             
             if (exito) {
                 const reservaNombre = document.getElementById('reservaNombre');
@@ -4022,14 +4017,6 @@
                     if (textEl) textEl.textContent = 'Modo offline';
                     break;
             }
-        }
-
-        function showLoading() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
         }
 
         function showToast(message, type = 'success') {
