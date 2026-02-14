@@ -120,7 +120,7 @@
         .order-card.reserva-atendida { border-left-color: #ff5722; }
         
         .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .order-id { font-weight: 700; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; display: none; } /* Oculto */
+        .order-id { font-weight: 700; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; display: none; }
         .order-time { font-size: 0.9rem; color: #555; font-weight: 600; background: #f0f0f0; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; }
         .order-details { font-size: 0.9rem; margin-bottom: 10px; }
         .order-detail-row { display: flex; justify-content: space-between; padding: 3px 0; }
@@ -189,7 +189,7 @@
             font-weight: 700; 
             color: var(--secondary); 
             font-size: 0.9rem;
-            display: none; /* Oculto */
+            display: none;
         }
         .stats-detail-platillos { 
             font-size: 0.9rem; 
@@ -207,7 +207,7 @@
             border-bottom: 1px dashed #eee;
         }
         .stats-detail-platillo-item:last-child { border-bottom: none; }
-        .stats-detail-mesa, .stats-detail-direccion, .stats-detail-telefono, .stats-detail-cliente {
+        .stats-detail-mesa, .stats-detail-direccion, .stats-detail-telefono, .stats-detail-cliente, .stats-detail-parroquia {
             font-size: 0.85rem;
             color: #555;
             margin: 4px 0;
@@ -465,52 +465,235 @@
             font-size: 0.9rem;
         }
         
-        .special-options { background: #FFF3E0; border: 2px solid var(--warning); border-radius: 12px; padding: 20px; margin: 20px 0; }
-        .special-option { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .special-option input[type="radio"] { width: 20px; height: 20px; }
-        .special-input { margin-top: 10px; display: none; }
-        .special-input.show { display: block; }
-        .btn-modal { flex: 1; padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: var(--transition); font-family: 'Montserrat', sans-serif; }
-        .btn-modal.secondary { background: #f0f0f0; color: var(--secondary); }
-        .btn-modal.primary { background: linear-gradient(135deg, var(--success), #2E7D32); color: white; }
-        .btn-modal:disabled { background: #ccc; cursor: not-allowed; }
+        .special-options { 
+            background: #FFF3E0; 
+            border: 2px solid var(--warning); 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin: 20px 0; 
+        }
+        .special-option { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin-bottom: 10px; 
+        }
+        .special-option input[type="radio"] { 
+            width: 20px; 
+            height: 20px; 
+        }
+        .special-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .special-input { 
+            margin-top: 10px; 
+            display: none; 
+        }
+        .special-input.show { 
+            display: block; 
+        }
+        .btn-modal { 
+            flex: 1; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            font-family: 'Montserrat', sans-serif; 
+        }
+        .btn-modal.secondary { 
+            background: #f0f0f0; 
+            color: var(--secondary); 
+        }
+        .btn-modal.primary { 
+            background: linear-gradient(135deg, var(--success), #2E7D32); 
+            color: white; 
+        }
+        .btn-modal:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
         
-        .alert-modal .modal-content { max-width: 500px; text-align: center; }
-        .alert-icon { font-size: 4rem; color: var(--warning); margin-bottom: 1rem; }
-        .timer-badge { background: var(--warning); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-        .timer-badge.urgent { background: var(--danger); animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .alert-modal .modal-content { 
+            max-width: 500px; 
+            text-align: center; 
+        }
+        .alert-icon { 
+            font-size: 4rem; 
+            color: var(--warning); 
+            margin-bottom: 1rem; 
+        }
+        .timer-badge { 
+            background: var(--warning); 
+            color: white; 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
+        .timer-badge.urgent { 
+            background: var(--danger); 
+            animation: pulse 1s infinite; 
+        }
+        @keyframes pulse { 
+            0%, 100% { opacity: 1; } 
+            50% { opacity: 0.7; } 
+        }
         
-        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 4000; color: white; }
-        .loading-overlay.show { display: flex; }
-        .spinner { width: 60px; height: 60px; border: 5px solid rgba(255,255,255,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(0,0,0,0.8); 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 4000; 
+            color: white; 
+        }
+        .loading-overlay.show { 
+            display: flex; 
+        }
+        .spinner { 
+            width: 60px; 
+            height: 60px; 
+            border: 5px solid rgba(255,255,255,0.3); 
+            border-top-color: var(--accent); 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin-bottom: 20px; 
+        }
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
         
-        .empty-state { text-align: center; padding: 40px; color: #888; }
-        .empty-state i { font-size: 3em; margin-bottom: 15px; color: #ddd; }
+        .empty-state { 
+            text-align: center; 
+            padding: 40px; 
+            color: #888; 
+        }
+        .empty-state i { 
+            font-size: 3em; 
+            margin-bottom: 15px; 
+            color: #ddd; 
+        }
         
-        .notification { position: fixed; top: 80px; right: 20px; background: white; padding: 20px 25px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; align-items: center; gap: 15px; z-index: 5000; animation: slideIn 0.3s ease; border-left: 5px solid var(--success); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0%); opacity: 1; } }
-        .notification.show { display: flex; }
+        .notification { 
+            position: fixed; 
+            top: 80px; 
+            right: 20px; 
+            background: white; 
+            padding: 20px 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+            display: none; 
+            align-items: center; 
+            gap: 15px; 
+            z-index: 5000; 
+            animation: slideIn 0.3s ease; 
+            border-left: 5px solid var(--success); 
+        }
+        @keyframes slideIn { 
+            from { transform: translateX(100%); opacity: 0; } 
+            to { transform: translateX(0%); opacity: 1; } 
+        }
+        .notification.show { 
+            display: flex; 
+        }
         
-        .menu-item-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
-        .menu-item-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; }
-        .menu-item-info { flex: 1; }
-        .menu-item-name { font-weight: 700; font-family: 'Montserrat', sans-serif; margin-bottom: 5px; }
-        .menu-item-desc { font-size: 0.875rem; color: #666; margin-bottom: 5px; }
-        .menu-item-price { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-success { background: #E8F5E9; color: var(--success); }
-        .badge-danger { background: #FFEBEE; color: var(--danger); }
+        .menu-item-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+        }
+        .menu-item-img { 
+            width: 80px; 
+            height: 80px; 
+            object-fit: cover; 
+            border-radius: 8px; 
+            background: #f0f0f0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: #999; 
+        }
+        .menu-item-info { 
+            flex: 1; 
+        }
+        .menu-item-name { 
+            font-weight: 700; 
+            font-family: 'Montserrat', sans-serif; 
+            margin-bottom: 5px; 
+        }
+        .menu-item-desc { 
+            font-size: 0.875rem; 
+            color: #666; 
+            margin-bottom: 5px; 
+        }
+        .menu-item-price { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: var(--primary); 
+        }
+        .badge { 
+            padding: 5px 12px; 
+            border-radius: 20px; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+        }
+        .badge-success { 
+            background: #E8F5E9; 
+            color: var(--success); 
+        }
+        .badge-danger { 
+            background: #FFEBEE; 
+            color: var(--danger); 
+        }
         
-        .confirm-modal .modal-header { background: linear-gradient(135deg, var(--info), #1565C0); }
-        .confirm-modal .modal-header.entrega { background: linear-gradient(135deg, var(--success), #2E7D32); }
-        .confirm-modal .modal-header.envio { background: linear-gradient(135deg, var(--info), #1565C0); }
-        .confirm-modal .modal-header.reserva { background: linear-gradient(135deg, #9c27b0, #7b1fa2); }
+        .confirm-modal .modal-header { 
+            background: linear-gradient(135deg, var(--info), #1565C0); 
+        }
+        .confirm-modal .modal-header.entrega { 
+            background: linear-gradient(135deg, var(--success), #2E7D32); 
+        }
+        .confirm-modal .modal-header.envio { 
+            background: linear-gradient(135deg, var(--info), #1565C0); 
+        }
+        .confirm-modal .modal-header.reserva { 
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2); 
+        }
         
-        .info-box { background: #f8f8f8; border-radius: 10px; padding: 15px; margin: 15px 0; }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
-        .info-row:last-child { border-bottom: none; font-weight: 600; }
+        .info-box { 
+            background: #f8f8f8; 
+            border-radius: 10px; 
+            padding: 15px; 
+            margin: 15px 0; 
+        }
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 8px 0; 
+            border-bottom: 1px solid #e0e0e0; 
+        }
+        .info-row:last-child { 
+            border-bottom: none; 
+            font-weight: 600; 
+        }
         
         .keyboard-hint { 
             background: #f0f0f0; 
@@ -557,7 +740,6 @@
             margin-right: 8px;
         }
 
-        /* Nuevo estilo para la sección de vuelto */
         .change-section {
             background: #E8F5E9;
             border: 2px solid var(--success);
@@ -591,6 +773,36 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.2);
         }
+
+        .change-confirm-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+        .change-confirm-btn:hover {
+            background: #2E7D32;
+            transform: scale(1.05);
+        }
+        .change-confirm-btn.undo {
+            background: var(--warning);
+        }
+        
+        .invitacion-checkbox {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid var(--warning);
+        }
         
         @media (max-width: 768px) {
             .tasa-bar { flex-direction: column; gap: 1rem; padding: 1rem; }
@@ -600,7 +812,6 @@
             .keyboard-hint { flex-direction: column; gap: 5px; text-align: center; }
         }
 
-        /* Botón de sincronización manual */
         .sync-manual-btn {
             background: rgba(255,255,255,0.2);
             border: 1px solid white;
@@ -624,10 +835,18 @@
         .sync-manual-btn.syncing {
             animation: pulse 1.5s infinite;
         }
+
+        .moneda-prefijo {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary);
+            min-width: 35px;
+            text-align: right;
+            padding-right: 5px;
+        }
     </style>
 </head>
 <body>
-    <!-- Alert Modal para Tasa del Día (Cajero) -->
     <div class="modal-overlay alert-modal" id="alertTasaModal">
         <div class="modal-content">
             <div class="modal-body" style="padding: 2rem;">
@@ -643,16 +862,13 @@
         </div>
     </div>
 
-    <!-- Loading -->
     <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><h2>Cargando panel...</h2></div>
 
-    <!-- Notification -->
     <div class="notification" id="notification">
         <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></i>
         <div><h4 style="margin: 0; color: var(--secondary);">Éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
     </div>
 
-    <!-- Modal de Confirmación de Entrega/Envío/Reserva -->
     <div class="modal-overlay confirm-modal" id="confirmEntregaModal">
         <div class="modal-content">
             <div class="modal-header" id="confirmEntregaHeader">
@@ -660,7 +876,6 @@
                 <button class="modal-close" onclick="cerrarModal('confirmEntregaModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body" id="confirmEntregaBody">
-                <!-- Contenido dinámico -->
             </div>
             <div class="modal-footer">
                 <button class="btn-modal secondary" onclick="cerrarModal('confirmEntregaModal')">Cancelar (ESC)</button>
@@ -669,7 +884,6 @@
         </div>
     </div>
 
-    <!-- Modal de Visualización de Comprobante -->
     <div class="modal-overlay" id="comprobanteModal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header" style="background: linear-gradient(135deg, var(--info), #1565C0);">
@@ -689,7 +903,6 @@
         </div>
     </div>
 
-    <!-- Modal de Detalle de Estadísticas - MEJORADO CON DETALLES DE PLATILLOS, MESA, DIRECCIÓN Y MÉTODOS DE PAGO -->
     <div class="modal-overlay stats-detail-modal" id="statsDetailModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -697,7 +910,6 @@
                 <button class="modal-close" onclick="cerrarModal('statsDetailModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body" id="statsDetailBody">
-                <!-- Contenido dinámico -->
             </div>
             <div class="modal-footer">
                 <button class="btn-modal primary" onclick="cerrarModal('statsDetailModal')">Cerrar</button>
@@ -705,7 +917,6 @@
         </div>
     </div>
 
-    <!-- Modal de Cobro con Múltiples Métodos de Pago - MEJORADO -->
     <div class="modal-overlay" id="cobroModal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header"><h2><i class="fas fa-cash-register"></i> Procesar cobro</h2><button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button></div>
@@ -718,7 +929,7 @@
                 </div>
                 
                 <div class="payment-mix-remaining" id="remainingDisplay">
-                    <span>Pendiente por pagar:</span>
+                    <span id="remainingLabel">Pendiente por pagar:</span>
                     <span style="font-size: 1.5rem; font-weight: 700;" id="remainingAmount">Bs. 0.00</span>
                 </div>
                 
@@ -727,6 +938,11 @@
                 <button class="payment-mix-add" id="btnAddPayment" onclick="agregarMetodoPago()">
                     <i class="fas fa-plus-circle"></i> Agregar Método de Pago
                 </button>
+
+                <div class="invitacion-checkbox">
+                    <input type="checkbox" id="invitacionCheckbox" onchange="toggleInvitacion()">
+                    <label for="invitacionCheckbox"><strong>Por parte de la casa (invitación)</strong> - El cliente no paga, total a $0</label>
+                </div>
                 
                 <div class="payment-mix-summary" id="paymentSummary" style="display: none;">
                     <div class="payment-mix-summary-item">
@@ -743,21 +959,25 @@
                     </div>
                 </div>
                 
-                <!-- Sección de vuelto cuando hay excedente -->
                 <div class="change-section" id="changeSection" style="display: none;">
                     <span class="change-label"><i class="fas fa-hand-holding-usd"></i> Vuelto a entregar:</span>
-                    <input type="number" step="0.01" class="change-input" id="vueltoInput" placeholder="0.00" value="0.00" oninput="validarVuelto()">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="number" step="0.01" class="change-input" id="vueltoInput" placeholder="0.00" value="0.00" oninput="validarVuelto()">
+                        <button class="change-confirm-btn" id="confirmarVueltoBtn" onclick="confirmarVuelto()">Confirmar Vuelto</button>
+                        <button class="change-confirm-btn undo" id="deshacerVueltoBtn" style="display: none;" onclick="deshacerVuelto()">Deshacer</button>
+                    </div>
                 </div>
-                
+
+                <div class="invitacion-checkbox" id="afavorCheckbox" style="display: none;">
+                    <input type="checkbox" id="afavorCheckboxInput" onchange="toggleAfavor()">
+                    <label for="afavorCheckboxInput"><strong>A favor (Vuelto incompleto/no entregado)</strong> - El excedente queda a favor de la casa</label>
+                </div>
+
                 <div class="special-options" id="specialOptions" style="display: none;">
                     <h3><i class="fas fa-exclamation-circle"></i> Opciones de Diferencia</h3>
                     <div class="special-option"><input type="radio" name="specialOption" id="optNormal" value="normal" checked onchange="toggleSpecialInput()"><label for="optNormal">Cobro exacto</label></div>
                     <div class="special-option"><input type="radio" name="specialOption" id="optAfavor" value="afavor" onchange="toggleSpecialInput()"><label for="optAfavor">A favor (cliente debe)</label></div>
                     <div class="special-input" id="inputAfavor"><label>Monto a favor:</label><input type="number" id="montoAfavor" placeholder="0.00" readonly></div>
-                    <div class="special-option"><input type="radio" name="specialOption" id="optCondonacion" value="condonacion" onchange="toggleSpecialInput()"><label for="optCondonacion">Condonación (no cobrar diferencia)</label></div>
-                    <div class="special-input" id="inputCondonacion"><label>Monto condonado:</label><input type="number" id="montoCondonacion" placeholder="0.00" readonly></div>
-                    <div class="special-option"><input type="radio" name="specialOption" id="optCasa" value="casa" onchange="toggleSpecialInput()"><label for="optCasa">Por parte de la casa (invitación)</label></div>
-                    <div class="special-input" id="inputCasa"><label>Nombre de quien invita:</label><input type="text" id="nombreInvita" placeholder="Nombre del empleado/admin"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -767,7 +987,6 @@
         </div>
     </div>
 
-    <!-- Modal de Rechazo -->
     <div class="modal-overlay" id="rechazoModal">
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, var(--danger), #B71C1C);"><h2><i class="fas fa-times-circle"></i> Rechazar Pedido</h2><button class="modal-close" onclick="closeModal('rechazoModal')"><i class="fas fa-times"></i></button></div>
@@ -789,7 +1008,6 @@
         <div class="header">
             <div class="header-left"><h1><i class="fas fa-cash-register"></i> Panel del Cajero</h1><p>Saki Sushi - Gestión de pedidos y cobros</p></div>
             <div class="header-right">
-                <!-- Botón de sincronización manual -->
                 <div class="sync-manual-btn" onclick="sincronizarManual()" title="Sincronizar con servidor">
                     <i class="fas fa-sync-alt" id="manualSyncIcon"></i>
                     <span>JSONbin</span>
@@ -807,11 +1025,9 @@
         </div>
 
         <div class="content">
-            <!-- Sección Pedidos -->
             <div class="section active" id="section-pedidos">
                 <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Pedidos del Día</h2>
                 
-                <!-- Estadísticas Interactivas -->
                 <div class="stats-grid">
                     <div class="stat-card" onclick="verDetalleEstadistica('pendientes')">
                         <div class="stat-icon pendientes"><i class="fas fa-fire"></i></div>
@@ -835,7 +1051,6 @@
                     </div>
                 </div>
 
-                <!-- Pedidos Pendientes de Cobro -->
                 <div class="section-subtitle">
                     <i class="fas fa-clock"></i> 
                     Pedidos a cobrar y confirmar:
@@ -857,7 +1072,6 @@
                     </div>
                 </div>
 
-                <!-- Pedidos en Preparación -->
                 <div class="section-subtitle">
                     <i class="fas fa-fire"></i> 
                     Pedidos en preparación:
@@ -880,7 +1094,6 @@
                 </div>
             </div>
 
-            <!-- Sección Ver Menú -->
             <div class="section" id="section-menu">
                 <h2 class="section-title"><i class="fas fa-utensils"></i> Menú Actual</h2>
                 <div id="menuViewContainer"></div>
@@ -889,30 +1102,59 @@
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURACIÓN JSONBin
-        // ==========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
             API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
             BASE_URL: 'https://api.jsonbin.io/v3/b'
         };
 
-        // ==========================================
-        // SISTEMA DE BLOQUEO Y COLA DE OPERACIONES
-        // ==========================================
         let isProcessing = false;
         let operationQueue = [];
         let processingTimeout = null;
         let syncIntervalId = null;
         let isManualSyncing = false;
         
+        let sistemaData = null;
+        let currentPedido = null;
+        let pedidoRechazo = null;
+        let pedidoConfirmacion = null;
+        let tipoConfirmacion = null;
+        
+        let pagosMixtos = [];
+        let totalPagar = 0;
+        let tasaEfectiva = 400;
+        
+        let lastSyncTime = 0;
+        const SYNC_COOLDOWN = 60000;
+
+        let invitacionActiva = false;
+        let vueltoConfirmado = false;
+        let vueltoValor = 0;
+        let afavorActivo = false;
+
+        const parroquiasDesdeSanBernardino = {
+            "San Bernardino": 0, "San José": 1, "San Agustín": 2, "San Juan": 3, "Catedral": 4,
+            "Santa Rosalía": 5, "Candelaria": 6, "El Recreo": 7, "La Candelaria": 8, "San Pedro": 9,
+            "El Paraíso": 10, "La Vega": 11, "El Valle": 12, "Coche": 13, "Caricuao": 14, "Antímano": 15,
+            "Macarao": 16, "23 de Enero": 17, "La Pastora": 18, "Altagracia": 19, "Santa Teresa": 20,
+            "Santa Rosalía de Palermo": 21, "Chacao": 22, "Leoncio Martínez": 23, "Petare": 24,
+            "La Dolorita": 25, "Fila de Mariches": 26, "Caucagüita": 27, "El Cafetal": 28,
+            "Las Minas": 29, "Nuestra Señora del Rosario": 30, "Sucre": 31, "El Junquito": 32
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarDatos();
+            verificarTasaDelDia();
+            syncIntervalId = setInterval(() => {
+                sincronizarAutomatica();
+            }, 180000);
+            document.addEventListener('keydown', handleGlobalKeypress);
+        });
+
         async function executeNextOperation() {
             if (isProcessing || operationQueue.length === 0) return;
-            
             isProcessing = true;
             const operation = operationQueue.shift();
-            
             try {
                 await operation();
             } catch (error) {
@@ -944,35 +1186,8 @@
             });
         }
 
-        let sistemaData = null;
-        let currentPedido = null;
-        let pedidoRechazo = null;
-        let pedidoConfirmacion = null;
-        let tipoConfirmacion = null;
-        
-        let pagosMixtos = [];
-        let totalPagar = 0;
-        let tasaEfectiva = 400;
-        
-        let lastSyncTime = 0;
-        const SYNC_COOLDOWN = 60000;
-
-        // ==========================================
-        // INICIALIZACIÓN
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarDatos();
-            verificarTasaDelDia();
-            // Sincronización automática cada 3 minutos
-            syncIntervalId = setInterval(() => {
-                sincronizarAutomatica();
-            }, 180000);
-            document.addEventListener('keydown', handleGlobalKeypress);
-        });
-
         async function cargarDatos(skipCooldown = false) {
             if (isProcessing && !skipCooldown) return;
-            
             const ahora = Date.now();
             if (!skipCooldown && (ahora - lastSyncTime < SYNC_COOLDOWN)) {
                 console.log('Carga omitida - en cooldown');
@@ -990,7 +1205,6 @@
                 if (!response.ok) throw new Error('Error al cargar datos');
                 const data = await response.json();
                 
-                // PRESERVAR DATOS DEL MODAL DE COBRO
                 const currentPedidoGuardado = currentPedido;
                 const pagosMixtosGuardados = [...pagosMixtos];
                 
@@ -1002,7 +1216,6 @@
                 document.getElementById('loadingOverlay').style.display = 'none';
                 actualizarVista();
                 
-                // RESTAURAR DATOS DEL MODAL DE COBRO
                 if (currentPedidoGuardado) {
                     currentPedido = sistemaData.pedidos?.find(p => p.id === currentPedidoGuardado.id) || null;
                 }
@@ -1018,13 +1231,11 @@
             }
         }
 
-        // Sincronización automática silenciosa
         async function sincronizarAutomatica() {
             if (isManualSyncing) return;
             await cargarDatos(true);
         }
 
-        // Sincronización manual con feedback visual
         async function sincronizarManual() {
             if (isManualSyncing) {
                 mostrarNotificacion('Ya hay una sincronización en curso...', 'info');
@@ -1148,343 +1359,6 @@
             renderMenuView();
         }
 
-        // ==========================================
-        // ESTADÍSTICAS INTERACTIVAS - MEJORADO CON DETALLES COMPLETOS
-        // ==========================================
-        function verDetalleEstadistica(tipo) {
-            if (!sistemaData || !sistemaData.pedidos) return;
-            
-            const hoy = new Date().toISOString().split('T')[0];
-            const pedidosHoy = sistemaData.pedidos.filter(p => p.timestamp.startsWith(hoy));
-            
-            let titulo = '';
-            let contenido = '';
-            let icono = '';
-            
-            switch(tipo) {
-                // ========== PEDIDOS EN PREPARACIÓN ==========
-                case 'pendientes':
-                    titulo = 'Pedidos en Preparación';
-                    icono = 'fa-fire';
-                    
-                    const enCocina = pedidosHoy.filter(p => p.estado === 'en_cocina');
-                    const enCamino = pedidosHoy.filter(p => p.estado === 'en_camino');
-                    const reservaPendiente = pedidosHoy.filter(p => p.estado === 'reserva_pendiente');
-                    const reservaAtendida = pedidosHoy.filter(p => p.estado === 'reserva_atendida');
-                    
-                    const todosPendientes = [...enCocina, ...enCamino, ...reservaPendiente, ...reservaAtendida];
-                    
-                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total: <strong>${todosPendientes.length}</strong> pedido(s) en preparación</p>`;
-                    
-                    if (todosPendientes.length === 0) {
-                        contenido += '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay pedidos en preparación</p></div>';
-                    } else {
-                        contenido += '<div class="stats-detail-list">';
-                        todosPendientes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
-                            let estadoTexto = '';
-                            let estadoColor = '';
-                            
-                            if (p.estado === 'en_cocina') { estadoTexto = '👨‍🍳 En Cocina'; estadoColor = 'var(--warning)'; }
-                            else if (p.estado === 'en_camino') { estadoTexto = '🛵 En Camino'; estadoColor = 'var(--info)'; }
-                            else if (p.estado === 'reserva_pendiente') { estadoTexto = '📅 Reserva Pendiente'; estadoColor = '#9c27b0'; }
-                            else if (p.estado === 'reserva_atendida') { estadoTexto = '✅ Cliente Atendido'; estadoColor = '#ff5722'; }
-                            
-                            // Generar lista de platillos
-                            let platillosHtml = '';
-                            if (p.items && p.items.length > 0) {
-                                platillosHtml = '<div class="stats-detail-platillos">';
-                                p.items.forEach(item => {
-                                    const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(sin ${item.personalizacion.join(', ')})</small>` : '';
-                                    const subtotal = item.subtotal || 0;
-                                    platillosHtml += `<div class="stats-detail-platillo-item"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${subtotal.toFixed(2)}</span></div>`;
-                                });
-                                platillosHtml += '</div>';
-                            }
-                            
-                            // Información adicional según tipo
-                            let infoAdicional = '';
-                            if (p.tipo === 'mesa' && p.mesa) {
-                                infoAdicional = `<div class="stats-detail-mesa"><i class="fas fa-chair"></i> Mesa #${p.mesa}</div>`;
-                            } else if (p.tipo === 'delivery') {
-                                infoAdicional = `
-                                    <div class="stats-detail-direccion"><i class="fas fa-map-marker-alt"></i> ${p.direccion || 'Dirección no especificada'}</div>
-                                    <div class="stats-detail-telefono"><i class="fas fa-phone"></i> ${p.telefono || 'Teléfono no especificado'}</div>
-                                `;
-                            } else if (p.tipo === 'reserva') {
-                                infoAdicional = `<div class="stats-detail-cliente"><i class="fas fa-user"></i> ${p.clienteNombre || 'Cliente no especificado'}</div>`;
-                            }
-                            
-                            contenido += `
-                                <div class="stats-detail-item">
-                                    <div class="stats-detail-info">
-                                        <div class="stats-detail-id">${p.id}</div>
-                                        ${platillosHtml}
-                                        ${infoAdicional}
-                                        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-                                            <span style="color: ${estadoColor}; font-weight: 600;"><i class="fas fa-${p.tipo === 'mesa' ? 'chair' : p.tipo === 'delivery' ? 'motorcycle' : 'calendar-check'}"></i> ${p.tipo === 'mesa' ? 'Mesa' : p.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</span>
-                                            <span style="color: #666;"><i class="far fa-clock"></i> ${new Date(p.timestamp).toLocaleTimeString()}</span>
-                                        </div>
-                                    </div>
-                                    <div class="stats-detail-total">Bs. ${(p.total || 0).toFixed(2)}</div>
-                                </div>
-                            `;
-                        });
-                        contenido += '</div>';
-                    }
-                    break;
-                    
-                // ========== PEDIDOS COBRADOS HOY ==========
-                case 'cobrados':
-                    titulo = 'Pedidos Cobrados Hoy';
-                    icono = 'fa-check-circle';
-                    
-                    const cobrados = pedidosHoy.filter(p => 
-                        p.estado === 'cobrado' || 
-                        p.estado === 'en_cocina' || 
-                        p.estado === 'en_camino' || 
-                        p.estado === 'reserva_pendiente' || 
-                        p.estado === 'entregado' || 
-                        p.estado === 'enviado' || 
-                        p.estado === 'reserva_completada'
-                    );
-                    
-                    const totalCobrado = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
-                    
-                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total cobrado hoy: <strong style="color: var(--primary); font-size: 1.2rem;">Bs. ${totalCobrado.toFixed(2)}</strong></p>`;
-                    
-                    if (cobrados.length === 0) {
-                        contenido += '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay cobros registrados hoy</p></div>';
-                    } else {
-                        contenido += '<div class="stats-detail-list">';
-                        cobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
-                            // Generar lista de platillos
-                            let platillosHtml = '';
-                            if (p.items && p.items.length > 0) {
-                                platillosHtml = '<div class="stats-detail-platillos">';
-                                p.items.forEach(item => {
-                                    const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(sin ${item.personalizacion.join(', ')})</small>` : '';
-                                    const subtotal = item.subtotal || 0;
-                                    platillosHtml += `<div class="stats-detail-platillo-item"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${subtotal.toFixed(2)}</span></div>`;
-                                });
-                                platillosHtml += '</div>';
-                            }
-                            
-                            // Información adicional según tipo
-                            let infoAdicional = '';
-                            if (p.tipo === 'mesa' && p.mesa) {
-                                infoAdicional = `<div class="stats-detail-mesa"><i class="fas fa-chair"></i> Mesa #${p.mesa}</div>`;
-                            } else if (p.tipo === 'delivery') {
-                                infoAdicional = `
-                                    <div class="stats-detail-direccion"><i class="fas fa-map-marker-alt"></i> ${p.direccion || 'Dirección no especificada'}</div>
-                                    <div class="stats-detail-telefono"><i class="fas fa-phone"></i> ${p.telefono || 'Teléfono no especificado'}</div>
-                                `;
-                            } else if (p.tipo === 'reserva') {
-                                infoAdicional = `<div class="stats-detail-cliente"><i class="fas fa-user"></i> ${p.clienteNombre || 'Cliente no especificado'}</div>`;
-                            }
-                            
-                            // Métodos de pago
-                            let metodosPagoHtml = '<div class="stats-detail-metodos-pago">';
-                            if (p.pagosMixtos && p.pagosMixtos.length > 0) {
-                                p.pagosMixtos.forEach(pago => {
-                                    let nombreMetodo = '';
-                                    if (pago.metodo === 'efectivo_bs') nombreMetodo = 'Efectivo Bs';
-                                    else if (pago.metodo === 'efectivo_usd') nombreMetodo = 'Efectivo $';
-                                    else if (pago.metodo === 'pago_movil') nombreMetodo = 'Pago Móvil';
-                                    else if (pago.metodo === 'punto_venta') nombreMetodo = 'Punto de Venta';
-                                    else nombreMetodo = pago.metodo;
-                                    
-                                    metodosPagoHtml += `<span class="metodo-pago-tag"><i class="fas fa-${pago.metodo === 'efectivo_bs' ? 'money-bill-wave' : pago.metodo === 'efectivo_usd' ? 'dollar-sign' : pago.metodo === 'pago_movil' ? 'mobile-alt' : 'credit-card'}"></i> ${nombreMetodo}: Bs. ${(pago.montoBs || pago.monto).toFixed(2)}</span>`;
-                                });
-                            } else if (p.metodoPago) {
-                                metodosPagoHtml += `<span class="metodo-pago-tag">${p.metodoPago}</span>`;
-                            }
-                            metodosPagoHtml += '</div>';
-                            
-                            contenido += `
-                                <div class="stats-detail-item">
-                                    <div class="stats-detail-info">
-                                        <div class="stats-detail-id">${p.id}</div>
-                                        ${platillosHtml}
-                                        ${infoAdicional}
-                                        ${metodosPagoHtml}
-                                        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-                                            <span style="color: var(--info);"><i class="fas fa-${p.tipo === 'mesa' ? 'chair' : p.tipo === 'delivery' ? 'motorcycle' : 'calendar-check'}"></i> ${p.tipo === 'mesa' ? 'Mesa' : p.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</span>
-                                            <span style="color: #666;"><i class="far fa-clock"></i> ${new Date(p.timestamp).toLocaleTimeString()}</span>
-                                            ${p.cajero ? `<span style="color: #666;"><i class="fas fa-user"></i> ${p.cajero}</span>` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="stats-detail-total">Bs. ${(p.total || 0).toFixed(2)}</div>
-                                </div>
-                            `;
-                        });
-                        contenido += '</div>';
-                    }
-                    break;
-                    
-                // ========== VENTAS TOTALES ==========
-                case 'ventas':
-                    titulo = 'Ventas Totales';
-                    icono = 'fa-dollar-sign';
-                    
-                    const ventasDia = pedidosHoy.filter(p => 
-                        p.estado !== 'pendiente' && 
-                        p.estado !== 'rechazado' && 
-                        p.estado !== 'cancelado_timeout'
-                    );
-                    
-                    const totalVentas = ventasDia.reduce((sum, p) => sum + (p.total || 0), 0);
-                    const totalItemsVendidos = ventasDia.reduce((sum, p) => sum + (p.items?.length || 0), 0);
-                    
-                    let porEfectivo = 0, porPM = 0, porPV = 0;
-                    ventasDia.forEach(p => {
-                        if (p.metodoPago === 'mixto' && p.pagosMixtos) {
-                            p.pagosMixtos.forEach(pago => {
-                                if (pago.metodo === 'efectivo_bs') porEfectivo += pago.monto;
-                                else if (pago.metodo === 'efectivo_usd') porEfectivo += pago.monto * tasaEfectiva;
-                                else if (pago.metodo === 'pago_movil') porPM += pago.monto;
-                                else if (pago.metodo === 'punto_venta') porPV += pago.monto;
-                            });
-                        } else {
-                            if (p.metodoPago === 'efectivo') porEfectivo += p.total;
-                            else if (p.metodoPago === 'pago_movil') porPM += p.total;
-                            else if (p.metodoPago === 'punto_venta') porPV += p.total;
-                        }
-                    });
-                    
-                    contenido = `
-                        <p style="color: #666; margin-bottom: 15px;">
-                            Ventas totales del día: <strong style="color: var(--primary); font-size: 1.5rem;">Bs. ${totalVentas.toFixed(2)}</strong><br>
-                            <span style="font-size: 0.9rem;">${totalItemsVendidos} productos vendidos</span>
-                        </p>
-                        
-                        <div style="background: #f8f8f8; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                            <h4 style="margin-bottom: 15px; color: var(--secondary);"><i class="fas fa-chart-pie"></i> Desglose por método de pago:</h4>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
-                                    <div style="font-size: 1.5rem; color: var(--success); margin-bottom: 5px;"><i class="fas fa-money-bill-wave"></i></div>
-                                    <div style="font-size: 0.85rem; color: #666;">Efectivo</div>
-                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porEfectivo.toFixed(2)}</div>
-                                </div>
-                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
-                                    <div style="font-size: 1.5rem; color: var(--info); margin-bottom: 5px;"><i class="fas fa-mobile-alt"></i></div>
-                                    <div style="font-size: 0.85rem; color: #666;">Pago Móvil</div>
-                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porPM.toFixed(2)}</div>
-                                </div>
-                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; grid-column: span 2;">
-                                    <div style="font-size: 1.5rem; color: var(--warning); margin-bottom: 5px;"><i class="fas fa-credit-card"></i></div>
-                                    <div style="font-size: 0.85rem; color: #666;">Punto de Venta</div>
-                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porPV.toFixed(2)}</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div style="max-height: 300px; overflow-y: auto;">
-                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Últimas transacciones:</h4>
-                    `;
-                    
-                    ventasDia.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).forEach(p => {
-                        // Generar lista de platillos
-                        let platillosHtml = '';
-                        if (p.items && p.items.length > 0) {
-                            platillosHtml = '<div class="stats-detail-platillos" style="font-size: 0.8rem;">';
-                            p.items.forEach(item => {
-                                platillosHtml += `<div class="stats-detail-platillo-item"><span>${item.cantidad || 1}x ${item.nombre}</span><span>Bs. ${(item.subtotal || 0).toFixed(2)}</span></div>`;
-                            });
-                            platillosHtml += '</div>';
-                        }
-                        
-                        // Información adicional
-                        let infoAdicional = '';
-                        if (p.tipo === 'mesa' && p.mesa) {
-                            infoAdicional = `<span><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>`;
-                        } else if (p.tipo === 'delivery') {
-                            infoAdicional = `<span><i class="fas fa-map-marker-alt"></i> ${p.direccion?.substring(0, 30)}...</span>`;
-                        }
-                        
-                        let estadoIcon = '';
-                        if (p.estado === 'cobrado') estadoIcon = '✅';
-                        else if (p.estado === 'en_cocina') estadoIcon = '👨‍🍳';
-                        else if (p.estado === 'en_camino') estadoIcon = '🛵';
-                        else if (p.estado === 'entregado') estadoIcon = '🍽️';
-                        
-                        contenido += `
-                            <div style="background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary);">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <div style="font-weight: 600; display: flex; align-items: center; gap: 5px;">${p.id} ${estadoIcon} ${infoAdicional}</div>
-                                        <div style="font-size: 0.75rem; color: #666;">${new Date(p.timestamp).toLocaleTimeString()}</div>
-                                    </div>
-                                    <div style="font-weight: 700; color: var(--primary);">Bs. ${(p.total || 0).toFixed(2)}</div>
-                                </div>
-                                ${platillosHtml}
-                            </div>
-                        `;
-                    });
-                    contenido += '</div>';
-                    break;
-                    
-                // ========== PLATILLOS MÁS VENDIDOS ==========
-                case 'platillos':
-                    titulo = 'Platillos Más Vendidos';
-                    icono = 'fa-utensils';
-                    
-                    const ventasPlatillos = pedidosHoy.filter(p => 
-                        p.estado !== 'pendiente' && 
-                        p.estado !== 'rechazado' && 
-                        p.estado !== 'cancelado_timeout'
-                    );
-                    
-                    const conteoPlatillos = {};
-                    let totalPlatillosVendidos = 0;
-                    
-                    ventasPlatillos.forEach(p => {
-                        p.items?.forEach(item => {
-                            const cantidad = item.cantidad || 1;
-                            conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + cantidad;
-                            totalPlatillosVendidos += cantidad;
-                        });
-                    });
-                    
-                    const ranking = Object.entries(conteoPlatillos)
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 10);
-                    
-                    const maxVentas = ranking.length > 0 ? ranking[0][1] : 0;
-                    
-                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total platillos vendidos hoy: <strong style="color: var(--primary); font-size: 1.2rem;">${totalPlatillosVendidos}</strong></p>`;
-                    
-                    if (ranking.length === 0) {
-                        contenido += '<div class="empty-state"><i class="fas fa-utensils"></i><p>No hay ventas registradas hoy</p></div>';
-                    } else {
-                        contenido += '<div style="max-height: 400px; overflow-y: auto;">';
-                        ranking.forEach(([nombre, cantidad], index) => {
-                            const porcentaje = maxVentas > 0 ? (cantidad / maxVentas) * 100 : 0;
-                            contenido += `
-                                <div class="ranking-bar">
-                                    <div class="ranking-position">${index + 1}</div>
-                                    <div class="ranking-info">
-                                        <div class="ranking-name">${nombre}</div>
-                                        <div class="ranking-cantidad">${cantidad} vendido(s)</div>
-                                    </div>
-                                    <div class="ranking-bar-container">
-                                        <div class="ranking-bar-fill" style="width: ${porcentaje}%;"></div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        contenido += '</div>';
-                    }
-                    break;
-            }
-            
-            document.getElementById('statsDetailTitle').innerHTML = `<i class="fas ${icono}"></i> ${titulo}`;
-            document.getElementById('statsDetailBody').innerHTML = contenido;
-            document.getElementById('statsDetailModal').classList.add('show');
-        }
-
-        // ==========================================
-        // RENDERIZADO DE PEDIDOS
-        // ==========================================
         function renderPedidos() {
             if (!sistemaData) return;
             const pedidos = sistemaData.pedidos || [];
@@ -1578,6 +1452,8 @@
                 extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85rem;">
                     <div><i class="fas fa-map-marker-alt"></i> ${pedido.direccion}</div>
                     <div><i class="fas fa-phone"></i> ${pedido.telefono}</div>
+                    ${pedido.parroquia ? `<div><i class="fas fa-building"></i> Parroquia: ${pedido.parroquia}</div>` : ''}
+                    ${pedido.costoDelivery ? `<div><i class="fas fa-truck"></i> Delivery: Bs. ${pedido.costoDelivery.toFixed(2)}</div>` : ''}
                     ${pedido.referencia ? `<div><i class="fas fa-receipt"></i> Ref: ${pedido.referencia}</div>` : ''}
                 </div>${timerText}`;
                 
@@ -1659,12 +1535,13 @@
             if (pedido?.tipo === 'delivery') {
                 infoHtml += `<div><strong>Teléfono:</strong> ${pedido.telefono}</div>`;
                 infoHtml += `<div><strong>Dirección:</strong> ${pedido.direccion}</div>`;
+                infoHtml += `<div><strong>Parroquia:</strong> ${pedido.parroquia || 'N/A'}</div>`;
             } else {
                 infoHtml += `<div><strong>Cliente:</strong> ${pedido.clienteNombre}</div>`;
                 infoHtml += `<div><strong>Fecha Reserva:</strong> ${new Date(pedido.fechaReserva).toLocaleDateString()}</div>`;
             }
             infoHtml += `<div><strong>Referencia:</strong> ${pedido.referencia}</div>`;
-            infoHtml += `<div><strong>Total:</strong> $${pedido.total?.toFixed(2)}</div>`;
+            infoHtml += `<div><strong>Total:</strong> Bs. ${pedido.total?.toFixed(2)}</div>`;
             infoHtml += `<div><strong>Archivo:</strong> ${comprobante.nombre || 'comprobante.jpg'}</div>`;
             infoHtml += `</div>`;
             
@@ -1740,6 +1617,8 @@
                 extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85rem;">
                     <div><strong><i class="fas fa-map-marker-alt"></i> Dirección:</strong> ${pedido.direccion}</div>
                     <div><strong><i class="fas fa-phone"></i> Teléfono:</strong> ${pedido.telefono}</div>
+                    ${pedido.parroquia ? `<div><strong><i class="fas fa-building"></i> Parroquia:</strong> ${pedido.parroquia}</div>` : ''}
+                    ${pedido.costoDelivery ? `<div><strong><i class="fas fa-truck"></i> Delivery:</strong> Bs. ${pedido.costoDelivery.toFixed(2)}</div>` : ''}
                     ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
                 </div>`;
                 
@@ -1790,9 +1669,6 @@
             </div>`;
         }
 
-        // ==========================================
-        // CONFIRMACIÓN DE ENTREGA/ENVÍO/RESERVA - AHORA MUESTRA DETALLES DEL PEDIDO
-        // ==========================================
         function mostrarConfirmacionEntrega(pedidoId, tipo) {
             if (isProcessing) return;
             
@@ -1857,7 +1733,6 @@
             
             title.innerHTML = `<i class="fas ${icono}"></i> ${titulo}`;
             
-            // Generar HTML de los items del pedido
             const itemsHtml = (pedidoConfirmacion.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` (Sin ${item.personalizacion.join(', ')})` : '';
                 return `<div class="info-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(item.subtotal || 0).toFixed(2)}</span></div>`;
@@ -1866,7 +1741,9 @@
             let detallesExtras = '';
             if (pedidoConfirmacion.tipo === 'delivery') {
                 detallesExtras = `<div class="info-row"><span>Dirección:</span><span>${pedidoConfirmacion.direccion}</span></div>
-                    <div class="info-row"><span>Teléfono:</span><span>${pedidoConfirmacion.telefono}</span></div>`;
+                    <div class="info-row"><span>Teléfono:</span><span>${pedidoConfirmacion.telefono}</span></div>
+                    ${pedidoConfirmacion.parroquia ? `<div class="info-row"><span>Parroquia:</span><span>${pedidoConfirmacion.parroquia}</span></div>` : ''}
+                    ${pedidoConfirmacion.costoDelivery ? `<div class="info-row"><span>Costo Delivery:</span><span>Bs. ${pedidoConfirmacion.costoDelivery.toFixed(2)}</span></div>` : ''}`;
             } else if (pedidoConfirmacion.tipo === 'reserva') {
                 detallesExtras = `<div class="info-row"><span>Cliente:</span><span>${pedidoConfirmacion.clienteNombre || 'No especificado'}</span></div>
                     <div class="info-row"><span>Fecha Reserva:</span><span>${pedidoConfirmacion.fechaReserva ? new Date(pedidoConfirmacion.fechaReserva).toLocaleDateString() : 'No especificada'}</span></div>`;
@@ -2034,14 +1911,18 @@
             }
         }
 
-        // ==========================================
-        // COBRO - CON MÚLTIPLES MÉTODOS DE PAGO Y VALIDACIÓN CORREGIDA
-        // ==========================================
         function mostrarCobro(pedidoId) {
             if (isProcessing) return;
             
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
+            
+            invitacionActiva = false;
+            vueltoConfirmado = false;
+            afavorActivo = false;
+            document.getElementById('invitacionCheckbox').checked = false;
+            document.getElementById('afavorCheckbox').style.display = 'none';
+            document.getElementById('afavorCheckboxInput').checked = false;
             
             const summary = document.getElementById('cobroSummary');
             
@@ -2083,10 +1964,32 @@
             actualizarResumenPago();
             
             document.getElementById('specialOptions').style.display = 'none';
-            document.getElementById('changeSection').style.display = 'none'; // Ocultar sección de vuelto al inicio
+            document.getElementById('changeSection').style.display = 'none';
             document.getElementById('btnConfirmarCobro').disabled = true;
             
             document.getElementById('cobroModal').classList.add('show');
+        }
+
+        function toggleInvitacion() {
+            invitacionActiva = document.getElementById('invitacionCheckbox').checked;
+            
+            if (invitacionActiva) {
+                totalPagar = 0;
+                document.getElementById('totalPagarDisplay').textContent = `Bs. 0.00`;
+                document.getElementById('btnConfirmarCobro').disabled = false;
+                document.querySelectorAll('.payment-mix-add, .payment-mix-item, .payment-mix-summary').forEach(el => {
+                    if (el) el.style.opacity = '0.5';
+                });
+                document.getElementById('btnAddPayment').disabled = true;
+            } else {
+                totalPagar = currentPedido.total || 0;
+                document.getElementById('totalPagarDisplay').textContent = `Bs. ${totalPagar.toFixed(2)}`;
+                document.querySelectorAll('.payment-mix-add, .payment-mix-item, .payment-mix-summary').forEach(el => {
+                    if (el) el.style.opacity = '1';
+                });
+                document.getElementById('btnAddPayment').disabled = false;
+                actualizarResumenPago();
+            }
         }
 
         function agregarMetodoPago() {
@@ -2096,15 +1999,15 @@
             }
             
             const metodosDisponibles = [
+                { id: 'pago_movil', nombre: 'Pago Móvil', icono: 'fa-mobile-alt' },
                 { id: 'efectivo_bs', nombre: 'Efectivo Bs', icono: 'fa-money-bill-wave' },
                 { id: 'efectivo_usd', nombre: 'Efectivo $', icono: 'fa-dollar-sign' },
-                { id: 'pago_movil', nombre: 'Pago Móvil', icono: 'fa-mobile-alt' },
                 { id: 'punto_venta', nombre: 'Punto de Venta', icono: 'fa-credit-card' }
             ];
             
             pagosMixtos.push({
                 id: Date.now() + Math.random(),
-                metodo: metodosDisponibles[0].id,
+                metodo: 'pago_movil',
                 monto: 0,
                 referencia: ''
             });
@@ -2123,9 +2026,9 @@
             }
             
             const metodosOptions = [
+                { id: 'pago_movil', nombre: 'Pago Móvil' },
                 { id: 'efectivo_bs', nombre: 'Efectivo Bs' },
                 { id: 'efectivo_usd', nombre: 'Efectivo $' },
-                { id: 'pago_movil', nombre: 'Pago Móvil' },
                 { id: 'punto_venta', nombre: 'Punto de Venta' }
             ];
             
@@ -2134,10 +2037,9 @@
                     `<option value="${m.id}" ${pago.metodo === m.id ? 'selected' : ''}>${m.nombre}</option>`
                 ).join('');
                 
-                // Mostrar campo de referencia solo para Pago Móvil. Punto de Venta es opcional.
-                const showReferencia = pago.metodo === 'pago_movil' || pago.metodo === 'punto_venta';
-                const referenciaRequerida = pago.metodo === 'pago_movil'; // Solo obligatorio para Pago Móvil
-                const placeholderTexto = pago.metodo === 'pago_movil' ? 'Referencia (6 dígitos)' : 'Referencia (opcional)';
+                const showReferencia = pago.metodo === 'pago_movil';
+                const placeholderTexto = 'Referencia (6 dígitos)';
+                const monedaPrefijo = pago.metodo === 'efectivo_usd' ? '$' : 'Bs.';
                 
                 return `
                     <div class="payment-mix-item" id="pago-${pago.id}">
@@ -2149,7 +2051,7 @@
                                 </select>
                             </div>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-weight: 600; color: var(--secondary);">Bs.</span>
+                                <span class="moneda-prefijo">${monedaPrefijo}</span>
                                 <input type="number" step="0.01" class="payment-mix-input" 
                                     value="${pago.monto > 0 ? pago.monto : ''}" 
                                     placeholder="0.00" 
@@ -2161,7 +2063,7 @@
                         ${showReferencia ? `
                             <div class="reference-input">
                                 <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">${placeholderTexto}:</label>
-                                <input type="text" maxlength="${pago.metodo === 'pago_movil' ? '6' : '20'}" placeholder="${placeholderTexto}" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
+                                <input type="text" maxlength="6" placeholder="${placeholderTexto}" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
                             </div>
                         ` : ''}
                     </div>
@@ -2185,7 +2087,7 @@
             const pago = pagosMixtos.find(p => p.id === id);
             if (pago) {
                 pago.metodo = nuevoMetodo;
-                pago.referencia = ''; // Limpiar referencia al cambiar método
+                pago.referencia = '';
                 renderPagosMixtos();
                 actualizarResumenPago();
             }
@@ -2233,6 +2135,8 @@
         }
 
         function actualizarResumenPago() {
+            if (invitacionActiva) return;
+            
             let totalRecibido = 0;
             let totalRecibidoUsd = 0;
             let totalRecibidoBs = 0;
@@ -2253,25 +2157,36 @@
             
             const remainingDisplay = document.getElementById('remainingDisplay');
             const remainingAmount = document.getElementById('remainingAmount');
+            const remainingLabel = document.getElementById('remainingLabel');
             
             if (pendiente > 0) {
                 remainingDisplay.className = 'payment-mix-remaining';
+                remainingLabel.textContent = 'Pendiente por pagar:';
                 remainingAmount.textContent = `Bs. ${pendiente.toFixed(2)}`;
                 remainingAmount.style.color = 'var(--warning)';
-                document.getElementById('changeSection').style.display = 'none'; // Ocultar vuelto si falta
+                document.getElementById('changeSection').style.display = 'none';
+                document.getElementById('afavorCheckbox').style.display = 'none';
             } else if (pendiente === 0) {
                 remainingDisplay.className = 'payment-mix-remaining paid';
+                remainingLabel.textContent = 'Pendiente por pagar:';
                 remainingAmount.textContent = '¡PAGO COMPLETO!';
                 remainingAmount.style.color = 'var(--success)';
-                document.getElementById('changeSection').style.display = 'none'; // Ocultar vuelto si es exacto
+                document.getElementById('changeSection').style.display = 'none';
+                document.getElementById('afavorCheckbox').style.display = 'none';
             } else {
                 remainingDisplay.className = 'payment-mix-remaining overpaid';
-                remainingAmount.textContent = `Bs. ${Math.abs(pendiente).toFixed(2)} (excedente)`;
+                remainingLabel.textContent = 'Vuelto a entregar:';
+                remainingAmount.textContent = `Bs. ${Math.abs(pendiente).toFixed(2)}`;
                 remainingAmount.style.color = 'var(--danger)';
                 
-                // Mostrar sección de vuelto
                 document.getElementById('changeSection').style.display = 'flex';
                 document.getElementById('vueltoInput').value = Math.abs(pendiente).toFixed(2);
+                document.getElementById('afavorCheckbox').style.display = 'flex';
+                
+                vueltoValor = Math.abs(pendiente);
+                vueltoConfirmado = false;
+                document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
+                document.getElementById('deshacerVueltoBtn').style.display = 'none';
             }
             
             const summaryDiv = document.getElementById('paymentSummary');
@@ -2295,7 +2210,6 @@
                     document.getElementById('faltanteRow').style.display = 'flex';
                     document.getElementById('faltanteAmount').textContent = `Bs. ${faltante.toFixed(2)}`;
                     document.getElementById('montoAfavor').value = faltante.toFixed(2);
-                    document.getElementById('montoCondonacion').value = faltante.toFixed(2);
                     document.getElementById('specialOptions').style.display = 'block';
                 } else {
                     document.getElementById('faltanteRow').style.display = 'none';
@@ -2307,17 +2221,19 @@
                 summaryDiv.style.display = 'none';
             }
             
-            // ✅ VALIDACIÓN CORREGIDA: Activar botón si hay al menos un monto > 0 y referencias completas donde sea necesario
             const btnConfirmar = document.getElementById('btnConfirmarCobro');
+            if (invitacionActiva) {
+                btnConfirmar.disabled = false;
+                return;
+            }
+            
             const hayMontoValido = pagosMixtos.some(p => p.monto > 0);
             
-            // Verificar referencias: solo Pago Móvil requiere 6 dígitos si tiene monto
             const hayReferenciaValida = pagosMixtos.every(p => {
-                if (p.monto <= 0) return true; // Si no hay monto, no importa la referencia
+                if (p.monto <= 0) return true;
                 if (p.metodo === 'pago_movil') {
                     return p.referencia && p.referencia.length === 6;
                 }
-                // Punto de venta y efectivo no requieren referencia
                 return true;
             });
             
@@ -2325,12 +2241,10 @@
         }
 
         function validarVuelto() {
-            // Esta función puede ser usada para validar que el vuelto ingresado no sea mayor al excedente, pero por ahora lo dejamos libre.
             const vuelto = parseFloat(document.getElementById('vueltoInput').value) || 0;
             const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
             const excedente = totalRecibido - totalPagar;
             
-            // Opcional: Mostrar advertencia si el vuelto es mayor al excedente
             if (vuelto > excedente) {
                 document.getElementById('vueltoInput').style.borderColor = 'var(--danger)';
             } else {
@@ -2338,24 +2252,85 @@
             }
         }
 
+        function confirmarVuelto() {
+            const vuelto = parseFloat(document.getElementById('vueltoInput').value) || 0;
+            const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
+            const excedente = totalRecibido - totalPagar;
+            
+            if (vuelto > excedente) {
+                mostrarNotificacion('El vuelto no puede ser mayor al excedente', 'error');
+                return;
+            }
+            
+            vueltoConfirmado = true;
+            vueltoValor = vuelto;
+            document.getElementById('confirmarVueltoBtn').style.display = 'none';
+            document.getElementById('deshacerVueltoBtn').style.display = 'inline-block';
+            document.getElementById('vueltoInput').disabled = true;
+            mostrarNotificacion(`Vuelto de Bs. ${vuelto.toFixed(2)} confirmado`, 'success');
+        }
+
+        function deshacerVuelto() {
+            vueltoConfirmado = false;
+            document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
+            document.getElementById('deshacerVueltoBtn').style.display = 'none';
+            document.getElementById('vueltoInput').disabled = false;
+        }
+
+        function toggleAfavor() {
+            afavorActivo = document.getElementById('afavorCheckboxInput').checked;
+            if (afavorActivo) {
+                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
+                const excedente = totalRecibido - totalPagar;
+                document.getElementById('remainingDisplay').className = 'payment-mix-remaining';
+                document.getElementById('remainingLabel').textContent = 'A favor de la casa:';
+                document.getElementById('remainingAmount').textContent = `Bs. ${excedente.toFixed(2)}`;
+                document.getElementById('btnConfirmarCobro').disabled = false;
+            } else {
+                actualizarResumenPago();
+            }
+        }
+
         function toggleSpecialInput() {
             const selected = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
             document.getElementById('inputAfavor').classList.toggle('show', selected === 'afavor');
-            document.getElementById('inputCondonacion').classList.toggle('show', selected === 'condonacion');
-            document.getElementById('inputCasa').classList.toggle('show', selected === 'casa');
         }
 
-        // ==========================================
-        // CONFIRMAR COBRO - DESCUENTA STOCK REAL
-        // ==========================================
         async function confirmarCobro() {
-            if (isProcessing || !currentPedido || pagosMixtos.length === 0) return;
+            if (isProcessing || (!currentPedido && !invitacionActiva) || (pagosMixtos.length === 0 && !invitacionActiva)) return;
             
             const btnConfirmar = document.getElementById('btnConfirmarCobro');
             btnConfirmar.disabled = true;
             
             queueOperation(async () => {
                 try {
+                    if (invitacionActiva) {
+                        const pedidoActual = sistemaData.pedidos.find(p => p.id === currentPedido.id);
+                        if (!pedidoActual) {
+                            mostrarNotificacion('Pedido no encontrado', 'error');
+                            return;
+                        }
+                        
+                        pedidoActual.estado = 'en_cocina';
+                        pedidoActual.cajero = 'Cajero Principal';
+                        pedidoActual.fechaCobro = new Date().toISOString();
+                        pedidoActual.metodoPago = 'invitacion';
+                        pedidoActual.pagosMixtos = [{ metodo: 'invitacion', monto: 0, montoBs: 0 }];
+                        
+                        agregarNotificacionCliente(
+                            pedidoActual.id,
+                            'approved',
+                            '🎉 ¡Invitación de la casa!',
+                            'Tu pedido es por cuenta de la casa. ¡Disfruta tu comida!'
+                        );
+                        
+                        await guardarCambios();
+                        closeModal('cobroModal');
+                        mostrarNotificacion('✅ Pedido procesado como invitación');
+                        renderPedidos();
+                        return;
+                    }
+                    
                     let totalRecibido = 0;
                     let totalRecibidoUsd = 0;
                     
@@ -2370,7 +2345,6 @@
                     
                     const diferencia = totalRecibido - totalPagar;
                     const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
-                    const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
                     
                     const pedidoActual = sistemaData.pedidos.find(p => p.id === currentPedido.id);
                     if (!pedidoActual) {
@@ -2378,7 +2352,6 @@
                         return;
                     }
                     
-                    // ✅ PASO 1: DESCONTAR STOCK DEL INVENTARIO REAL
                     if (pedidoActual.items) {
                         pedidoActual.items.forEach(item => {
                             const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
@@ -2402,7 +2375,6 @@
                         });
                     }
                     
-                    // ✅ PASO 2: DESCONTAR STOCK DE PLATILLOS
                     pedidoActual.items?.forEach(item => {
                         const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
                         if (platillo) {
@@ -2411,7 +2383,6 @@
                         }
                     });
                     
-                    // ✅ PASO 3: ACTUALIZAR ESTADO DEL PEDIDO
                     if (pedidoActual.tipo === 'delivery') {
                         pedidoActual.estado = 'en_camino';
                     } else if (pedidoActual.tipo === 'reserva') {
@@ -2423,7 +2394,6 @@
                     pedidoActual.cajero = 'Cajero Principal';
                     pedidoActual.fechaCobro = new Date().toISOString();
                     
-                    // Guardar métodos de pago con detalles
                     pedidoActual.pagosMixtos = pagosMixtos.map(p => ({
                         metodo: p.metodo,
                         monto: p.monto,
@@ -2431,13 +2401,14 @@
                         referencia: p.referencia || null
                     }));
                     
-                    // Guardar el vuelto entregado si existe
                     if (diferencia > 0) {
-                        pedidoActual.vueltoEntregado = vueltoIngresado;
+                        pedidoActual.vueltoEntregado = vueltoConfirmado ? vueltoValor : 0;
                         pedidoActual.excedente = diferencia;
+                        if (afavorActivo) {
+                            pedidoActual.aFavor = diferencia;
+                        }
                     }
                     
-                    // Determinar método de pago principal para compatibilidad
                     if (pagosMixtos.length === 1) {
                         const pago = pagosMixtos[0];
                         if (pago.metodo === 'efectivo_bs') pedidoActual.metodoPago = 'efectivo';
@@ -2455,12 +2426,10 @@
                     if (diferencia < 0) {
                         pedidoActual.diferencia = Math.abs(diferencia);
                         pedidoActual.tipoDiferencia = specialOption;
-                        if (specialOption === 'casa') pedidoActual.invitadoPor = document.getElementById('nombreInvita').value;
                     } else if (diferencia > 0) {
                         pedidoActual.cambio = diferencia;
                     }
                     
-                    // ✅ PASO 4: ENVIAR NOTIFICACIÓN AL CLIENTE
                     let mensajeNotificacion = {
                         titulo: '🎉 ¡Pago confirmado!',
                         texto: '',
@@ -2477,14 +2446,11 @@
                     
                     agregarNotificacionCliente(pedidoActual.id, mensajeNotificacion.tipo, mensajeNotificacion.titulo, mensajeNotificacion.texto);
                     
-                    await new Promise(resolve => setTimeout(resolve, 200));
                     await guardarCambios();
-                    await new Promise(resolve => setTimeout(resolve, 300));
                     
                     closeModal('cobroModal');
                     mostrarNotificacion('✅ Cobro procesado. Stock descontado. Cliente notificado.');
                     
-                    await new Promise(resolve => setTimeout(resolve, 200));
                     renderPedidos();
                     
                 } catch (error) {
@@ -2508,9 +2474,6 @@
             return enBase;
         }
 
-        // ==========================================
-        // RECHAZO
-        // ==========================================
         function mostrarRechazo(pedidoId) {
             if (isProcessing) return;
             pedidoRechazo = sistemaData.pedidos.find(p => p.id === pedidoId);
@@ -2549,14 +2512,11 @@
                         `Motivo: ${traducirRazon(razon)}. Por favor, contacta al restaurante para más información.`
                     );
                     
-                    await new Promise(resolve => setTimeout(resolve, 200));
                     await guardarCambios();
-                    await new Promise(resolve => setTimeout(resolve, 300));
                     
                     closeModal('rechazoModal');
                     mostrarNotificacion('Pedido rechazado. Cliente notificado.');
                     
-                    await new Promise(resolve => setTimeout(resolve, 200));
                     renderPedidos();
                     
                 } catch (error) {
@@ -2580,9 +2540,6 @@
             return razones[razon] || razon;
         }
 
-        // ==========================================
-        // MENÚ
-        // ==========================================
         function renderMenuView() {
             const container = document.getElementById('menuViewContainer');
             if (!sistemaData || !sistemaData.menu) return;
@@ -2615,7 +2572,7 @@
                         <div class="menu-item-info">
                             <div class="menu-item-name">${item.nombre}</div>
                             <div class="menu-item-desc">${item.descripcion || 'Sin descripción'}</div>
-                            <span class="badge ${disponible ? 'badge-success' : 'badge-danger'}">${disponible ? 'Disponible' : 'No disponible'}${disponible ? ` (${stockReal} unidades)` : ''}</span>
+                            <span class="badge ${disponible ? 'badge-success' : 'badge-danger'}">${disponible ? 'Disponible' : 'AGOTADO'}${disponible ? ` (${stockReal} unidades)` : ''}</span>
                         </div>
                         <div class="menu-item-price">Bs. ${precioBs}<br><small style="color: #666; font-size: 0.75rem;">$${(item.precio || 0).toFixed(2)}</small></div>
                     </div>
@@ -2623,9 +2580,6 @@
             }).join('');
         }
 
-        // ==========================================
-        // UTILIDADES
-        // ==========================================
         function closeModal(modalId) { 
             document.getElementById(modalId).classList.remove('show'); 
         }
