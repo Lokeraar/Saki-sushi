@@ -40,72 +40,6 @@
             color: var(--secondary);
         }
 
-        /* Location Check Overlay */
-        .location-check {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .location-check.hidden {
-            display: none;
-        }
-
-        .location-check h2 {
-            color: white;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .location-check p {
-            color: #ccc;
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin-bottom: 2rem;
-        }
-
-        .location-error {
-            background: var(--primary);
-            color: white;
-            padding: 2rem;
-            border-radius: 15px;
-            max-width: 600px;
-            display: none;
-        }
-
-        .location-error.show {
-            display: block;
-        }
-
-        .btn-location {
-            background: var(--accent);
-            color: var(--secondary);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .btn-location:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(255, 152, 0, 0.4);
-        }
-
         /* Header con menú hamburguesa, sincronización y notificaciones */
         .main-header {
             background: linear-gradient(135deg, var(--primary), #B71C1C);
@@ -1814,17 +1748,6 @@
     </style>
 </head>
 <body>
-    <!-- Location Check -->
-    <div class="location-check" id="locationCheck">
-        <h2>Verificando ubicación...</h2>
-        <p>Por favor, permite el acceso a tu ubicación para verificar si estamos en tu zona de cobertura.</p>
-        <button class="btn-location" onclick="checkLocation()">Verificar Ubicación</button>
-        <div class="location-error" id="locationError">
-            <h3>⚠️ Fuera de zona de cobertura</h3>
-            <p>Lo sentimos, los pedidos solo están disponibles en la Gran Caracas. Su solicitud no será procesada.</p>
-        </div>
-    </div>
-
     <!-- Loading -->
     <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="spinner"></div>
@@ -1892,7 +1815,7 @@
     </div>
 
     <!-- Main Container -->
-    <div class="container" id="mainContainer" style="display: none;">
+    <div class="container" id="mainContainer">
         <div class="header">
             <div class="logo-container">
                 <img src="https://lh3.googleusercontent.com/pw/AP1GczPrZAoWxmsOGRD9xl1hO5Q65JXuwUZzoR6gUk-cw5lVmarxQe_-lwqpA60tTKLlXfpvIjAJlKC6jFls-xETJOPkebLIIPhbGlUkknmhrRbdhMUll2UViGSUj3WmHKg2YEsZlAfxBPPTjIHhScjD0jfe=w1439-h1439-s-no-gm" alt="Saki Sushi Logo" class="logo">
@@ -2218,68 +2141,64 @@
         let pedidosConTimer = {};
 
         // ==========================================
-        // VERIFICACIÓN DE UBICACIÓN CON SESIÓN
+        // INICIALIZACIÓN SIN VERIFICACIÓN DE UBICACIÓN
         // ==========================================
-		function checkLocation() {
-			const urlParams = new URLSearchParams(window.location.search);
-			const mesaUrl = urlParams.get('mesa');
-
-			// 🔥 PRIORIDAD 1: Si hay mesa en la URL, USAR ESA SIEMPRE
-			if (mesaUrl) {
-				isInRestaurant = true;
-				tableNumber = mesaUrl;
-
-				// Crear nueva sesión (sobrescribe la anterior)
-				crearSesion();
-
-				document.getElementById('tableNumber').textContent = mesaUrl;
-				document.getElementById('tableBadge').style.display = 'block';
-				document.getElementById('confirmTableNumber').textContent = `Mesa #${mesaUrl}`;
-				document.getElementById('locationCheck').classList.add('hidden');
-				document.getElementById('mainContainer').style.display = 'block';
-				document.getElementById('onlineOrderOptions').classList.remove('show');
-				document.getElementById('restaurantOrderSection').classList.add('show');
-
-				cargarDatosDesdeCache();
-				initApp();
-				return;
-			}
-
-			// 🔥 PRIORIDAD 2: Si NO hay mesa en URL, intentar recuperar sesión guardada
-			const sessionData = localStorage.getItem('sakiSession');
-			if (sessionData) {
-				try {
-					const session = JSON.parse(sessionData);
-					const ahora = new Date().getTime();
-					const tiempoTranscurrido = ahora - session.timestamp;
-
-					if (tiempoTranscurrido < 1800000) { // 30 minutos
-						sessionId = session.id;
-						isInRestaurant = session.isInRestaurant;
-						tableNumber = session.tableNumber;
-
-						if (isInRestaurant && tableNumber) {
-							document.getElementById('tableNumber').textContent = tableNumber;
-							document.getElementById('tableBadge').style.display = 'block';
-							document.getElementById('confirmTableNumber').textContent = `Mesa #${tableNumber}`;
-						}
-
-						document.getElementById('locationCheck').classList.add('hidden');
-						document.getElementById('mainContainer').style.display = 'block';
-
-						cargarDatosDesdeCache();
-						initApp();
-						return;
-					}
-				} catch (e) {
-					console.error('Error parsing session:', e);
-					localStorage.removeItem('sakiSession');
-				}
-			}
-
-			// 🔥 PRIORIDAD 3: Sin mesa y sin sesión válida → Verificar ubicación
-			verifyLocation();
-		}
+        function initApp() {
+            if (isInitialized) return;
+            isInitialized = true;
+            
+            showLoading();
+            
+            // Verificar si hay mesa en URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const mesaUrl = urlParams.get('mesa');
+            
+            if (mesaUrl) {
+                isInRestaurant = true;
+                tableNumber = mesaUrl;
+                
+                document.getElementById('tableNumber').textContent = mesaUrl;
+                document.getElementById('tableBadge').style.display = 'block';
+                document.getElementById('confirmTableNumber').textContent = `Mesa #${mesaUrl}`;
+                document.getElementById('onlineOrderOptions').classList.remove('show');
+                document.getElementById('restaurantOrderSection').classList.add('show');
+            } else {
+                // Modo online (delivery/reserva)
+                document.getElementById('onlineOrderOptions').classList.add('show');
+            }
+            
+            cargarDatosDesdeCache();
+            
+            try {
+                sincronizarUnaVez().then(() => {
+                    renderSidebar();
+                    renderMenu();
+                    updateOrderSummary();
+                    actualizarEstadoSync('online');
+                    
+                    iniciarVerificacionPedidos();
+                    
+                    // Sincronización automática cada 3 minutos
+                    if (syncIntervalId) clearInterval(syncIntervalId);
+                    syncIntervalId = setInterval(() => {
+                        sincronizarAutomatica();
+                    }, 180000);
+                    
+                    hideLoading();
+                }).catch(() => {
+                    renderSidebar();
+                    renderMenu();
+                    updateOrderSummary();
+                    actualizarEstadoSync('offline');
+                    hideLoading();
+                });
+            } catch (error) {
+                console.error('Error inicializando app:', error);
+                showToast('Error al cargar. Verifica tu conexión.', 'error');
+                actualizarEstadoSync('offline');
+                hideLoading();
+            }
+        }
 
         function cargarDatosDesdeCache() {
             const cachedData = localStorage.getItem('sakiMenuCache');
@@ -2289,120 +2208,9 @@
                     sincronizarMenuLocal();
                     renderSidebar();
                     renderMenu();
-                    actualizarEstadoSync('online');
                 } catch (e) {
                     console.error('Error parsing cached data:', e);
                 }
-            }
-        }
-
-        async function verifyLocation() {
-            const btn = document.querySelector('.btn-location');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-            btn.disabled = true;
-
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const mesa = urlParams.get('mesa');
-                
-                if (mesa) {
-                    isInRestaurant = true;
-                    tableNumber = mesa;
-                    
-                    crearSesion();
-                    
-                    document.getElementById('tableNumber').textContent = mesa;
-                    document.getElementById('tableBadge').style.display = 'block';
-                    document.getElementById('confirmTableNumber').textContent = `Mesa #${mesa}`;
-                    document.getElementById('locationCheck').classList.add('hidden');
-                    document.getElementById('mainContainer').style.display = 'block';
-                    
-                    cargarDatosDesdeCache();
-                    initApp();
-                    return;
-                }
-
-                if (!navigator.geolocation) {
-                    showLocationError();
-                    return;
-                }
-
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        const inCaracas = (
-                            latitude >= 10.4 && latitude <= 10.6 &&
-                            longitude >= -67.0 && longitude <= -66.8
-                        );
-                        
-                        if (inCaracas) {
-                            crearSesion();
-                            
-                            document.getElementById('locationCheck').classList.add('hidden');
-                            document.getElementById('mainContainer').style.display = 'block';
-                            document.getElementById('onlineOrderOptions').classList.add('show');
-                            
-                            cargarDatosDesdeCache();
-                            initApp();
-                        } else {
-                            showLocationError();
-                        }
-                    },
-                    () => {
-                        showLocationError();
-                    }
-                );
-            } catch (error) {
-                console.error('Error en verificación:', error);
-                showLocationError();
-            }
-        }
-
-		function crearSesion() {
-			sessionId = 'SES-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
-			const sessionData = {
-				id: sessionId,
-				timestamp: new Date().getTime(),
-				isInRestaurant: isInRestaurant,
-				tableNumber: tableNumber
-			};
-			localStorage.setItem('sakiSession', JSON.stringify(sessionData));
-		}
-
-        function showLocationError() {
-            document.getElementById('locationError').classList.add('show');
-            document.querySelector('.btn-location').style.display = 'none';
-        }
-
-        // ==========================================
-        // INICIALIZACIÓN
-        // ==========================================
-        async function initApp() {
-            if (isInitialized) return;
-            isInitialized = true;
-            
-            showLoading();
-            try {
-                await sincronizarUnaVez();
-                renderSidebar();
-                renderMenu();
-                updateOrderSummary();
-                actualizarEstadoSync('online');
-                
-                iniciarVerificacionPedidos();
-                
-                // Sincronización automática cada 3 minutos (180000 ms) sin bloquear
-                if (syncIntervalId) clearInterval(syncIntervalId);
-                syncIntervalId = setInterval(() => {
-                    sincronizarAutomatica();
-                }, 180000);
-                
-            } catch (error) {
-                console.error('Error inicializando app:', error);
-                showToast('Error al cargar. Verifica tu conexión.', 'error');
-                actualizarEstadoSync('offline');
-            } finally {
-                hideLoading();
             }
         }
 
@@ -2437,7 +2245,7 @@
                     throw new Error('Datos inválidos recibidos');
                 }
                 
-                // PRESERVAR EL ESTADO LOCAL: stockCache y pedidoActual
+                // PRESERVAR EL ESTADO LOCAL
                 const pedidoGuardado = menuItems.map(item => ({
                     id: item.id,
                     quantity: item.quantity,
@@ -2480,16 +2288,14 @@
             }
         }
 
-        // Sincronización automática silenciosa (no interfiere con UI)
         async function sincronizarAutomatica() {
-            if (isManualSyncing) return; // No solapar con sincronización manual
-            const sincronizado = await sincronizarUnaVez(true); // skipCooldown
+            if (isManualSyncing) return;
+            const sincronizado = await sincronizarUnaVez(true);
             if (sincronizado) {
-                renderMenu(); // Refrescar disponibilidad sin perder selecciones
+                renderMenu();
             }
         }
 
-        // Sincronización manual con feedback visual
         async function sincronizarManual() {
             if (isManualSyncing) {
                 showToast('Ya hay una sincronización en curso...', 'info');
@@ -2571,13 +2377,10 @@
                 return stockCache[ingredienteId];
             }
             
-            // CALCULAR RESERVADO REAL: SUMAR TODOS LOS PEDIDOS PENDIENTES Y CONFIRMADOS (COBRADOS/EN COCINA/EN CAMINO)
             let total = 0;
             
-            // 1. Sumar reservas de pedidos pendientes en el sistema
             if (sistemaData && sistemaData.pedidos) {
                 sistemaData.pedidos.forEach(pedido => {
-                    // Solo considerar pedidos que están en estado de reserva de stock
                     if (pedido.estado === 'pendiente' || 
                         pedido.estado === 'cobrado' || 
                         pedido.estado === 'en_cocina' || 
@@ -2587,7 +2390,6 @@
                         
                         pedido.items?.forEach(item => {
                             if (item.personalizacion && !item.personalizacion.includes(ingredienteId)) {
-                                // El ingrediente NO fue removido, por lo tanto se consume
                                 const platillo = sistemaData.menu.find(p => p.id === item.platilloId);
                                 if (platillo && platillo.ingredientes && platillo.ingredientes[ingredienteId]) {
                                     const cantidadIngrediente = platillo.ingredientes[ingredienteId].cantidad || 0;
@@ -2599,7 +2401,6 @@
                 });
             }
             
-            // 2. Sumar reservas de instancias locales (pedido actual no enviado aún)
             menuItems.forEach(item => {
                 if (item.instances && item.ingredients && item.ingredients[ingredienteId]) {
                     item.instances.forEach(inst => {
@@ -2639,7 +2440,7 @@
         }
 
         // ==========================================
-        // CREACIÓN DE PEDIDO - SOLO RESERVA, NO DESCUENTA
+        // CREACIÓN DE PEDIDO
         // ==========================================
         function crearPedidoBase() {
             const pedido = {
@@ -2684,11 +2485,9 @@
 
         async function guardarPedido(pedido) {
             try {
-                // Separar el comprobante
                 const comprobanteBase64 = pedido.comprobanteBase64;
                 const comprobanteNombre = pedido.comprobanteNombre;
                 
-                // Crear versión del pedido SIN el comprobante para JSONbin
                 const pedidoParaJSONbin = {
                     id: pedido.id,
                     timestamp: pedido.timestamp,
@@ -2720,9 +2519,6 @@
                     comprobanteNombre: comprobanteNombre || null
                 };
 
-                console.log('📤 Preparando pedido para JSONbin:', pedidoParaJSONbin.id);
-
-                // Obtener datos actuales de JSONbin
                 let dataActual;
                 try {
                     const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
@@ -2742,7 +2538,6 @@
                     dataActual = sistemaData || { menu: [], inventario: {}, pedidos: [], config: { tasaCambio: 400 } };
                 }
 
-                // Preparar datos para guardar
                 const dataToSave = {
                     menu: dataActual.menu || [],
                     inventario: dataActual.inventario || {},
@@ -2750,15 +2545,11 @@
                     config: dataActual.config || { tasaCambio: 400, aumentoDiario: 0, aumentoActivo: false }
                 };
 
-                // Verificar tamaño
                 const payloadSize = JSON.stringify(dataToSave).length;
-                console.log('📊 Tamaño payload:', (payloadSize/1024).toFixed(2), 'KB');
-
                 if (payloadSize > 900000) {
-                    throw new Error('PAYLOAD_TOO_LARGE: El pedido excede 900KB. Reduce items o contacta soporte.');
+                    throw new Error('PAYLOAD_TOO_LARGE');
                 }
 
-                // Guardar en JSONbin
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
                     method: 'PUT',
                     headers: {
@@ -2768,36 +2559,14 @@
                     body: JSON.stringify(dataToSave)
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Error HTTP:', response.status, errorText);
-                    
-                    if (response.status === 413 || payloadSize > 1000000) {
-                        throw new Error('PAYLOAD_TOO_LARGE: La imagen o el pedido es muy grande para JSONbin.');
-                    } else if (response.status === 404) {
-                        throw new Error('BIN_NOT_FOUND');
-                    } else if (response.status === 429) {
-                        throw new Error('RATE_LIMIT');
-                    } else if (response.status === 401 || response.status === 403) {
-                        throw new Error('AUTH_ERROR');
-                    } else {
-                        throw new Error(`HTTP_${response.status}: ${errorText}`);
-                    }
-                }
+                if (!response.ok) throw new Error('Error al guardar');
 
-                const result = await response.json();
-                console.log('✅ Pedido guardado en JSONbin:', result);
-
-                // GUARDAR COMPROBANTE EN LOCALSTORAGE (del cliente)
                 if (comprobanteBase64 && pedidoParaJSONbin.tieneComprobante) {
                     try {
                         const comprobantes = JSON.parse(localStorage.getItem('sakiComprobantes') || '{}');
-                        
                         const comprobanteSize = comprobanteBase64.length;
-                        console.log('📎 Tamaño comprobante:', (comprobanteSize/1024).toFixed(2), 'KB');
                         
                         if (comprobanteSize > 5000000) {
-                            console.warn('⚠️ Comprobante muy grande para localStorage');
                             comprobantes[pedido.id] = {
                                 nombre: comprobanteNombre,
                                 timestamp: new Date().toISOString(),
@@ -2814,14 +2583,11 @@
                         }
                         
                         localStorage.setItem('sakiComprobantes', JSON.stringify(comprobantes));
-                        console.log('💾 Comprobante guardado en localStorage del cliente');
-                        
                     } catch (e) {
-                        console.error('❌ Error guardando comprobante:', e);
+                        console.error('Error guardando comprobante:', e);
                     }
                 }
                 
-                // Actualizar caché del sistema
                 sistemaData = dataToSave;
                 localStorage.setItem('sakiMenuCache', JSON.stringify(dataToSave));
                 lastSyncTime = Date.now();
@@ -2829,20 +2595,11 @@
                 return true;
                 
             } catch (error) {
-                console.error('❌ Error en guardarPedido:', error);
-                
+                console.error('Error en guardarPedido:', error);
                 let mensajeError = 'Error al procesar el pedido. ';
                 
                 if (error.message.includes('PAYLOAD_TOO_LARGE')) {
                     mensajeError = '⚠️ La imagen es muy grande. Intenta con una foto más pequeña (máx 500KB) o sin comprobante.';
-                } else if (error.message === 'BIN_NOT_FOUND') {
-                    mensajeError += 'El bin no existe.';
-                } else if (error.message === 'RATE_LIMIT') {
-                    mensajeError += 'Límite de 10000 solicitudes/día alcanzado.';
-                } else if (error.message === 'AUTH_ERROR') {
-                    mensajeError += 'API Key inválida.';
-                } else if (error.message.includes('Failed to fetch')) {
-                    mensajeError += 'Sin conexión a internet.';
                 } else {
                     mensajeError += error.message || 'Error desconocido.';
                 }
@@ -2853,37 +2610,27 @@
         }
 
         // ==========================================
-        // CANCELACIÓN DE PEDIDO - LIBERA STOCK RESERVADO
+        // CANCELACIÓN DE PEDIDO
         // ==========================================
         async function cancelarPedidoPorTimeout(pedidoId) {
-            console.log(`⏱️ Cancelando pedido ${pedidoId} por timeout`);
+            console.log(`Cancelando pedido ${pedidoId} por timeout`);
             
             try {
                 await sincronizarUnaVez();
                 
                 const pedido = sistemaData.pedidos?.find(p => p.id === pedidoId);
-                if (!pedido) {
-                    console.log(`Pedido ${pedidoId} no encontrado`);
-                    return;
-                }
+                if (!pedido) return;
                 
-                // Solo cancelar si sigue pendiente
-                if (pedido.estado !== 'pendiente') {
-                    console.log(`Pedido ${pedidoId} ya no está pendiente, estado: ${pedido.estado}`);
-                    return;
-                }
+                if (pedido.estado !== 'pendiente') return;
                 
-                // Marcar como cancelado por timeout
                 pedido.estado = 'cancelado_timeout';
                 pedido.fechaCancelacion = new Date().toISOString();
                 pedido.motivoCancelacion = 'Tiempo de pago excedido (20 minutos)';
                 
                 await guardarCambiosSistema();
                 
-                // Notificar al cliente
                 agregarNotificacion(pedidoId, 'rejected', 'Pedido cancelado', 'Se agotó el tiempo de pago (20 minutos). Los ingredientes han sido liberados.');
                 
-                // Limpiar de pedidos del cliente
                 pedidosCliente = pedidosCliente.filter(p => p.id !== pedidoId);
                 
                 showToast('Tu pedido fue cancelado por exceder el tiempo de pago', 'error');
@@ -3152,7 +2899,6 @@
             }
         }
         
-        // Funciones para manejo de timers de pedidos online
         function iniciarTimerPedido(pedidoId, tipo) {
             cancelarTimerPedido(pedidoId);
             
@@ -3166,15 +2912,12 @@
                 startTime: startTime,
                 tipo: tipo
             };
-            
-            console.log(`⏱️ Timer iniciado para pedido ${pedidoId} (${tipo})`);
         }
         
         function cancelarTimerPedido(pedidoId) {
             if (pedidosConTimer[pedidoId]) {
                 clearTimeout(pedidosConTimer[pedidoId].timerId);
                 delete pedidosConTimer[pedidoId];
-                console.log(`⏱️ Timer cancelado para pedido ${pedidoId}`);
             }
         }
 
@@ -3737,8 +3480,6 @@
                     </div>
                 `;
                 if (orderBtn) orderBtn.disabled = true;
-                if (onlineOptions) onlineOptions.classList.remove('show');
-                if (restaurantSection) restaurantSection.classList.remove('show');
                 return;
             }
             
@@ -3803,10 +3544,8 @@
             
             if (isInRestaurant) {
                 restaurantSection.classList.add('show');
-                onlineOptions.classList.remove('show');
                 if (orderBtn) orderBtn.disabled = false;
             } else {
-                restaurantSection.classList.remove('show');
                 onlineOptions.classList.add('show');
             }
             
@@ -4312,19 +4051,10 @@
         }
 
         // ==========================================
-        // SINCRONIZACIÓN MANUAL
-        // ==========================================
-        // Función ya definida arriba (sincronizarManual)
-        // ==========================================
-
-        // ==========================================
         // EVENT LISTENERS
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
-            checkLocation();
-            
-            // Botón de sincronización ya está en el HTML
-            // No agregar duplicado
+            initApp();
         });
 
         window.addEventListener('beforeunload', () => {
