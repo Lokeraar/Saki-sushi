@@ -1657,34 +1657,9 @@
             margin-top: 10px;
         }
 
-        /* Loading */
+        /* Loading - ELIMINADO (ya no se usa) */
         .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
             display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 4000;
-            color: white;
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid rgba(255,255,255,0.3);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* Toast */
@@ -1748,11 +1723,11 @@
     </style>
 </head>
 <body>
-    <!-- Loading -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <!-- Loading (ELIMINADO) - El div ha sido comentado para no mostrarse, pero se mantiene por si acaso. Su display está en 'none' por CSS. -->
+    <!-- <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="spinner"></div>
         <h2>Procesando...</h2>
-    </div>
+    </div> -->
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
@@ -3617,7 +3592,6 @@
 
         async function finalConfirmOrder() {
             closeModal('confirmationModal');
-            showLoading();
             
             const pedido = crearPedidoBase();
             pedido.tipo = 'mesa';
@@ -3787,7 +3761,6 @@
             }
             
             closeModal('deliveryModal');
-            showLoading();
             
             const exito = await guardarPedido(pedido);
             
@@ -3904,9 +3877,8 @@
             }
             
             closeModal('reservaModal');
-            showLoading();
             
-            const exito = await guardarPedido(pedido);          
+            const exito = await guardarPedido(pedido);
             
             if (exito) {
                 const reservaNombre = document.getElementById('reservaNombre');
@@ -4018,6 +3990,8 @@
                     break;
             }
         }
+
+        // showLoading y hideLoading ELIMINADOS
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
