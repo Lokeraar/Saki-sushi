@@ -556,6 +556,41 @@
             animation: spin 0.8s linear infinite;
             margin-right: 8px;
         }
+
+        /* Nuevo estilo para la sección de vuelto */
+        .change-section {
+            background: #E8F5E9;
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .change-section .change-label {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        .change-section .change-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        .change-input {
+            width: 150px;
+            padding: 8px 12px;
+            border: 2px solid var(--success);
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: right;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        .change-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.2);
+        }
         
         @media (max-width: 768px) {
             .tasa-bar { flex-direction: column; gap: 1rem; padding: 1rem; }
@@ -673,7 +708,7 @@
     <!-- Modal de Cobro con Múltiples Métodos de Pago - MEJORADO -->
     <div class="modal-overlay" id="cobroModal">
         <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header"><h2><i class="fas fa-cash-register"></i> Procesar Cobro - Pago Mixto</h2><button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button></div>
+            <div class="modal-header"><h2><i class="fas fa-cash-register"></i> Procesar cobro</h2><button class="modal-close" onclick="closeModal('cobroModal')"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
                 <div id="cobroSummary" style="margin-bottom: 20px;"></div>
                 
@@ -706,6 +741,12 @@
                         <span>Faltante:</span>
                         <span id="faltanteAmount">Bs. 0.00</span>
                     </div>
+                </div>
+                
+                <!-- Sección de vuelto cuando hay excedente -->
+                <div class="change-section" id="changeSection" style="display: none;">
+                    <span class="change-label"><i class="fas fa-hand-holding-usd"></i> Vuelto a entregar:</span>
+                    <input type="number" step="0.01" class="change-input" id="vueltoInput" placeholder="0.00" value="0.00" oninput="validarVuelto()">
                 </div>
                 
                 <div class="special-options" id="specialOptions" style="display: none;">
@@ -1750,7 +1791,7 @@
         }
 
         // ==========================================
-        // CONFIRMACIÓN DE ENTREGA/ENVÍO/RESERVA
+        // CONFIRMACIÓN DE ENTREGA/ENVÍO/RESERVA - AHORA MUESTRA DETALLES DEL PEDIDO
         // ==========================================
         function mostrarConfirmacionEntrega(pedidoId, tipo) {
             if (isProcessing) return;
@@ -1816,6 +1857,12 @@
             
             title.innerHTML = `<i class="fas ${icono}"></i> ${titulo}`;
             
+            // Generar HTML de los items del pedido
+            const itemsHtml = (pedidoConfirmacion.items || []).map(item => {
+                const personalizacion = item.personalizacion?.length > 0 ? ` (Sin ${item.personalizacion.join(', ')})` : '';
+                return `<div class="info-row"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${(item.subtotal || 0).toFixed(2)}</span></div>`;
+            }).join('');
+            
             let detallesExtras = '';
             if (pedidoConfirmacion.tipo === 'delivery') {
                 detallesExtras = `<div class="info-row"><span>Dirección:</span><span>${pedidoConfirmacion.direccion}</span></div>
@@ -1833,10 +1880,13 @@
                     <p style="font-size: 1.1rem; color: #666;">${mensaje}</p>
                 </div>
                 <div class="info-box">
-                    <div class="info-row"><span>Pedido:</span><span>${pedidoConfirmacion.id}</span></div>
-                    <div class="info-row"><span>Items:</span><span>${pedidoConfirmacion.items?.length || 0}</span></div>
+                    <h4 style="margin-bottom: 10px; color: var(--secondary);">Detalles del Pedido:</h4>
+                    ${itemsHtml}
                     ${detallesExtras}
-                    <div class="info-row"><span>Total:</span><span>Bs. ${total.toFixed(2)}</span></div>
+                    <div class="info-row" style="font-size: 1.1rem; margin-top: 10px; border-top: 2px dashed #ddd; padding-top: 10px;">
+                        <span><strong>TOTAL</strong></span>
+                        <span><strong>Bs. ${total.toFixed(2)}</strong></span>
+                    </div>
                 </div>
                 <div style="background: #E8F5E9; border-left: 4px solid var(--success); padding: 15px; margin-top: 15px; border-radius: 8px;">
                     <i class="fas fa-bell"></i> <strong>Notificación al cliente:</strong><br>
@@ -2033,6 +2083,7 @@
             actualizarResumenPago();
             
             document.getElementById('specialOptions').style.display = 'none';
+            document.getElementById('changeSection').style.display = 'none'; // Ocultar sección de vuelto al inicio
             document.getElementById('btnConfirmarCobro').disabled = true;
             
             document.getElementById('cobroModal').classList.add('show');
@@ -2051,12 +2102,9 @@
                 { id: 'punto_venta', nombre: 'Punto de Venta', icono: 'fa-credit-card' }
             ];
             
-            // NO FILTRAR POR USADOS - Permitir múltiples instancias del mismo método
-            const disponibles = metodosDisponibles; // Todos disponibles siempre
-            
             pagosMixtos.push({
                 id: Date.now() + Math.random(),
-                metodo: disponibles[0].id,
+                metodo: metodosDisponibles[0].id,
                 monto: 0,
                 referencia: ''
             });
@@ -2082,13 +2130,14 @@
             ];
             
             container.innerHTML = pagosMixtos.map((pago, index) => {
-                // NO deshabilitar opciones basado en uso previo
                 const options = metodosOptions.map(m => 
                     `<option value="${m.id}" ${pago.metodo === m.id ? 'selected' : ''}>${m.nombre}</option>`
                 ).join('');
                 
-                const showReferencia = pago.metodo === 'pago_movil' || pago.metodo === 'punto_venta'; // Ambos pueden tener referencia
-                const isUsd = pago.metodo === 'efectivo_usd';
+                // Mostrar campo de referencia solo para Pago Móvil. Punto de Venta es opcional.
+                const showReferencia = pago.metodo === 'pago_movil' || pago.metodo === 'punto_venta';
+                const referenciaRequerida = pago.metodo === 'pago_movil'; // Solo obligatorio para Pago Móvil
+                const placeholderTexto = pago.metodo === 'pago_movil' ? 'Referencia (6 dígitos)' : 'Referencia (opcional)';
                 
                 return `
                     <div class="payment-mix-item" id="pago-${pago.id}">
@@ -2100,7 +2149,7 @@
                                 </select>
                             </div>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-weight: 600; color: var(--secondary);">${isUsd ? '$' : 'Bs.'}</span>
+                                <span style="font-weight: 600; color: var(--secondary);">Bs.</span>
                                 <input type="number" step="0.01" class="payment-mix-input" 
                                     value="${pago.monto > 0 ? pago.monto : ''}" 
                                     placeholder="0.00" 
@@ -2111,8 +2160,8 @@
                         </div>
                         ${showReferencia ? `
                             <div class="reference-input">
-                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">${pago.metodo === 'pago_movil' ? 'Últimos 6 dígitos de referencia:' : 'Número de referencia / Voucher:'}</label>
-                                <input type="text" maxlength="${pago.metodo === 'pago_movil' ? '6' : '20'}" placeholder="${pago.metodo === 'pago_movil' ? '000000' : 'Referencia'}" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
+                                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px;">${placeholderTexto}:</label>
+                                <input type="text" maxlength="${pago.metodo === 'pago_movil' ? '6' : '20'}" placeholder="${placeholderTexto}" value="${pago.referencia}" oninput="actualizarReferencia(${pago.id}, this.value)">
                             </div>
                         ` : ''}
                     </div>
@@ -2209,14 +2258,20 @@
                 remainingDisplay.className = 'payment-mix-remaining';
                 remainingAmount.textContent = `Bs. ${pendiente.toFixed(2)}`;
                 remainingAmount.style.color = 'var(--warning)';
+                document.getElementById('changeSection').style.display = 'none'; // Ocultar vuelto si falta
             } else if (pendiente === 0) {
                 remainingDisplay.className = 'payment-mix-remaining paid';
                 remainingAmount.textContent = '¡PAGO COMPLETO!';
                 remainingAmount.style.color = 'var(--success)';
+                document.getElementById('changeSection').style.display = 'none'; // Ocultar vuelto si es exacto
             } else {
                 remainingDisplay.className = 'payment-mix-remaining overpaid';
                 remainingAmount.textContent = `Bs. ${Math.abs(pendiente).toFixed(2)} (excedente)`;
                 remainingAmount.style.color = 'var(--danger)';
+                
+                // Mostrar sección de vuelto
+                document.getElementById('changeSection').style.display = 'flex';
+                document.getElementById('vueltoInput').value = Math.abs(pendiente).toFixed(2);
             }
             
             const summaryDiv = document.getElementById('paymentSummary');
@@ -2256,19 +2311,31 @@
             const btnConfirmar = document.getElementById('btnConfirmarCobro');
             const hayMontoValido = pagosMixtos.some(p => p.monto > 0);
             
-            // Verificar referencias solo para los métodos que las requieren y que tienen monto > 0
+            // Verificar referencias: solo Pago Móvil requiere 6 dígitos si tiene monto
             const hayReferenciaValida = pagosMixtos.every(p => {
                 if (p.monto <= 0) return true; // Si no hay monto, no importa la referencia
                 if (p.metodo === 'pago_movil') {
                     return p.referencia && p.referencia.length === 6;
                 }
-                if (p.metodo === 'punto_venta') {
-                    return p.referencia && p.referencia.trim() !== ''; // Referencia opcional pero si se ingresa, se guarda
-                }
-                return true; // Efectivo no requiere referencia
+                // Punto de venta y efectivo no requieren referencia
+                return true;
             });
             
             btnConfirmar.disabled = !(hayMontoValido && hayReferenciaValida);
+        }
+
+        function validarVuelto() {
+            // Esta función puede ser usada para validar que el vuelto ingresado no sea mayor al excedente, pero por ahora lo dejamos libre.
+            const vuelto = parseFloat(document.getElementById('vueltoInput').value) || 0;
+            const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
+            const excedente = totalRecibido - totalPagar;
+            
+            // Opcional: Mostrar advertencia si el vuelto es mayor al excedente
+            if (vuelto > excedente) {
+                document.getElementById('vueltoInput').style.borderColor = 'var(--danger)';
+            } else {
+                document.getElementById('vueltoInput').style.borderColor = 'var(--success)';
+            }
         }
 
         function toggleSpecialInput() {
@@ -2303,6 +2370,7 @@
                     
                     const diferencia = totalRecibido - totalPagar;
                     const specialOption = document.querySelector('input[name="specialOption"]:checked')?.value || 'normal';
+                    const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
                     
                     const pedidoActual = sistemaData.pedidos.find(p => p.id === currentPedido.id);
                     if (!pedidoActual) {
@@ -2362,6 +2430,12 @@
                         montoBs: p.metodo === 'efectivo_usd' ? p.monto * tasaEfectiva : p.monto,
                         referencia: p.referencia || null
                     }));
+                    
+                    // Guardar el vuelto entregado si existe
+                    if (diferencia > 0) {
+                        pedidoActual.vueltoEntregado = vueltoIngresado;
+                        pedidoActual.excedente = diferencia;
+                    }
                     
                     // Determinar método de pago principal para compatibilidad
                     if (pagosMixtos.length === 1) {
