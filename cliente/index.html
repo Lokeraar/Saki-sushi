@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* [MANTENER TODOS LOS ESTILOS ORIGINALES - SIN CAMBIOS] */
         :root {
             --primary: #D32F2F;
             --secondary: #212121;
@@ -40,7 +39,6 @@
             color: var(--secondary);
         }
 
-        /* Header con menú hamburguesa, sincronización y notificaciones */
         .main-header {
             background: linear-gradient(135deg, var(--primary), #B71C1C);
             padding: 1rem 2rem;
@@ -71,6 +69,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            cursor: pointer;
         }
 
         .header-logo img {
@@ -83,6 +82,7 @@
             font-family: 'Montserrat', sans-serif;
             font-size: 1.5rem;
             font-weight: 800;
+            cursor: pointer;
         }
 
         .header-actions {
@@ -127,12 +127,13 @@
         }
 
         .notification-badge.has-unread {
-            animation: pulse 2s infinite;
+            animation: vibrate 0.3s ease;
         }
 
-        @keyframes pulse {
+        @keyframes vibrate {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            10%, 30%, 50%, 70%, 90% { transform: scale(1.1); }
+            20%, 40%, 60%, 80% { transform: scale(0.95); }
         }
 
         .badge-count {
@@ -160,7 +161,6 @@
             font-family: 'Montserrat', sans-serif;
         }
 
-        /* Sidebar Menu */
         .sidebar {
             position: fixed;
             top: 0;
@@ -275,7 +275,6 @@
             display: block;
         }
 
-        /* Notifications Panel */
         .notifications-panel {
             position: fixed;
             top: 70px;
@@ -369,7 +368,6 @@
             color: #888;
         }
 
-        /* Main Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -413,6 +411,7 @@
             height: auto;
             filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4));
             border-radius: 10px;
+            cursor: pointer;
         }
 
         h1 {
@@ -460,7 +459,6 @@
             font-weight: 500;
         }
 
-        /* Buscador */
         .search-container {
             position: relative;
             z-index: 1;
@@ -559,7 +557,6 @@
             box-shadow: 0 20px 50px rgba(255, 152, 0, 0.2);
         }
 
-        /* ESTADO AGOTADO */
         .menu-item.agotado {
             opacity: 0.6;
             pointer-events: none;
@@ -593,7 +590,7 @@
         }
 
         .menu-item.disabled::after {
-            content: 'NO DISPONIBLE';
+            content: 'AGOTADO';
             position: absolute;
             top: 50%;
             left: 50%;
@@ -607,7 +604,6 @@
             z-index: 10;
         }
 
-        /* Imagen del platillo - AHORA CON <img> EN LUGAR DE background-image */
         .item-image-container {
             height: 250px;
             width: 100%;
@@ -983,7 +979,6 @@
             display: block;
         }
 
-        /* Order Summary - Centered and half width on desktop */
         .order-summary-section {
             background: #F8F8F8;
             padding: 40px 30px;
@@ -1136,7 +1131,6 @@
             font-weight: 700;
         }
 
-        /* Order Options for Online Orders */
         .order-options {
             display: none;
             gap: 20px;
@@ -1180,7 +1174,6 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
 
-        /* Standard Order Button */
         .order-section {
             padding: 40px;
             text-align: center;
@@ -1223,7 +1216,6 @@
             box-shadow: none;
         }
 
-        /* Thank You Message */
         .thank-you {
             background: linear-gradient(135deg, var(--success), #2E7D32);
             color: white;
@@ -1232,7 +1224,7 @@
             margin-top: 30px;
             text-align: center;
             display: none;
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.3s ease;
         }
 
         .thank-you.show {
@@ -1264,7 +1256,6 @@
             border-radius: 10px;
         }
 
-        /* Footer - 3 columns */
         .footer {
             background: var(--secondary);
             color: white;
@@ -1366,7 +1357,6 @@
             color: #1da851;
         }
 
-        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -1568,7 +1558,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* Estilos para el campo de fecha */
         .date-input {
             width: 100%;
             padding: 12px;
@@ -1583,7 +1572,6 @@
             border-color: var(--primary);
         }
 
-        /* Estilos para el código de referencia */
         .reference-code-container {
             display: flex;
             gap: 8px;
@@ -1607,7 +1595,6 @@
             box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
         }
 
-        /* Confirmation Modal */
         .confirmation-modal .order-review {
             background: #F8F8F8;
             padding: 20px;
@@ -1640,7 +1627,6 @@
             font-size: 1.2rem;
         }
 
-        /* Timer */
         .payment-timer {
             background: linear-gradient(135deg, var(--warning), #F57C00);
             color: white;
@@ -1657,12 +1643,6 @@
             margin-top: 10px;
         }
 
-        /* Loading - ELIMINADO (ya no se usa) */
-        .loading-overlay {
-            display: none;
-        }
-
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -1691,7 +1671,50 @@
             background: var(--primary);
         }
 
-        /* Responsive */
+        .search-select-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .search-select-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .search-select-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .parroquia-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .parroquia-select option {
+            padding: 10px;
+        }
+
+        .delivery-price-display {
+            background: #E8F5E9;
+            border: 2px solid var(--success);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            color: var(--success);
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
             .menu-grid { padding: 20px; grid-template-columns: 1fr; }
@@ -1703,7 +1726,6 @@
             .reference-digit { width: 45px; height: 45px; font-size: 1.4rem; }
         }
 
-        /* Warning text for payment timeout */
         .payment-warning-text {
             background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
             border: 2px solid var(--warning);
@@ -1723,30 +1745,19 @@
     </style>
 </head>
 <body>
-    <!-- Loading (ELIMINADO) - El div ha sido comentado para no mostrarse, pero se mantiene por si acaso. Su display está en 'none' por CSS. -->
-    <!-- <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="spinner"></div>
-        <h2>Procesando...</h2>
-    </div> -->
-
-    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <!-- Sidebar Overlay -->
     <div class="overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    <!-- Sidebar Menu -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>🍣 Categorías</h2>
             <button class="close-sidebar" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
         </div>
         <div class="sidebar-content" id="sidebarContent">
-            <!-- Categories loaded dynamically -->
         </div>
     </div>
 
-    <!-- Notifications Panel -->
     <div class="notifications-panel" id="notificationsPanel">
         <div class="notifications-header">
             <h3><i class="fas fa-bell"></i> Mis Pedidos</h3>
@@ -1762,15 +1773,13 @@
         </div>
     </div>
 
-    <!-- Main Header -->
     <header class="main-header">
         <button class="menu-toggle" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
-        <div class="header-logo">
+        <div class="header-logo" onclick="resetToAllCategories()">
             <img src="https://lh3.googleusercontent.com/pw/AP1GczPrZAoWxmsOGRD9xl1hO5Q65JXuwUZzoR6gUk-cw5lVmarxQe_-lwqpA60tTKLlXfpvIjAJlKC6jFls-xETJOPkebLIIPhbGlUkknmhrRbdhMUll2UViGSUj3WmHKg2YEsZlAfxBPPTjIHhScjD0jfe=w1439-h1439-s-no-gm" alt="Saki Sushi">
             <span class="header-title">Saki Sushi</span>
         </div>
         <div class="header-actions">
-            <!-- Botón de sincronización manual -->
             <div class="sync-badge" onclick="sincronizarManual()" title="Sincronizar con servidor">
                 <i class="fas fa-sync-alt" id="manualSyncIcon"></i>
                 <span style="font-size: 0.7rem; background: var(--accent); color: black; padding: 2px 5px; border-radius: 12px;">JSONbin</span>
@@ -1783,27 +1792,24 @@
         </div>
     </header>
 
-    <!-- Sync Status -->
     <div class="sync-status offline" id="syncStatus">
         <i class="fas fa-sync-alt"></i>
         <span>Sincronizando...</span>
     </div>
 
-    <!-- Main Container -->
     <div class="container" id="mainContainer">
         <div class="header">
             <div class="logo-container">
-                <img src="https://lh3.googleusercontent.com/pw/AP1GczPrZAoWxmsOGRD9xl1hO5Q65JXuwUZzoR6gUk-cw5lVmarxQe_-lwqpA60tTKLlXfpvIjAJlKC6jFls-xETJOPkebLIIPhbGlUkknmhrRbdhMUll2UViGSUj3WmHKg2YEsZlAfxBPPTjIHhScjD0jfe=w1439-h1439-s-no-gm" alt="Saki Sushi Logo" class="logo">
+                <img src="https://lh3.googleusercontent.com/pw/AP1GczPrZAoWxmsOGRD9xl1hO5Q65JXuwUZzoR6gUk-cw5lVmarxQe_-lwqpA60tTKLlXfpvIjAJlKC6jFls-xETJOPkebLIIPhbGlUkknmhrRbdhMUll2UViGSUj3WmHKg2YEsZlAfxBPPTjIHhScjD0jfe=w1439-h1439-s-no-gm" alt="Saki Sushi Logo" class="logo" onclick="resetToAllCategories()">
             </div>
-            <h1>Saki Sushi</h1>
-            <p class="subtitle">Adictos al universo saki</p>
+            <h1 onclick="resetToAllCategories()">Saki Sushi</h1>
+            <p class="subtitle" onclick="resetToAllCategories()">Adictos al universo saki</p>
             <div class="tagline">
                 <div class="tagline-item">🐟 Fresco del día</div>
                 <div class="tagline-item">🎌 Tradicional</div>
                 <div class="tagline-item">👨‍🍳 Chef experto</div>
             </div>
             
-            <!-- Buscador -->
             <div class="search-container">
                 <input type="text" class="search-box" id="searchInput" placeholder="Buscar platillo por nombre..." oninput="buscarPlatillos()">
                 <i class="fas fa-search search-icon"></i>
@@ -1828,7 +1834,6 @@
             </div>
         </div>
 
-        <!-- Online Order Options -->
         <div class="order-options" id="onlineOrderOptions">
             <button class="order-option-btn delivery" onclick="showDeliveryModal()">
                 <i class="fas fa-motorcycle"></i>
@@ -1840,7 +1845,6 @@
             </button>
         </div>
 
-        <!-- In-Restaurant Order Button -->
         <div class="order-section" id="restaurantOrderSection">
             <button class="order-btn" id="orderBtn" onclick="showConfirmationModal()" disabled>
                 <i class="fas fa-check-circle"></i>
@@ -1855,7 +1859,6 @@
             <div id="thankYouExtraContent"></div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <div class="footer-column">
                 <h3 class="footer-title">Horario</h3>
@@ -1899,7 +1902,6 @@
         </div>
     </div>
 
-    <!-- Delivery Modal -->
     <div class="modal-overlay" id="deliveryModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1907,7 +1909,6 @@
                 <button class="modal-close" onclick="closeModal('deliveryModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <!-- Advertencia de tiempo de pago -->
                 <div class="payment-warning-text">
                     <i class="fas fa-clock"></i>
                     Tienes 20 minutos para realizar el pago, de lo contrario tu pedido será cancelado
@@ -1928,6 +1929,54 @@
                 <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px; font-style: italic;">
                     <i class="fas fa-info-circle"></i> Si introduce mal la dirección y/o el número de contacto, la empresa no se hace responsable de que su pedido no llegue.
                 </p>
+
+                <!-- NUEVO: Campo Parroquia con buscador -->
+                <div class="form-group">
+                    <label>Parroquia a enviar: *</label>
+                    <div class="search-select-wrapper">
+                        <input type="text" class="search-select-input" id="parroquiaSearch" placeholder="Buscar parroquia..." oninput="filtrarParroquias()">
+                        <select class="parroquia-select" id="parroquiaSelect" size="5" onchange="seleccionarParroquia()" onkeypress="handleParroquiaKeypress(event)">
+                            <option value="Altagracia">Altagracia</option>
+                            <option value="Antímano">Antímano</option>
+                            <option value="Candelaria">Candelaria</option>
+                            <option value="Caricuao">Caricuao</option>
+                            <option value="Caucagüita">Caucagüita</option>
+                            <option value="Catedral">Catedral</option>
+                            <option value="Chacao">Chacao</option>
+                            <option value="Coche">Coche</option>
+                            <option value="El Cafetal">El Cafetal</option>
+                            <option value="El Junquito">El Junquito</option>
+                            <option value="El Paraíso">El Paraíso</option>
+                            <option value="El Recreo">El Recreo</option>
+                            <option value="El Valle">El Valle</option>
+                            <option value="Fila de Mariches">Fila de Mariches</option>
+                            <option value="La Dolorita">La Dolorita</option>
+                            <option value="La Pastora">La Pastora</option>
+                            <option value="La Vega">La Vega</option>
+                            <option value="Las Minas">Las Minas</option>
+                            <option value="Leoncio Martínez">Leoncio Martínez</option>
+                            <option value="Macarao">Macarao</option>
+                            <option value="Nuestra Señora del Rosario">Nuestra Señora del Rosario</option>
+                            <option value="Petare">Petare</option>
+                            <option value="San Agustín">San Agustín</option>
+                            <option value="San Bernardino" selected>San Bernardino</option>
+                            <option value="San José">San José</option>
+                            <option value="San Juan">San Juan</option>
+                            <option value="San Pedro">San Pedro</option>
+                            <option value="Santa Rosalía">Santa Rosalía</option>
+                            <option value="Santa Rosalía de Palermo">Santa Rosalía de Palermo</option>
+                            <option value="Santa Teresa">Santa Teresa</option>
+                            <option value="Sucre">Sucre</option>
+                            <option value="23 de Enero">23 de Enero</option>
+                        </select>
+                    </div>
+                    <div class="error" id="parroquiaError">Debe seleccionar una parroquia</div>
+                </div>
+
+                <!-- NUEVO: Mostrar precio del delivery -->
+                <div class="delivery-price-display" id="deliveryPriceDisplay">
+                    Costo de envío: Bs. 0,00
+                </div>
 
                 <div class="form-group">
                     <label>Dirección completa *</label>
@@ -1974,7 +2023,6 @@
         </div>
     </div>
 
-    <!-- Reserva Modal -->
     <div class="modal-overlay" id="reservaModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1982,7 +2030,6 @@
                 <button class="modal-close" onclick="closeModal('reservaModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <!-- Advertencia de tiempo de pago -->
                 <div class="payment-warning-text">
                     <i class="fas fa-clock"></i>
                     Tienes 20 minutos para realizar el pago, de lo contrario tu reserva será cancelada
@@ -2043,7 +2090,6 @@
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div class="modal-overlay confirmation-modal" id="confirmationModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -2054,7 +2100,6 @@
                 <p style="margin-bottom: 20px; color: #666;">Por favor, revisa tu pedido antes de confirmar:</p>
                 
                 <div class="order-review" id="orderReview">
-                    <!-- Order items loaded dynamically -->
                 </div>
 
                 <div class="form-group" style="margin-top: 20px;">
@@ -2076,18 +2121,12 @@
     </div>
 
     <script>
-        // =========================================
-        // CONFIGURACIÓN JSONBin.io
-        // =========================================
         const JSONBIN_CONFIG = {
             BIN_ID: '69879d6e43b1c97be96d2b13',
             API_KEY: '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K',
             BASE_URL: 'https://api.jsonbin.io/v3/b'
         };
 
-        // ==========================================
-        // VARIABLES GLOBALES
-        // ==========================================
         let sistemaData = null;
         let menuItems = [];
         let currentCategory = 'todos';
@@ -2101,28 +2140,37 @@
         let searchTerm = '';
         let isInitialized = false;
         
-        // Control de sincronización
         let lastSyncTime = 0;
         const SYNC_COOLDOWN = 60000;
         let syncIntervalId = null;
         let isManualSyncing = false;
         
-        // Caché de stock
         let stockCache = {};
         let lastStockUpdate = 0;
         const STOCK_CACHE_DURATION = 5000;
 
-        // Timers para pedidos online (delivery/reserva)
         let pedidosConTimer = {};
 
-        // ==========================================
-        // INICIALIZACIÓN SIN VERIFICACIÓN DE UBICACIÓN
-        // ==========================================
+        // NUEVO: Matriz de distancias para cálculo de precio delivery
+        const parroquiasOrden = [
+            "San Bernardino", "San José", "San Agustín", "San Juan", "Catedral", 
+            "Santa Rosalía", "Candelaria", "El Recreo", "La Candelaria", "San Pedro",
+            "El Paraíso", "La Vega", "El Valle", "Coche", "Caricuao", "Antímano",
+            "Macarao", "23 de Enero", "La Pastora", "Altagracia", "Santa Teresa",
+            "Santa Rosalía de Palermo", "Chacao", "Leoncio Martínez", "Petare",
+            "La Dolorita", "Fila de Mariches", "Caucagüita", "El Cafetal",
+            "Las Minas", "Nuestra Señora del Rosario", "Sucre", "El Junquito"
+        ];
+
+        const distanciasDesdeSanBernardino = {};
+        parroquiasOrden.forEach((nombre, index) => {
+            distanciasDesdeSanBernardino[nombre] = index;
+        });
+
         function initApp() {
             if (isInitialized) return;
             isInitialized = true;
             
-            // Verificar si hay mesa en URL
             const urlParams = new URLSearchParams(window.location.search);
             const mesaUrl = urlParams.get('mesa');
             
@@ -2136,10 +2184,10 @@
                 document.getElementById('onlineOrderOptions').classList.remove('show');
                 document.getElementById('restaurantOrderSection').classList.add('show');
             } else {
-                // Modo online (delivery/reserva)
                 document.getElementById('onlineOrderOptions').classList.add('show');
             }
             
+            limpiarNotificacionesDiarias();
             cargarDatosDesdeCache();
             
             try {
@@ -2151,7 +2199,6 @@
                     
                     iniciarVerificacionPedidos();
                     
-                    // Sincronización automática cada 3 minutos
                     if (syncIntervalId) clearInterval(syncIntervalId);
                     syncIntervalId = setInterval(() => {
                         sincronizarAutomatica();
@@ -2170,6 +2217,25 @@
             }
         }
 
+        function resetToAllCategories() {
+            currentCategory = 'todos';
+            currentSubcategory = null;
+            renderMenu();
+            closeSidebar();
+        }
+
+        function limpiarNotificacionesDiarias() {
+            const hoy = new Date().toDateString();
+            const ultimaLimpieza = localStorage.getItem('ultimaLimpiezaNotificaciones');
+            
+            if (ultimaLimpieza !== hoy) {
+                localStorage.setItem('sakiNotificaciones', '[]');
+                localStorage.setItem('ultimaLimpiezaNotificaciones', hoy);
+                actualizarBadgeNotificaciones();
+                renderizarNotificaciones();
+            }
+        }
+
         function cargarDatosDesdeCache() {
             const cachedData = localStorage.getItem('sakiMenuCache');
             if (cachedData) {
@@ -2184,9 +2250,6 @@
             }
         }
 
-        // ==========================================
-        // SISTEMA DE SINCRONIZACIÓN NO BLOQUEANTE
-        // ==========================================
         async function sincronizarUnaVez(skipCooldown = false) {
             const ahora = Date.now();
             if (!skipCooldown && (ahora - lastSyncTime < SYNC_COOLDOWN)) {
@@ -2215,7 +2278,6 @@
                     throw new Error('Datos inválidos recibidos');
                 }
                 
-                // PRESERVAR EL ESTADO LOCAL
                 const pedidoGuardado = menuItems.map(item => ({
                     id: item.id,
                     quantity: item.quantity,
@@ -2235,7 +2297,6 @@
                 
                 sincronizarMenuLocal();
                 
-                // RESTAURAR estado local del pedido
                 menuItems.forEach(item => {
                     const guardado = pedidoGuardado.find(p => p.id === item.id);
                     if (guardado) {
@@ -2332,9 +2393,6 @@
             lastStockUpdate = 0;
         }
 
-        // ==========================================
-        // FUNCIONES CORREGIDAS PARA RESERVAR STOCK
-        // ==========================================
         function calcularReservadoConCache(ingredienteId) {
             const ahora = Date.now();
             
@@ -2409,9 +2467,6 @@
             return { disponible, faltantes };
         }
 
-        // ==========================================
-        // CREACIÓN DE PEDIDO
-        // ==========================================
         function crearPedidoBase() {
             const pedido = {
                 id: 'PED-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
@@ -2480,13 +2535,15 @@
                     tiempoPreparacion: pedido.tiempoPreparacion || null,
                     origen: pedido.origen || 'cliente_web',
                     mesa: pedido.mesa || null,
+                    parroquia: pedido.parroquia || null,
                     direccion: pedido.direccion || null,
                     telefono: pedido.telefono || null,
                     referencia: pedido.referencia || null,
                     fechaReserva: pedido.fechaReserva || null,
                     clienteNombre: pedido.clienteNombre || null,
                     tieneComprobante: !!comprobanteBase64,
-                    comprobanteNombre: comprobanteNombre || null
+                    comprobanteNombre: comprobanteNombre || null,
+                    costoDelivery: pedido.costoDelivery || 0
                 };
 
                 let dataActual;
@@ -2579,9 +2636,6 @@
             }
         }
 
-        // ==========================================
-        // CANCELACIÓN DE PEDIDO
-        // ==========================================
         async function cancelarPedidoPorTimeout(pedidoId) {
             console.log(`Cancelando pedido ${pedidoId} por timeout`);
             
@@ -2632,9 +2686,6 @@
             }
         }
 
-        // ==========================================
-        // SISTEMA DE NOTIFICACIONES
-        // ==========================================
         function iniciarVerificacionPedidos() {
             setInterval(verificarNotificacionesManual, 10000);
             verificarNotificacionesManual();
@@ -2812,6 +2863,12 @@
                 badge.textContent = noLeidas;
                 badge.style.display = 'flex';
                 badgeElement.classList.add('has-unread');
+                if (noLeidas === 1) {
+                    badgeElement.style.animation = 'vibrate 0.3s ease';
+                    setTimeout(() => {
+                        badgeElement.style.animation = '';
+                    }, 300);
+                }
             } else {
                 badge.style.display = 'none';
                 badgeElement.classList.remove('has-unread');
@@ -2891,9 +2948,6 @@
             }
         }
 
-        // ==========================================
-        // SIDEBAR Y NAVEGACIÓN
-        // ==========================================
         function openSidebar() {
             document.getElementById('sidebar').classList.add('open');
             document.getElementById('sidebarOverlay').classList.add('show');
@@ -2986,17 +3040,11 @@
             });
         }
 
-        // ==========================================
-        // BÚSQUEDA DE PLATILLOS
-        // ==========================================
         function buscarPlatillos() {
             searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             renderMenu();
         }
 
-        // ==========================================
-        // RENDERIZADO DEL MENÚ
-        // ==========================================
         function renderMenu() {
             const menuGrid = document.getElementById('menuGrid');
             
@@ -3098,7 +3146,7 @@
                                 </div>
                                 <div class="item-stock ${getStockClass(stockReal, hayIngredientes)}">
                                     <i class="fas fa-box"></i> 
-                                    ${!hayIngredientes ? 'Agotado' : `Disponibles: ${stockReal} de ${item.stockMaximo || 0}`}
+                                    ${!hayIngredientes ? 'AGOTADO' : `Disponibles: ${stockReal} de ${item.stockMaximo || 0}`}
                                 </div>
                             </div>
                             
@@ -3428,9 +3476,58 @@
             return tasaBase;
         }
 
-        // ==========================================
-        // RESUMEN DEL PEDIDO
-        // ==========================================
+        // NUEVO: Funciones para manejo de parroquias y cálculo de delivery
+        function filtrarParroquias() {
+            const searchTerm = document.getElementById('parroquiaSearch').value.toLowerCase();
+            const select = document.getElementById('parroquiaSelect');
+            const options = select.options;
+            
+            for (let i = 0; i < options.length; i++) {
+                const optionText = options[i].text.toLowerCase();
+                if (optionText.includes(searchTerm)) {
+                    options[i].style.display = '';
+                } else {
+                    options[i].style.display = 'none';
+                }
+            }
+        }
+
+        function seleccionarParroquia() {
+            const select = document.getElementById('parroquiaSelect');
+            const selectedValue = select.value;
+            if (selectedValue) {
+                document.getElementById('parroquiaSearch').value = selectedValue;
+                calcularCostoDelivery(selectedValue);
+                validateDeliveryForm();
+            }
+        }
+
+        function handleParroquiaKeypress(e) {
+            if (e.key === 'Enter') {
+                const select = document.getElementById('parroquiaSelect');
+                if (select.selectedOptions.length > 0) {
+                    seleccionarParroquia();
+                }
+            }
+        }
+
+        function calcularCostoDelivery(parroquiaDestino) {
+            const tasaEfectiva = obtenerTasaEfectiva();
+            const distancia = distanciasDesdeSanBernardino[parroquiaDestino] || 0;
+            const costoDeliveryUSD = Math.max(1, distancia); // $1 base + $1 por cada parroquia de distancia
+            const costoDeliveryBs = costoDeliveryUSD * tasaEfectiva;
+            
+            document.getElementById('deliveryPriceDisplay').textContent = `Costo de envío: Bs. ${costoDeliveryBs.toFixed(2).replace('.', ',')} ($${costoDeliveryUSD.toFixed(2)})`;
+            
+            return { costoUSD: costoDeliveryUSD, costoBs: costoDeliveryBs };
+        }
+
+        function obtenerCostoDeliverySeleccionado() {
+            const parroquia = document.getElementById('parroquiaSelect').value;
+            if (!parroquia) return 0;
+            return calcularCostoDelivery(parroquia).costoBs;
+        }
+
         function updateOrderSummary() {
             const orderSummaryContent = document.getElementById('orderSummaryContent');
             const orderBtn = document.getElementById('orderBtn');
@@ -3519,8 +3616,10 @@
                 onlineOptions.classList.add('show');
             }
             
-            document.getElementById('deliveryMonto').textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
-            document.getElementById('reservaMonto').textContent = `Bs. ${total.toFixed(2).replace('.', ',')}`;
+            // Actualizar montos en modales (sin delivery todavía)
+            const totalSinDelivery = total;
+            document.getElementById('deliveryMonto').textContent = `Bs. ${totalSinDelivery.toFixed(2).replace('.', ',')}`;
+            document.getElementById('reservaMonto').textContent = `Bs. ${totalSinDelivery.toFixed(2).replace('.', ',')}`;
         }
 
         function deleteItem(itemId, instanceId) {
@@ -3540,9 +3639,6 @@
             showToast('Platillo eliminado del pedido', 'success');
         }
 
-        // ==========================================
-        // MODALES Y CONFIRMACIÓN
-        // ==========================================
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
         }
@@ -3647,9 +3743,6 @@
             }
         }
 
-        // ==========================================
-        // DELIVERY
-        // ==========================================
         function showDeliveryModal() {
             document.getElementById('deliveryModal').classList.add('show');
             validateDeliveryForm();
@@ -3702,14 +3795,19 @@
         }
 
         function validateDeliveryForm() {
+            const parroquia = document.getElementById('parroquiaSelect')?.value || '';
             const direccion = document.getElementById('deliveryDireccion')?.value.trim() || '';
             const telefono = document.getElementById('deliveryTelefono')?.value.trim() || '';
             const referencia = getReferenceCode('delivery');
             const comprobante = document.getElementById('deliveryComprobante')?.files.length > 0;
             
+            const parroquiaValid = parroquia !== '';
             const direccionValid = direccion.length >= 20;
             const telefonoValid = telefono.length >= 11 && telefono.length <= 14;
             const referenciaValid = referencia.length === 6;
+            
+            const parroquiaError = document.getElementById('parroquiaError');
+            if (parroquiaError) parroquiaError.classList.toggle('show', parroquia === '');
             
             const direccionError = document.getElementById('direccionError');
             if (direccionError) direccionError.classList.toggle('show', direccion.length > 0 && !direccionValid);
@@ -3721,7 +3819,30 @@
             if (referenciaError) referenciaError.classList.toggle('show', referencia.length > 0 && !referenciaValid);
             
             const btnConfirm = document.getElementById('btnConfirmDelivery');
-            if (btnConfirm) btnConfirm.disabled = !(direccionValid && telefonoValid && referenciaValid && comprobante);
+            if (btnConfirm) btnConfirm.disabled = !(parroquiaValid && direccionValid && telefonoValid && referenciaValid && comprobante);
+            
+            // Actualizar monto total con delivery
+            actualizarMontoTotalConDelivery();
+        }
+
+        function actualizarMontoTotalConDelivery() {
+            const parroquia = document.getElementById('parroquiaSelect')?.value;
+            if (!parroquia) return;
+            
+            // Calcular total de platillos
+            let totalPlatillos = 0;
+            menuItems.forEach(item => {
+                if (item.instances) {
+                    item.instances.filter(inst => inst.confirmada).forEach(instance => {
+                        totalPlatillos += instance.price || 0;
+                    });
+                }
+            });
+            
+            const costoDelivery = obtenerCostoDeliverySeleccionado();
+            const totalConDelivery = totalPlatillos + costoDelivery;
+            
+            document.getElementById('deliveryMonto').textContent = `Bs. ${totalConDelivery.toFixed(2).replace('.', ',')}`;
         }
 
         function handleFileSelect(input, labelId) {
@@ -3746,9 +3867,17 @@
         async function confirmDelivery() {
             const pedido = crearPedidoBase();
             pedido.tipo = 'delivery';
+            
+            // Agregar datos de delivery
+            pedido.parroquia = document.getElementById('parroquiaSelect')?.value || '';
             pedido.direccion = document.getElementById('deliveryDireccion')?.value.trim() || '';
             pedido.telefono = document.getElementById('deliveryTelefono')?.value.trim() || '';
             pedido.referencia = getReferenceCode('delivery');
+            
+            // Calcular y agregar costo de delivery
+            const costoDelivery = obtenerCostoDeliverySeleccionado();
+            pedido.costoDelivery = costoDelivery;
+            pedido.total += costoDelivery;
             
             const comprobanteFile = document.getElementById('deliveryComprobante')?.files[0];
             if (comprobanteFile) {
@@ -3765,11 +3894,16 @@
             const exito = await guardarPedido(pedido);
             
             if (exito) {
-                const deliveryDireccion = document.getElementById('deliveryDireccion');
-                if (deliveryDireccion) deliveryDireccion.value = '';
+                // Limpiar campos
+                document.getElementById('parroquiaSearch').value = '';
+                const parroquiaSelect = document.getElementById('parroquiaSelect');
+                for (let i = 0; i < parroquiaSelect.options.length; i++) {
+                    parroquiaSelect.options[i].style.display = '';
+                }
+                parroquiaSelect.value = 'San Bernardino';
                 
-                const deliveryTelefono = document.getElementById('deliveryTelefono');
-                if (deliveryTelefono) deliveryTelefono.value = '';
+                document.getElementById('deliveryDireccion').value = '';
+                document.getElementById('deliveryTelefono').value = '';
                 
                 const deliveryRefContainer = document.getElementById('deliveryReferenceContainer');
                 if (deliveryRefContainer) {
@@ -3808,6 +3942,7 @@
                     <div class="payment-info-text">
                         <i class="fas fa-clock"></i> 
                         Estamos verificando tu pago. Te notificaremos cuando tu pedido esté en camino.
+                        ${pedido.parroquia ? `<br><small>Envío a: ${pedido.parroquia}</small>` : ''}
                     </div>
                 `;
                 
@@ -3821,9 +3956,6 @@
             }
         }
 
-        // ==========================================
-        // RESERVA
-        // ==========================================
         function showReservaModal() {
             const hoy = new Date();
             const yyyy = hoy.getFullYear();
@@ -3938,9 +4070,6 @@
             }
         }
 
-        // ==========================================
-        // UTILIDADES
-        // ==========================================
         function limpiarPedido() {
             menuItems.forEach(item => {
                 if (item.instances) item.instances = [];
@@ -3991,8 +4120,6 @@
             }
         }
 
-        // showLoading y hideLoading ELIMINADOS
-
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             if (!toast) return;
@@ -4005,9 +4132,6 @@
             }, 3000);
         }
 
-        // ==========================================
-        // EVENT LISTENERS
-        // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
         });
