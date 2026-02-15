@@ -390,7 +390,7 @@
         }
         .payment-mix-remaining.paid { background: #E8F5E9; border-color: var(--success); }
         .payment-mix-remaining.faltante { background: #FFEBEE; border-color: var(--danger); }
-        .payment-mix-remaining.excedente { background: #FFF3E0; border-color: var(--warning); }
+        .payment-mix-remaining.sobrante { background: #FFF3E0; border-color: var(--warning); }
         
         .payment-mix-add {
             width: 100%;
@@ -932,13 +932,13 @@
                         <span>Total recibido:</span>
                         <span id="totalRecibido">Bs. 0.00</span>
                     </div>
-                    <div class="payment-mix-summary-item" id="faltanteRow" style="display: none;">
+                    <div class="payment-mix-summary-item" id="pendienteRow" style="display: none;">
                         <span>Pendiente por cobrar:</span>
-                        <span id="faltanteAmount" style="color: var(--danger);">Bs. 0.00</span>
+                        <span id="pendienteAmount" style="color: var(--danger);">Bs. 0.00</span>
                     </div>
-                    <div class="payment-mix-summary-item" id="excedenteRow" style="display: none;">
-                        <span>Vuelto a entregar:</span>
-                        <span id="excedenteAmount" style="color: var(--warning);">Bs. 0.00</span>
+                    <div class="payment-mix-summary-item" id="sobranteRow" style="display: none;">
+                        <span>Sobrante:</span>
+                        <span id="sobranteAmount" style="color: var(--warning);">Bs. 0.00</span>
                     </div>
                 </div>
                 
@@ -946,13 +946,13 @@
                 <div class="vuelto-section" id="vueltoSection" style="display: none;">
                     <span class="vuelto-label"><i class="fas fa-hand-holding-usd"></i> Vuelto a entregar:</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" step="0.01" class="vuelto-input" id="vueltoInput" placeholder="0.00" value="0.00" oninput="actualizarVueltoEnTiempoReal()">
-                        <button class="vuelto-confirm-btn" id="confirmarVueltoBtn" onclick="confirmarVuelto()">Confirmar Vuelto</button>
+                        <input type="number" step="0.01" class="vuelto-input" id="vueltoInput" placeholder="0.00" value="0.00" oninput="previsualizarVuelto()">
+                        <button class="vuelto-confirm-btn" id="confirmarVueltoBtn" onclick="procesarVuelto()">Confirmar Vuelto</button>
                         <button class="vuelto-confirm-btn undo" id="deshacerVueltoBtn" style="display: none;" onclick="deshacerVuelto()">Deshacer</button>
                     </div>
                 </div>
 
-                <!-- CHECKBOX PARA CONDONACIÓN (CUANDO FALTA DINERO) - INICIALMENTE OCULTO -->
+                <!-- CHECKBOX PARA CONDONACIÓN (CUANDO FALTA DINERO) -->
                 <div class="condonacion-checkbox" id="condonacionCheckbox" style="display: none;">
                     <input type="checkbox" id="condonacionInput" onchange="toggleCondonacion()">
                     <label for="condonacionInput">
@@ -961,25 +961,13 @@
                     </label>
                 </div>
 
-                <!-- CHECKBOX PARA A FAVOR DE CAJA (CUANDO SOBRA DINERO Y NO SE DEVUELVE TODO) - INICIALMENTE OCULTO -->
+                <!-- CHECKBOX PARA A FAVOR DE CAJA (CUANDO SOBRA DINERO Y NO SE DEVUELVE TODO) -->
                 <div class="condonacion-checkbox" id="afavorCajaCheckbox" style="display: none;">
                     <input type="checkbox" id="afavorCajaInput" onchange="toggleAfavorCaja()">
                     <label for="afavorCajaInput">
                         <strong>A favor de caja:</strong>
                         <span id="afavorCajaMontoDisplay" style="margin-left: 10px; color: var(--warning); font-weight: 600;"></span>
                     </label>
-                </div>
-
-                <div class="special-options" id="specialOptions" style="display: none;">
-                    <h3><i class="fas fa-exclamation-circle"></i> Opciones de Diferencia</h3>
-                    <div class="special-option">
-                        <input type="checkbox" id="optCondonacion" value="condonacion" onchange="sincronizarCondonacion()">
-                        <label for="optCondonacion">Condonación (cliente no paga lo que falta)</label>
-                    </div>
-                    <div class="special-option">
-                        <input type="checkbox" id="optAfavorCaja" value="afavor_caja" onchange="sincronizarAfavorCaja()">
-                        <label for="optAfavorCaja">A favor de caja (sobrante no devuelto)</label>
-                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1123,18 +1111,39 @@
         let tipoConfirmacion = null;
         
         let pagosMixtos = [];
-        let totalPagar = 0;
         let tasaEfectiva = 400;
         
         let lastSyncTime = 0;
         const SYNC_COOLDOWN = 60000;
 
         let invitacionActiva = false;
-        let vueltoConfirmado = false;
-        let vueltoValor = 0;
-        let condonacionActiva = false;
-        let afavorCajaActiva = false;
         let pagosConMonto = false;
+
+        // ==========================================
+        // NUEVO: ESTADO GLOBAL DE PAGO
+        // ==========================================
+        let estadoPago = {
+            // Valores base
+            totalPagar: 0,
+            totalRecibido: 0,
+            diferencia: 0,
+            sobrante: 0,
+            pendiente: 0,
+            
+            // Acciones tomadas
+            vueltoEntregado: 0,
+            vueltoConfirmado: false,
+            condonacionActiva: false,
+            aFavorCajaActivo: false,
+            
+            // Resultados parciales
+            vueltoPendiente: 0,
+            ajustePorCheckbox: 0,
+            
+            // UI
+            modoPrevisualizacion: false,
+            previewVuelto: 0
+        };
 
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
@@ -1905,34 +1914,252 @@
             }
         }
 
+        // ==========================================
+        // FUNCIÓN CENTRAL DE CÁLCULO
+        // ==========================================
+        function calcularEstadoGlobal() {
+            // Calcular total recibido
+            estadoPago.totalRecibido = pagosMixtos.reduce((sum, p) => {
+                return sum + (p.metodo === 'efectivo_usd' ? p.monto * tasaEfectiva : p.monto);
+            }, 0);
+            
+            // Calcular diferencia
+            estadoPago.diferencia = estadoPago.totalRecibido - estadoPago.totalPagar;
+            
+            // Calcular sobrante y pendiente
+            estadoPago.sobrante = estadoPago.diferencia > 0 ? estadoPago.diferencia : 0;
+            estadoPago.pendiente = estadoPago.diferencia < 0 ? -estadoPago.diferencia : 0;
+            
+            // Calcular vuelto pendiente (considerando vuelto confirmado)
+            estadoPago.vueltoPendiente = estadoPago.sobrante - estadoPago.vueltoEntregado;
+            
+            // Aplicar ajuste por checkbox si está activo
+            let diferenciaAjustada = estadoPago.diferencia;
+            if (estadoPago.condonacionActiva && estadoPago.pendiente > 0) {
+                estadoPago.ajustePorCheckbox = estadoPago.pendiente;
+                diferenciaAjustada = 0;
+            } else if (estadoPago.aFavorCajaActivo && estadoPago.vueltoPendiente > 0) {
+                estadoPago.ajustePorCheckbox = estadoPago.vueltoPendiente;
+                diferenciaAjustada = estadoPago.vueltoPendiente - estadoPago.ajustePorCheckbox;
+            } else {
+                estadoPago.ajustePorCheckbox = 0;
+                diferenciaAjustada = estadoPago.vueltoPendiente;
+            }
+            
+            // Si hay preview de vuelto, mostrar preview sin modificar el estado real
+            const diferenciaMostrada = estadoPago.modoPrevisualizacion ? 
+                estadoPago.sobrante - estadoPago.previewVuelto : 
+                diferenciaAjustada;
+            
+            actualizarUI(diferenciaMostrada);
+        }
+
+        function actualizarUI(diferenciaMostrada) {
+            const remainingDisplay = document.getElementById('remainingDisplay');
+            const remainingLabel = document.getElementById('remainingLabel');
+            const remainingAmount = document.getElementById('remainingAmount');
+            
+            // Verificar si hay pagos
+            const hayPagos = pagosMixtos.some(p => p.monto > 0);
+            
+            if (!hayPagos) {
+                // Modo inicial - sin pagos
+                remainingDisplay.className = 'payment-mix-remaining';
+                remainingLabel.textContent = 'Monto a cobrar:';
+                remainingAmount.textContent = `Bs. ${estadoPago.totalPagar.toFixed(2)}`;
+                document.getElementById('vueltoSection').style.display = 'none';
+                document.getElementById('condonacionCheckbox').style.display = 'none';
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                document.getElementById('btnConfirmarCobro').disabled = true;
+                return;
+            }
+            
+            // Determinar estado basado en diferenciaMostrada
+            if (diferenciaMostrada > 0) {
+                // MODO SOBRANTE
+                remainingDisplay.className = 'payment-mix-remaining sobrante';
+                remainingLabel.textContent = estadoPago.modoPrevisualizacion ? 'Vuelto a entregar (preview):' : 'Vuelto a entregar:';
+                remainingAmount.textContent = `Bs. ${diferenciaMostrada.toFixed(2)}`;
+                
+                // Mostrar sección de vuelto si no hay vuelto confirmado
+                if (!estadoPago.vueltoConfirmado) {
+                    document.getElementById('vueltoSection').style.display = 'flex';
+                    document.getElementById('vueltoInput').value = estadoPago.previewVuelto || diferenciaMostrada;
+                } else {
+                    document.getElementById('vueltoSection').style.display = 'flex';
+                    document.getElementById('vueltoInput').disabled = true;
+                }
+                
+                document.getElementById('condonacionCheckbox').style.display = 'none';
+                
+                // Mostrar checkbox a favor de caja si hay vuelto pendiente después de confirmar
+                if (estadoPago.vueltoConfirmado && estadoPago.vueltoPendiente > 0) {
+                    document.getElementById('afavorCajaCheckbox').style.display = 'flex';
+                    document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${estadoPago.vueltoPendiente.toFixed(2)}`;
+                } else {
+                    document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                }
+                
+            } else if (diferenciaMostrada < 0) {
+                // MODO PENDIENTE
+                remainingDisplay.className = 'payment-mix-remaining faltante';
+                remainingLabel.textContent = estadoPago.modoPrevisualizacion ? 'Pendiente por cobrar (preview):' : 'Pendiente por cobrar:';
+                remainingAmount.textContent = `Bs. ${Math.abs(diferenciaMostrada).toFixed(2)}`;
+                
+                document.getElementById('vueltoSection').style.display = 'none';
+                
+                // Mostrar checkbox de condonación
+                document.getElementById('condonacionCheckbox').style.display = 'flex';
+                document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(diferenciaMostrada).toFixed(2)}`;
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                
+            } else {
+                // MODO COMPLETADO
+                remainingDisplay.className = 'payment-mix-remaining paid';
+                remainingLabel.textContent = 'Pendiente por pagar:';
+                remainingAmount.textContent = '¡PAGO COMPLETO!';
+                
+                document.getElementById('vueltoSection').style.display = 'none';
+                document.getElementById('condonacionCheckbox').style.display = 'none';
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
+            }
+            
+            // Actualizar resumen de pagos
+            const summaryDiv = document.getElementById('paymentSummary');
+            if (pagosMixtos.length > 0 && pagosMixtos.some(p => p.monto > 0)) {
+                summaryDiv.style.display = 'block';
+                document.getElementById('totalRecibido').textContent = `Bs. ${estadoPago.totalRecibido.toFixed(2)}`;
+                
+                if (estadoPago.pendiente > 0) {
+                    document.getElementById('pendienteRow').style.display = 'flex';
+                    document.getElementById('pendienteAmount').textContent = `Bs. ${estadoPago.pendiente.toFixed(2)}`;
+                    document.getElementById('sobranteRow').style.display = 'none';
+                } else if (estadoPago.sobrante > 0) {
+                    document.getElementById('sobranteRow').style.display = 'flex';
+                    document.getElementById('sobranteAmount').textContent = `Bs. ${estadoPago.sobrante.toFixed(2)}`;
+                    document.getElementById('pendienteRow').style.display = 'none';
+                } else {
+                    document.getElementById('pendienteRow').style.display = 'none';
+                    document.getElementById('sobranteRow').style.display = 'none';
+                }
+            } else {
+                summaryDiv.style.display = 'none';
+            }
+            
+            // Habilitar/deshabilitar botón de confirmar cobro
+            const btnConfirmar = document.getElementById('btnConfirmarCobro');
+            if (invitacionActiva) {
+                btnConfirmar.disabled = false;
+            } else if (diferenciaMostrada === 0 && !estadoPago.modoPrevisualizacion) {
+                btnConfirmar.disabled = false;
+            } else {
+                btnConfirmar.disabled = true;
+            }
+        }
+
+        // ==========================================
+        // FUNCIONES DE VUELTO
+        // ==========================================
+        function previsualizarVuelto() {
+            const vueltoInput = parseFloat(document.getElementById('vueltoInput').value) || 0;
+            
+            // Solo validación visual
+            if (vueltoInput > estadoPago.sobrante) {
+                document.getElementById('vueltoInput').style.borderColor = 'var(--danger)';
+            } else {
+                document.getElementById('vueltoInput').style.borderColor = 'var(--warning)';
+            }
+            
+            estadoPago.modoPrevisualizacion = true;
+            estadoPago.previewVuelto = vueltoInput;
+            calcularEstadoGlobal();
+        }
+
+        function procesarVuelto() {
+            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
+            
+            // Actualizar estado
+            estadoPago.vueltoEntregado = vueltoIngresado;
+            estadoPago.vueltoConfirmado = true;
+            estadoPago.modoPrevisualizacion = false;
+            estadoPago.previewVuelto = 0;
+            
+            // Bloquear campo
+            document.getElementById('vueltoInput').disabled = true;
+            document.getElementById('confirmarVueltoBtn').style.display = 'none';
+            document.getElementById('deshacerVueltoBtn').style.display = 'inline-block';
+            
+            calcularEstadoGlobal();
+            
+            mostrarNotificacion(`Vuelto de Bs. ${vueltoIngresado.toFixed(2)} confirmado`, 'success');
+        }
+
+        function deshacerVuelto() {
+            estadoPago.vueltoEntregado = 0;
+            estadoPago.vueltoConfirmado = false;
+            estadoPago.aFavorCajaActivo = false;
+            
+            document.getElementById('vueltoInput').disabled = false;
+            document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
+            document.getElementById('deshacerVueltoBtn').style.display = 'none';
+            document.getElementById('afavorCajaInput').checked = false;
+            
+            calcularEstadoGlobal();
+        }
+
+        function toggleCondonacion() {
+            estadoPago.condonacionActiva = document.getElementById('condonacionInput').checked;
+            calcularEstadoGlobal();
+        }
+
+        function toggleAfavorCaja() {
+            estadoPago.aFavorCajaActivo = document.getElementById('afavorCajaInput').checked;
+            calcularEstadoGlobal();
+        }
+
+        // ==========================================
+        // FUNCIONES DE PAGOS MIXTOS
+        // ==========================================
         function mostrarCobro(pedidoId) {
             if (isProcessing) return;
             
             currentPedido = sistemaData.pedidos.find(p => p.id === pedidoId);
             if (!currentPedido) return;
             
+            // Resetear todo
             invitacionActiva = false;
-            vueltoConfirmado = false;
-            condonacionActiva = false;
-            afavorCajaActiva = false;
             pagosConMonto = false;
+            pagosMixtos = [];
+            
+            estadoPago = {
+                totalPagar: currentPedido.total || 0,
+                totalRecibido: 0,
+                diferencia: 0,
+                sobrante: 0,
+                pendiente: 0,
+                vueltoEntregado: 0,
+                vueltoConfirmado: false,
+                condonacionActiva: false,
+                aFavorCajaActivo: false,
+                vueltoPendiente: 0,
+                ajustePorCheckbox: 0,
+                modoPrevisualizacion: false,
+                previewVuelto: 0
+            };
+            
+            // Resetear UI
             document.getElementById('invitacionCheckbox').checked = false;
             document.getElementById('invitacionContainer').style.display = 'flex';
-            document.getElementById('vueltoSection').style.display = 'none';
-            document.getElementById('condonacionCheckbox').style.display = 'none';
-            document.getElementById('afavorCajaCheckbox').style.display = 'none';
             document.getElementById('condonacionInput').checked = false;
             document.getElementById('afavorCajaInput').checked = false;
-            document.getElementById('condonacionMontoDisplay').style.display = 'none';
-            document.getElementById('afavorCajaMontoDisplay').style.display = 'none';
-            document.getElementById('optCondonacion').checked = false;
-            document.getElementById('optAfavorCaja').checked = false;
+            document.getElementById('vueltoInput').disabled = false;
+            document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
+            document.getElementById('deshacerVueltoBtn').style.display = 'none';
             
+            // Mostrar resumen del pedido
             const summary = document.getElementById('cobroSummary');
-            
             let itemsHtml = (currentPedido.items || []).map(item => {
                 const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(Sin ${item.personalizacion.join(', ')})</small>` : '';
-                
                 let descuentoTexto = '';
                 let descuentoDetalle = '';
                 
@@ -1954,23 +2181,15 @@
                 </div>`;
             }).join('');
             
-            totalPagar = currentPedido.total || 0;
-            
             summary.innerHTML = `<div style="background: #f8f8f8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
                 <h4 style="margin-bottom: 10px; color: var(--secondary);">Detalle del Pedido:</h4>
                 ${itemsHtml}
             </div>`;
             
-            document.getElementById('totalPagarDisplay').textContent = `Bs. ${totalPagar.toFixed(2)}`;
-            document.getElementById('remainingLabel').textContent = 'Monto a cobrar:';
-            document.getElementById('remainingAmount').textContent = `Bs. ${totalPagar.toFixed(2)}`;
+            document.getElementById('totalPagarDisplay').textContent = `Bs. ${estadoPago.totalPagar.toFixed(2)}`;
             
-            pagosMixtos = [];
             renderPagosMixtos();
-            actualizarResumenPago();
-            
-            document.getElementById('specialOptions').style.display = 'none';
-            document.getElementById('btnConfirmarCobro').disabled = true;
+            calcularEstadoGlobal();
             
             document.getElementById('cobroModal').classList.add('show');
         }
@@ -1979,7 +2198,7 @@
             invitacionActiva = document.getElementById('invitacionCheckbox').checked;
             
             if (invitacionActiva) {
-                totalPagar = 0;
+                estadoPago.totalPagar = 0;
                 document.getElementById('totalPagarDisplay').textContent = `Bs. 0.00`;
                 document.getElementById('btnConfirmarCobro').disabled = false;
                 document.querySelectorAll('.payment-mix-add, .payment-mix-item, .payment-mix-summary').forEach(el => {
@@ -1987,13 +2206,13 @@
                 });
                 document.getElementById('btnAddPayment').disabled = true;
             } else {
-                totalPagar = currentPedido.total || 0;
-                document.getElementById('totalPagarDisplay').textContent = `Bs. ${totalPagar.toFixed(2)}`;
+                estadoPago.totalPagar = currentPedido.total || 0;
+                document.getElementById('totalPagarDisplay').textContent = `Bs. ${estadoPago.totalPagar.toFixed(2)}`;
                 document.querySelectorAll('.payment-mix-add, .payment-mix-item, .payment-mix-summary').forEach(el => {
                     if (el) el.style.opacity = '1';
                 });
                 document.getElementById('btnAddPayment').disabled = false;
-                actualizarResumenPago();
+                calcularEstadoGlobal();
             }
         }
 
@@ -2018,7 +2237,7 @@
             });
             
             renderPagosMixtos();
-            actualizarResumenPago();
+            calcularEstadoGlobal();
         }
 
         function renderPagosMixtos() {
@@ -2094,7 +2313,7 @@
                 pago.metodo = nuevoMetodo;
                 pago.referencia = '';
                 renderPagosMixtos();
-                actualizarResumenPago();
+                calcularEstadoGlobal();
             }
         }
 
@@ -2105,13 +2324,9 @@
                 
                 pagosConMonto = pagosMixtos.some(p => p.monto > 0);
                 const invitacionContainer = document.getElementById('invitacionContainer');
-                if (pagosConMonto) {
-                    invitacionContainer.style.display = 'none';
-                } else {
-                    invitacionContainer.style.display = 'flex';
-                }
+                invitacionContainer.style.display = pagosConMonto ? 'none' : 'flex';
                 
-                actualizarResumenPago();
+                calcularEstadoGlobal();
             }
         }
 
@@ -2119,7 +2334,7 @@
             const pago = pagosMixtos.find(p => p.id === id);
             if (pago) {
                 pago.referencia = referencia;
-                actualizarResumenPago();
+                calcularEstadoGlobal();
             }
         }
 
@@ -2128,21 +2343,17 @@
             
             pagosConMonto = pagosMixtos.some(p => p.monto > 0);
             const invitacionContainer = document.getElementById('invitacionContainer');
-            if (pagosConMonto) {
-                invitacionContainer.style.display = 'none';
-            } else {
-                invitacionContainer.style.display = 'flex';
-            }
+            invitacionContainer.style.display = pagosConMonto ? 'none' : 'flex';
             
             renderPagosMixtos();
-            actualizarResumenPago();
+            calcularEstadoGlobal();
         }
 
         function handlePaymentKeypress(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-                const pendiente = totalPagar - totalRecibido;
+                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + (p.metodo === 'efectivo_usd' ? p.monto * tasaEfectiva : p.monto), 0);
+                const pendiente = estadoPago.totalPagar - totalRecibido;
                 
                 if (pendiente > 0 && pagosMixtos.length < 10) {
                     agregarMetodoPago();
@@ -2150,274 +2361,9 @@
             }
         }
 
-        function convertirAMontoReal(pago) {
-            if (pago.metodo === 'efectivo_usd') {
-                return pago.monto * tasaEfectiva;
-            }
-            return pago.monto;
-        }
-
-        function actualizarResumenPago() {
-            if (invitacionActiva) return;
-            
-            let totalRecibido = 0;
-            let totalRecibidoUsd = 0;
-            
-            pagosMixtos.forEach(pago => {
-                if (pago.metodo === 'efectivo_usd') {
-                    totalRecibidoUsd += pago.monto;
-                    totalRecibido += pago.monto * tasaEfectiva;
-                } else {
-                    totalRecibido += pago.monto;
-                }
-            });
-            
-            const diferencia = totalRecibido - totalPagar; // Negativo = falta, Positivo = sobra
-            
-            const remainingDisplay = document.getElementById('remainingDisplay');
-            const remainingAmount = document.getElementById('remainingAmount');
-            const remainingLabel = document.getElementById('remainingLabel');
-            
-            // Verificar si hay pagos con monto
-            const hayPagos = pagosMixtos.some(p => p.monto > 0);
-            
-            if (!hayPagos) {
-                // No hay pagos ingresados, ocultar todas las opciones especiales
-                document.getElementById('condonacionCheckbox').style.display = 'none';
-                document.getElementById('vueltoSection').style.display = 'none';
-                document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                remainingDisplay.className = 'payment-mix-remaining';
-                remainingLabel.textContent = 'Monto a cobrar:';
-                remainingAmount.textContent = `Bs. ${totalPagar.toFixed(2)}`;
-                remainingAmount.style.color = 'var(--secondary)';
-                document.getElementById('btnConfirmarCobro').disabled = true;
-                return;
-            }
-            
-            // Actualizar labels según la situación
-            if (diferencia < 0) {
-                // FALTA DINERO
-                remainingDisplay.className = 'payment-mix-remaining faltante';
-                remainingLabel.textContent = 'Pendiente por cobrar:';
-                remainingAmount.textContent = `Bs. ${Math.abs(diferencia).toFixed(2)}`;
-                remainingAmount.style.color = 'var(--danger)';
-                
-                // Ocultar sección de vuelto y mostrar checkbox de condonación
-                document.getElementById('vueltoSection').style.display = 'none';
-                document.getElementById('condonacionCheckbox').style.display = 'flex';
-                document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(diferencia).toFixed(2)}`;
-                document.getElementById('condonacionMontoDisplay').style.display = 'inline';
-                document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                
-                // Deshabilitar confirmar cobro hasta que se active condonación
-                if (!condonacionActiva) {
-                    document.getElementById('btnConfirmarCobro').disabled = true;
-                } else {
-                    document.getElementById('btnConfirmarCobro').disabled = false;
-                }
-                
-            } else if (diferencia > 0) {
-                // SOBRA DINERO
-                remainingDisplay.className = 'payment-mix-remaining excedente';
-                remainingLabel.textContent = 'Vuelto a entregar:';
-                remainingAmount.textContent = `Bs. ${diferencia.toFixed(2)}`;
-                remainingAmount.style.color = 'var(--warning)';
-                
-                // Mostrar sección de vuelto
-                document.getElementById('vueltoSection').style.display = 'flex';
-                document.getElementById('vueltoInput').value = diferencia.toFixed(2);
-                document.getElementById('vueltoInput').disabled = false;
-                document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
-                document.getElementById('deshacerVueltoBtn').style.display = 'none';
-                document.getElementById('condonacionCheckbox').style.display = 'none';
-                
-                // Calcular vuelto restante después de lo ingresado en el campo
-                const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
-                const vueltoRestante = diferencia - vueltoIngresado;
-                
-                if (vueltoRestante > 0) {
-                    // Aún falta devolver vuelto
-                    document.getElementById('afavorCajaCheckbox').style.display = 'flex';
-                    document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
-                    document.getElementById('afavorCajaMontoDisplay').style.display = 'inline';
-                } else if (vueltoRestante === 0) {
-                    // Vuelto exacto
-                    document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                } else {
-                    // Se pasó de vuelto (ahora falta dinero)
-                    document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                    document.getElementById('condonacionCheckbox').style.display = 'flex';
-                    document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
-                }
-                
-                // Si hay vuelto pendiente y no está confirmado, deshabilitar confirmar cobro
-                if (!vueltoConfirmado && !afavorCajaActiva) {
-                    document.getElementById('btnConfirmarCobro').disabled = true;
-                } else if (vueltoConfirmado && vueltoRestante === 0) {
-                    document.getElementById('btnConfirmarCobro').disabled = false;
-                } else if (afavorCajaActiva) {
-                    document.getElementById('btnConfirmarCobro').disabled = false;
-                } else {
-                    document.getElementById('btnConfirmarCobro').disabled = true;
-                }
-                
-            } else {
-                // PAGO EXACTO
-                remainingDisplay.className = 'payment-mix-remaining paid';
-                remainingLabel.textContent = 'Pendiente por pagar:';
-                remainingAmount.textContent = '¡PAGO COMPLETO!';
-                remainingAmount.style.color = 'var(--success)';
-                
-                document.getElementById('vueltoSection').style.display = 'none';
-                document.getElementById('condonacionCheckbox').style.display = 'none';
-                document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                document.getElementById('btnConfirmarCobro').disabled = false;
-            }
-            
-            const summaryDiv = document.getElementById('paymentSummary');
-            if (pagosMixtos.length > 0 && pagosMixtos.some(p => p.monto > 0)) {
-                summaryDiv.style.display = 'block';
-                
-                let resumenTexto = `Total recibido: Bs. ${totalRecibido.toFixed(2)}`;
-                if (totalRecibidoUsd > 0) {
-                    resumenTexto += ` ($${totalRecibidoUsd.toFixed(2)} × ${tasaEfectiva.toFixed(2)})`;
-                }
-                document.getElementById('totalRecibido').textContent = resumenTexto;
-                
-                if (diferencia < 0) {
-                    document.getElementById('faltanteRow').style.display = 'flex';
-                    document.getElementById('faltanteAmount').textContent = `Bs. ${Math.abs(diferencia).toFixed(2)}`;
-                    document.getElementById('excedenteRow').style.display = 'none';
-                } else if (diferencia > 0) {
-                    document.getElementById('excedenteRow').style.display = 'flex';
-                    document.getElementById('excedenteAmount').textContent = `Bs. ${diferencia.toFixed(2)}`;
-                    document.getElementById('faltanteRow').style.display = 'none';
-                } else {
-                    document.getElementById('faltanteRow').style.display = 'none';
-                    document.getElementById('excedenteRow').style.display = 'none';
-                }
-            } else {
-                summaryDiv.style.display = 'none';
-            }
-        }
-
-        function actualizarVueltoEnTiempoReal() {
-            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
-            const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-            const excedente = totalRecibido - totalPagar;
-            
-            const vueltoRestante = excedente - vueltoIngresado;
-            
-            if (vueltoRestante > 0) {
-                // Aún falta devolver vuelto
-                document.getElementById('remainingLabel').textContent = 'Restante por devolver:';
-                document.getElementById('remainingAmount').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
-                document.getElementById('afavorCajaCheckbox').style.display = 'flex';
-                document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
-                document.getElementById('btnConfirmarCobro').disabled = true;
-            } else if (vueltoRestante === 0) {
-                // Vuelto exacto
-                document.getElementById('remainingLabel').textContent = 'Vuelto a entregar:';
-                document.getElementById('remainingAmount').textContent = `Bs. ${excedente.toFixed(2)} (completo)`;
-                document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                if (vueltoConfirmado) {
-                    document.getElementById('btnConfirmarCobro').disabled = false;
-                }
-            } else {
-                // Se pasó de vuelto (ahora falta dinero)
-                document.getElementById('remainingDisplay').className = 'payment-mix-remaining faltante';
-                document.getElementById('remainingLabel').textContent = 'Pendiente por cobrar:';
-                document.getElementById('remainingAmount').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
-                document.getElementById('afavorCajaCheckbox').style.display = 'none';
-                document.getElementById('condonacionCheckbox').style.display = 'flex';
-                document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
-                document.getElementById('btnConfirmarCobro').disabled = true;
-            }
-        }
-
-        function confirmarVuelto() {
-            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
-            const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-            const excedente = totalRecibido - totalPagar;
-            
-            if (vueltoIngresado > excedente) {
-                mostrarNotificacion('El vuelto no puede ser mayor al excedente', 'error');
-                return;
-            }
-            
-            vueltoConfirmado = true;
-            vueltoValor = vueltoIngresado;
-            document.getElementById('confirmarVueltoBtn').style.display = 'none';
-            document.getElementById('deshacerVueltoBtn').style.display = 'inline-block';
-            document.getElementById('vueltoInput').disabled = true;
-            
-            // Verificar si con este vuelto se completa el pago
-            const vueltoRestante = excedente - vueltoIngresado;
-            if (vueltoRestante === 0) {
-                document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
-                document.getElementById('remainingLabel').textContent = 'Pendiente por pagar:';
-                document.getElementById('remainingAmount').textContent = '¡PAGO COMPLETO!';
-                document.getElementById('btnConfirmarCobro').disabled = false;
-            }
-            
-            mostrarNotificacion(`Vuelto de Bs. ${vueltoIngresado.toFixed(2)} confirmado`, 'success');
-        }
-
-        function deshacerVuelto() {
-            vueltoConfirmado = false;
-            document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
-            document.getElementById('deshacerVueltoBtn').style.display = 'none';
-            document.getElementById('vueltoInput').disabled = false;
-            actualizarResumenPago();
-        }
-
-        function toggleCondonacion() {
-            condonacionActiva = document.getElementById('condonacionInput').checked;
-            
-            if (condonacionActiva) {
-                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-                const pendiente = totalPagar - totalRecibido;
-                document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
-                document.getElementById('remainingLabel').textContent = 'Monto condonado:';
-                document.getElementById('remainingAmount').textContent = `Bs. ${pendiente.toFixed(2)}`;
-                document.getElementById('btnConfirmarCobro').disabled = false;
-            } else {
-                actualizarResumenPago();
-            }
-            
-            document.getElementById('optCondonacion').checked = condonacionActiva;
-        }
-
-        function toggleAfavorCaja() {
-            afavorCajaActiva = document.getElementById('afavorCajaInput').checked;
-            
-            if (afavorCajaActiva) {
-                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-                const excedente = totalRecibido - totalPagar;
-                const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
-                const restante = excedente - vueltoIngresado;
-                
-                document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
-                document.getElementById('remainingLabel').textContent = 'A favor de caja:';
-                document.getElementById('remainingAmount').textContent = `Bs. ${restante.toFixed(2)}`;
-                document.getElementById('btnConfirmarCobro').disabled = false;
-            } else {
-                actualizarResumenPago();
-            }
-            
-            document.getElementById('optAfavorCaja').checked = afavorCajaActiva;
-        }
-
-        function sincronizarCondonacion() {
-            document.getElementById('condonacionInput').checked = document.getElementById('optCondonacion').checked;
-            toggleCondonacion();
-        }
-
-        function sincronizarAfavorCaja() {
-            document.getElementById('afavorCajaInput').checked = document.getElementById('optAfavorCaja').checked;
-            toggleAfavorCaja();
-        }
-
+        // ==========================================
+        // CONFIRMAR COBRO
+        // ==========================================
         async function confirmarCobro() {
             if (isProcessing || (!currentPedido && !invitacionActiva) || (pagosMixtos.length === 0 && !invitacionActiva)) return;
             
@@ -2464,8 +2410,6 @@
                             totalRecibido += pago.monto;
                         }
                     });
-                    
-                    const diferencia = totalRecibido - totalPagar;
                     
                     const pedidoActual = sistemaData.pedidos.find(p => p.id === currentPedido.id);
                     if (!pedidoActual) {
@@ -2523,14 +2467,12 @@
                     }));
                     
                     // Registrar acciones especiales
-                    if (diferencia < 0 && condonacionActiva) {
-                        pedidoActual.condonado = Math.abs(diferencia);
-                    } else if (diferencia > 0 && vueltoConfirmado) {
-                        pedidoActual.vueltoEntregado = vueltoValor;
-                        if (afavorCajaActiva) {
-                            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
-                            const restante = diferencia - vueltoIngresado;
-                            pedidoActual.aFavorCaja = restante;
+                    if (estadoPago.pendiente > 0 && estadoPago.condonacionActiva) {
+                        pedidoActual.condonado = estadoPago.pendiente;
+                    } else if (estadoPago.sobrante > 0 && estadoPago.vueltoConfirmado) {
+                        pedidoActual.vueltoEntregado = estadoPago.vueltoEntregado;
+                        if (estadoPago.aFavorCajaActivo) {
+                            pedidoActual.aFavorCaja = estadoPago.vueltoPendiente;
                         }
                     }
                     
@@ -2746,6 +2688,329 @@
                 console.error('Error guardando:', error);
                 throw error;
             }
+        }
+		
+		// ==========================================
+        // FUNCIONES DE BOTONES INTERACTIVOS
+        // ==========================================
+        function verDetalleEstadistica(tipo) {
+            if (!sistemaData || !sistemaData.pedidos) return;
+            
+            const hoy = new Date().toISOString().split('T')[0];
+            const pedidosHoy = sistemaData.pedidos.filter(p => p.timestamp.startsWith(hoy));
+            
+            let titulo = '';
+            let contenido = '';
+            let icono = '';
+            
+            switch(tipo) {
+                case 'pendientes':
+                    titulo = 'Pedidos en Preparación';
+                    icono = 'fa-fire';
+                    
+                    const enCocina = pedidosHoy.filter(p => p.estado === 'en_cocina');
+                    const enCamino = pedidosHoy.filter(p => p.estado === 'en_camino');
+                    const reservaPendiente = pedidosHoy.filter(p => p.estado === 'reserva_pendiente');
+                    const reservaAtendida = pedidosHoy.filter(p => p.estado === 'reserva_atendida');
+                    
+                    const todosPendientes = [...enCocina, ...enCamino, ...reservaPendiente, ...reservaAtendida];
+                    
+                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total: <strong>${todosPendientes.length}</strong> pedido(s) en preparación</p>`;
+                    
+                    if (todosPendientes.length === 0) {
+                        contenido += '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay pedidos en preparación</p></div>';
+                    } else {
+                        contenido += '<div class="stats-detail-list">';
+                        todosPendientes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
+                            let estadoTexto = '';
+                            let estadoColor = '';
+                            
+                            if (p.estado === 'en_cocina') { estadoTexto = '👨‍🍳 En Cocina'; estadoColor = 'var(--warning)'; }
+                            else if (p.estado === 'en_camino') { estadoTexto = '🛵 En Camino'; estadoColor = 'var(--info)'; }
+                            else if (p.estado === 'reserva_pendiente') { estadoTexto = '📅 Reserva Pendiente'; estadoColor = '#9c27b0'; }
+                            else if (p.estado === 'reserva_atendida') { estadoTexto = '✅ Cliente Atendido'; estadoColor = '#ff5722'; }
+                            
+                            let platillosHtml = '';
+                            if (p.items && p.items.length > 0) {
+                                platillosHtml = '<div class="stats-detail-platillos">';
+                                p.items.forEach(item => {
+                                    const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(sin ${item.personalizacion.join(', ')})</small>` : '';
+                                    const subtotal = item.subtotal || 0;
+                                    platillosHtml += `<div class="stats-detail-platillo-item"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${subtotal.toFixed(2)}</span></div>`;
+                                });
+                                platillosHtml += '</div>';
+                            }
+                            
+                            let infoAdicional = '';
+                            if (p.tipo === 'mesa' && p.mesa) {
+                                infoAdicional = `<div class="stats-detail-mesa"><i class="fas fa-chair"></i> Mesa #${p.mesa}</div>`;
+                            } else if (p.tipo === 'delivery') {
+                                infoAdicional = `
+                                    <div class="stats-detail-direccion"><i class="fas fa-map-marker-alt"></i> ${p.direccion || 'Dirección no especificada'}</div>
+                                    <div class="stats-detail-telefono"><i class="fas fa-phone"></i> ${p.telefono || 'Teléfono no especificado'}</div>
+                                `;
+                            } else if (p.tipo === 'reserva') {
+                                infoAdicional = `<div class="stats-detail-cliente"><i class="fas fa-user"></i> ${p.clienteNombre || 'Cliente no especificado'}</div>`;
+                            }
+                            
+                            contenido += `
+                                <div class="stats-detail-item">
+                                    <div class="stats-detail-info">
+                                        <div class="stats-detail-id">${p.id}</div>
+                                        ${platillosHtml}
+                                        ${infoAdicional}
+                                        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                                            <span style="color: ${estadoColor}; font-weight: 600;"><i class="fas fa-${p.tipo === 'mesa' ? 'chair' : p.tipo === 'delivery' ? 'motorcycle' : 'calendar-check'}"></i> ${p.tipo === 'mesa' ? 'Mesa' : p.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</span>
+                                            <span style="color: #666;"><i class="far fa-clock"></i> ${new Date(p.timestamp).toLocaleTimeString()}</span>
+                                        </div>
+                                    </div>
+                                    <div class="stats-detail-total">Bs. ${(p.total || 0).toFixed(2)}</div>
+                                </div>
+                            `;
+                        });
+                        contenido += '</div>';
+                    }
+                    break;
+                    
+                case 'cobrados':
+                    titulo = 'Pedidos Cobrados Hoy';
+                    icono = 'fa-check-circle';
+                    
+                    const cobrados = pedidosHoy.filter(p => 
+                        p.estado === 'cobrado' || 
+                        p.estado === 'en_cocina' || 
+                        p.estado === 'en_camino' || 
+                        p.estado === 'reserva_pendiente' || 
+                        p.estado === 'entregado' || 
+                        p.estado === 'enviado' || 
+                        p.estado === 'reserva_completada'
+                    );
+                    
+                    const totalCobrado = cobrados.reduce((sum, p) => sum + (p.total || 0), 0);
+                    
+                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total cobrado hoy: <strong style="color: var(--primary); font-size: 1.2rem;">Bs. ${totalCobrado.toFixed(2)}</strong></p>`;
+                    
+                    if (cobrados.length === 0) {
+                        contenido += '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay cobros registrados hoy</p></div>';
+                    } else {
+                        contenido += '<div class="stats-detail-list">';
+                        cobrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(p => {
+                            let platillosHtml = '';
+                            if (p.items && p.items.length > 0) {
+                                platillosHtml = '<div class="stats-detail-platillos">';
+                                p.items.forEach(item => {
+                                    const personalizacion = item.personalizacion?.length > 0 ? ` <small style="color: #666;">(sin ${item.personalizacion.join(', ')})</small>` : '';
+                                    const subtotal = item.subtotal || 0;
+                                    platillosHtml += `<div class="stats-detail-platillo-item"><span>${item.cantidad || 1}x ${item.nombre}${personalizacion}</span><span>Bs. ${subtotal.toFixed(2)}</span></div>`;
+                                });
+                                platillosHtml += '</div>';
+                            }
+                            
+                            let infoAdicional = '';
+                            if (p.tipo === 'mesa' && p.mesa) {
+                                infoAdicional = `<div class="stats-detail-mesa"><i class="fas fa-chair"></i> Mesa #${p.mesa}</div>`;
+                            } else if (p.tipo === 'delivery') {
+                                infoAdicional = `
+                                    <div class="stats-detail-direccion"><i class="fas fa-map-marker-alt"></i> ${p.direccion || 'Dirección no especificada'}</div>
+                                    <div class="stats-detail-telefono"><i class="fas fa-phone"></i> ${p.telefono || 'Teléfono no especificado'}</div>
+                                `;
+                            } else if (p.tipo === 'reserva') {
+                                infoAdicional = `<div class="stats-detail-cliente"><i class="fas fa-user"></i> ${p.clienteNombre || 'Cliente no especificado'}</div>`;
+                            }
+                            
+                            let metodosPagoHtml = '<div class="stats-detail-metodos-pago">';
+                            if (p.pagosMixtos && p.pagosMixtos.length > 0) {
+                                p.pagosMixtos.forEach(pago => {
+                                    let nombreMetodo = '';
+                                    if (pago.metodo === 'efectivo_bs') nombreMetodo = 'Efectivo Bs';
+                                    else if (pago.metodo === 'efectivo_usd') nombreMetodo = 'Efectivo $';
+                                    else if (pago.metodo === 'pago_movil') nombreMetodo = 'Pago Móvil';
+                                    else if (pago.metodo === 'punto_venta') nombreMetodo = 'Punto de Venta';
+                                    else nombreMetodo = pago.metodo;
+                                    
+                                    metodosPagoHtml += `<span class="metodo-pago-tag"><i class="fas fa-${pago.metodo === 'efectivo_bs' ? 'money-bill-wave' : pago.metodo === 'efectivo_usd' ? 'dollar-sign' : pago.metodo === 'pago_movil' ? 'mobile-alt' : 'credit-card'}"></i> ${nombreMetodo}: Bs. ${(pago.montoBs || pago.monto).toFixed(2)}</span>`;
+                                });
+                            } else if (p.metodoPago) {
+                                metodosPagoHtml += `<span class="metodo-pago-tag">${p.metodoPago}</span>`;
+                            }
+                            metodosPagoHtml += '</div>';
+                            
+                            contenido += `
+                                <div class="stats-detail-item">
+                                    <div class="stats-detail-info">
+                                        <div class="stats-detail-id">${p.id}</div>
+                                        ${platillosHtml}
+                                        ${infoAdicional}
+                                        ${metodosPagoHtml}
+                                        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                                            <span style="color: var(--info);"><i class="fas fa-${p.tipo === 'mesa' ? 'chair' : p.tipo === 'delivery' ? 'motorcycle' : 'calendar-check'}"></i> ${p.tipo === 'mesa' ? 'Mesa' : p.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</span>
+                                            <span style="color: #666;"><i class="far fa-clock"></i> ${new Date(p.timestamp).toLocaleTimeString()}</span>
+                                            ${p.cajero ? `<span style="color: #666;"><i class="fas fa-user"></i> ${p.cajero}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="stats-detail-total">Bs. ${(p.total || 0).toFixed(2)}</div>
+                                </div>
+                            `;
+                        });
+                        contenido += '</div>';
+                    }
+                    break;
+                    
+                case 'ventas':
+                    titulo = 'Ventas Totales';
+                    icono = 'fa-dollar-sign';
+                    
+                    const ventasDia = pedidosHoy.filter(p => 
+                        p.estado !== 'pendiente' && 
+                        p.estado !== 'rechazado' && 
+                        p.estado !== 'cancelado_timeout'
+                    );
+                    
+                    const totalVentas = ventasDia.reduce((sum, p) => sum + (p.total || 0), 0);
+                    const totalItemsVendidos = ventasDia.reduce((sum, p) => sum + (p.items?.length || 0), 0);
+                    
+                    let porEfectivo = 0, porPM = 0, porPV = 0;
+                    ventasDia.forEach(p => {
+                        if (p.metodoPago === 'mixto' && p.pagosMixtos) {
+                            p.pagosMixtos.forEach(pago => {
+                                if (pago.metodo === 'efectivo_bs') porEfectivo += pago.monto;
+                                else if (pago.metodo === 'efectivo_usd') porEfectivo += pago.monto * tasaEfectiva;
+                                else if (pago.metodo === 'pago_movil') porPM += pago.monto;
+                                else if (pago.metodo === 'punto_venta') porPV += pago.monto;
+                            });
+                        } else {
+                            if (p.metodoPago === 'efectivo') porEfectivo += p.total;
+                            else if (p.metodoPago === 'pago_movil') porPM += p.total;
+                            else if (p.metodoPago === 'punto_venta') porPV += p.total;
+                        }
+                    });
+                    
+                    contenido = `
+                        <p style="color: #666; margin-bottom: 15px;">
+                            Ventas totales del día: <strong style="color: var(--primary); font-size: 1.5rem;">Bs. ${totalVentas.toFixed(2)}</strong><br>
+                            <span style="font-size: 0.9rem;">${totalItemsVendidos} productos vendidos</span>
+                        </p>
+                        
+                        <div style="background: #f8f8f8; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 15px; color: var(--secondary);"><i class="fas fa-chart-pie"></i> Desglose por método de pago:</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 1.5rem; color: var(--success); margin-bottom: 5px;"><i class="fas fa-money-bill-wave"></i></div>
+                                    <div style="font-size: 0.85rem; color: #666;">Efectivo</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porEfectivo.toFixed(2)}</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 1.5rem; color: var(--info); margin-bottom: 5px;"><i class="fas fa-mobile-alt"></i></div>
+                                    <div style="font-size: 0.85rem; color: #666;">Pago Móvil</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porPM.toFixed(2)}</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; grid-column: span 2;">
+                                    <div style="font-size: 1.5rem; color: var(--warning); margin-bottom: 5px;"><i class="fas fa-credit-card"></i></div>
+                                    <div style="font-size: 0.85rem; color: #666;">Punto de Venta</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Bs. ${porPV.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Últimas transacciones:</h4>
+                    `;
+                    
+                    ventasDia.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).forEach(p => {
+                        let platillosHtml = '';
+                        if (p.items && p.items.length > 0) {
+                            platillosHtml = '<div class="stats-detail-platillos" style="font-size: 0.8rem;">';
+                            p.items.forEach(item => {
+                                platillosHtml += `<div class="stats-detail-platillo-item"><span>${item.cantidad || 1}x ${item.nombre}</span><span>Bs. ${(item.subtotal || 0).toFixed(2)}</span></div>`;
+                            });
+                            platillosHtml += '</div>';
+                        }
+                        
+                        let infoAdicional = '';
+                        if (p.tipo === 'mesa' && p.mesa) {
+                            infoAdicional = `<span><i class="fas fa-chair"></i> Mesa #${p.mesa}</span>`;
+                        } else if (p.tipo === 'delivery') {
+                            infoAdicional = `<span><i class="fas fa-map-marker-alt"></i> ${p.direccion?.substring(0, 30)}...</span>`;
+                        }
+                        
+                        let estadoIcon = '';
+                        if (p.estado === 'cobrado') estadoIcon = '✅';
+                        else if (p.estado === 'en_cocina') estadoIcon = '👨‍🍳';
+                        else if (p.estado === 'en_camino') estadoIcon = '🛵';
+                        else if (p.estado === 'entregado') estadoIcon = '🍽️';
+                        
+                        contenido += `
+                            <div style="background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600; display: flex; align-items: center; gap: 5px;">${p.id} ${estadoIcon} ${infoAdicional}</div>
+                                        <div style="font-size: 0.75rem; color: #666;">${new Date(p.timestamp).toLocaleTimeString()}</div>
+                                    </div>
+                                    <div style="font-weight: 700; color: var(--primary);">Bs. ${(p.total || 0).toFixed(2)}</div>
+                                </div>
+                                ${platillosHtml}
+                            </div>
+                        `;
+                    });
+                    contenido += '</div>';
+                    break;
+                    
+                case 'platillos':
+                    titulo = 'Platillos Más Vendidos';
+                    icono = 'fa-utensils';
+                    
+                    const ventasPlatillos = pedidosHoy.filter(p => 
+                        p.estado !== 'pendiente' && 
+                        p.estado !== 'rechazado' && 
+                        p.estado !== 'cancelado_timeout'
+                    );
+                    
+                    const conteoPlatillos = {};
+                    let totalPlatillosVendidos = 0;
+                    
+                    ventasPlatillos.forEach(p => {
+                        p.items?.forEach(item => {
+                            const cantidad = item.cantidad || 1;
+                            conteoPlatillos[item.nombre] = (conteoPlatillos[item.nombre] || 0) + cantidad;
+                            totalPlatillosVendidos += cantidad;
+                        });
+                    });
+                    
+                    const ranking = Object.entries(conteoPlatillos)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10);
+                    
+                    const maxVentas = ranking.length > 0 ? ranking[0][1] : 0;
+                    
+                    contenido = `<p style="color: #666; margin-bottom: 15px;">Total platillos vendidos hoy: <strong style="color: var(--primary); font-size: 1.2rem;">${totalPlatillosVendidos}</strong></p>`;
+                    
+                    if (ranking.length === 0) {
+                        contenido += '<div class="empty-state"><i class="fas fa-utensils"></i><p>No hay ventas registradas hoy</p></div>';
+                    } else {
+                        contenido += '<div style="max-height: 400px; overflow-y: auto;">';
+                        ranking.forEach(([nombre, cantidad], index) => {
+                            const porcentaje = maxVentas > 0 ? (cantidad / maxVentas) * 100 : 0;
+                            contenido += `
+                                <div class="ranking-bar">
+                                    <div class="ranking-position">${index + 1}</div>
+                                    <div class="ranking-info">
+                                        <div class="ranking-name">${nombre}</div>
+                                        <div class="ranking-cantidad">${cantidad} vendido(s)</div>
+                                    </div>
+                                    <div class="ranking-bar-container">
+                                        <div class="ranking-bar-fill" style="width: ${porcentaje}%;"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contenido += '</div>';
+                    }
+                    break;
+            }
+            
+            document.getElementById('statsDetailTitle').innerHTML = `<i class="fas ${icono}"></i> ${titulo}`;
+            document.getElementById('statsDetailBody').innerHTML = contenido;
+            document.getElementById('statsDetailModal').classList.add('show');
         }
         
         window.addEventListener('beforeunload', () => { 
