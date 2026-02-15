@@ -1824,24 +1824,24 @@
     </div>
 
     <div class="container" id="mainContainer">
-        <div class="header">
-            <div class="logo-container">
-                <img src="https://lh3.googleusercontent.com/pw/AP1GczPrZAoWxmsOGRD9xl1hO5Q65JXuwUZzoR6gUk-cw5lVmarxQe_-lwqpA60tTKLlXfpvIjAJlKC6jFls-xETJOPkebLIIPhbGlUkknmhrRbdhMUll2UViGSUj3WmHKg2YEsZlAfxBPPTjIHhScjD0jfe=w1439-h1439-s-no-gm" alt="Saki Sushi Logo" class="logo" onclick="resetToAllCategories()">
-            </div>
-            <h1 onclick="resetToAllCategories()">Saki Sushi</h1>
-            <p class="subtitle" onclick="resetToAllCategories()">Adictos al universo saki</p>
-            <div class="tagline">
-                <div class="tagline-item">🐟 Fresco del día</div>
-                <div class="tagline-item">🎌 Tradicional</div>
-                <div class="tagline-item">👨‍🍳 Chef experto</div>
-                <div class="tagline-item">🔥 Ofertas Especiales</div>
-            </div>
-            
-            <div class="search-container">
-                <input type="text" class="search-box" id="searchInput" placeholder="Buscar platillo por nombre..." oninput="buscarPlatillos()">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-        </div>
+		<div class="header">
+			<div class="logo-container">
+				<img src="https://lh3.googleusercontent.com/pw/AP1GczPrZAoWxmsOGRD9xl1hO5Q65JXuwUZzoR6gUk-cw5lVmarxQe_-lwqpA60tTKLlXfpvIjAJlKC6jFls-xETJOPkebLIIPhbGlUkknmhrRbdhMUll2UViGSUj3WmHKg2YEsZlAfxBPPTjIHhScjD0jfe=w1439-h1439-s-no-gm" alt="Saki Sushi Logo" class="logo" onclick="resetToAllCategories()">
+			</div>
+			<h1 onclick="resetToAllCategories()">Saki Sushi</h1>
+			<p class="subtitle" onclick="resetToAllCategories()">Adictos al universo saki</p>
+			<div class="tagline">
+				<div class="tagline-item">🐟 Fresco del día</div>
+				<div class="tagline-item">🎌 Tradicional</div>
+				<div class="tagline-item">👨‍🍳 Chef experto</div>
+				<div class="tagline-item" onclick="selectCategory('ofertas')" style="cursor: pointer;">🔥 Ofertas Especiales</div>
+			</div>
+			
+			<div class="search-container">
+				<input type="text" class="search-box" id="searchInput" placeholder="Buscar platillo por nombre..." oninput="buscarPlatillos()">
+				<i class="fas fa-search search-icon"></i>
+			</div>
+		</div>
 
         <div class="menu-grid" id="menuGrid">
         </div>
