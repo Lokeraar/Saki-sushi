@@ -952,7 +952,7 @@
                     </div>
                 </div>
 
-                <!-- CHECKBOX PARA CONDONACIÓN (CUANDO FALTA DINERO) -->
+                <!-- CHECKBOX PARA CONDONACIÓN (CUANDO FALTA DINERO) - INICIALMENTE OCULTO -->
                 <div class="condonacion-checkbox" id="condonacionCheckbox" style="display: none;">
                     <input type="checkbox" id="condonacionInput" onchange="toggleCondonacion()">
                     <label for="condonacionInput">
@@ -961,7 +961,7 @@
                     </label>
                 </div>
 
-                <!-- CHECKBOX PARA A FAVOR DE CAJA (CUANDO SOBRA DINERO Y NO SE DEVUELVE TODO) -->
+                <!-- CHECKBOX PARA A FAVOR DE CAJA (CUANDO SOBRA DINERO Y NO SE DEVUELVE TODO) - INICIALMENTE OCULTO -->
                 <div class="condonacion-checkbox" id="afavorCajaCheckbox" style="display: none;">
                     <input type="checkbox" id="afavorCajaInput" onchange="toggleAfavorCaja()">
                     <label for="afavorCajaInput">
@@ -2178,6 +2178,22 @@
             const remainingAmount = document.getElementById('remainingAmount');
             const remainingLabel = document.getElementById('remainingLabel');
             
+            // Verificar si hay pagos con monto
+            const hayPagos = pagosMixtos.some(p => p.monto > 0);
+            
+            if (!hayPagos) {
+                // No hay pagos ingresados, ocultar todas las opciones especiales
+                document.getElementById('condonacionCheckbox').style.display = 'none';
+                document.getElementById('vueltoSection').style.display = 'none';
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                remainingDisplay.className = 'payment-mix-remaining';
+                remainingLabel.textContent = 'Monto a cobrar:';
+                remainingAmount.textContent = `Bs. ${totalPagar.toFixed(2)}`;
+                remainingAmount.style.color = 'var(--secondary)';
+                document.getElementById('btnConfirmarCobro').disabled = true;
+                return;
+            }
+            
             // Actualizar labels según la situación
             if (diferencia < 0) {
                 // FALTA DINERO
@@ -2196,6 +2212,8 @@
                 // Deshabilitar confirmar cobro hasta que se active condonación
                 if (!condonacionActiva) {
                     document.getElementById('btnConfirmarCobro').disabled = true;
+                } else {
+                    document.getElementById('btnConfirmarCobro').disabled = false;
                 }
                 
             } else if (diferencia > 0) {
@@ -2212,11 +2230,6 @@
                 document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
                 document.getElementById('deshacerVueltoBtn').style.display = 'none';
                 document.getElementById('condonacionCheckbox').style.display = 'none';
-                
-                // Si hay vuelto pendiente y no está confirmado, deshabilitar confirmar cobro
-                if (!vueltoConfirmado) {
-                    document.getElementById('btnConfirmarCobro').disabled = true;
-                }
                 
                 // Calcular vuelto restante después de lo ingresado en el campo
                 const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
@@ -2235,6 +2248,17 @@
                     document.getElementById('afavorCajaCheckbox').style.display = 'none';
                     document.getElementById('condonacionCheckbox').style.display = 'flex';
                     document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
+                }
+                
+                // Si hay vuelto pendiente y no está confirmado, deshabilitar confirmar cobro
+                if (!vueltoConfirmado && !afavorCajaActiva) {
+                    document.getElementById('btnConfirmarCobro').disabled = true;
+                } else if (vueltoConfirmado && vueltoRestante === 0) {
+                    document.getElementById('btnConfirmarCobro').disabled = false;
+                } else if (afavorCajaActiva) {
+                    document.getElementById('btnConfirmarCobro').disabled = false;
+                } else {
+                    document.getElementById('btnConfirmarCobro').disabled = true;
                 }
                 
             } else {
@@ -2275,33 +2299,6 @@
             } else {
                 summaryDiv.style.display = 'none';
             }
-            
-            const btnConfirmar = document.getElementById('btnConfirmarCobro');
-            if (invitacionActiva) {
-                btnConfirmar.disabled = false;
-                return;
-            }
-            
-            const hayMontoValido = pagosMixtos.some(p => p.monto > 0);
-            
-            const hayReferenciaValida = pagosMixtos.every(p => {
-                if (p.monto <= 0) return true;
-                if (p.metodo === 'pago_movil') {
-                    return p.referencia && p.referencia.length === 6;
-                }
-                return true;
-            });
-            
-            // Lógica para habilitar confirmar cobro
-            if (diferencia === 0) {
-                btnConfirmar.disabled = false;
-            } else if (diferencia < 0 && condonacionActiva) {
-                btnConfirmar.disabled = false;
-            } else if (diferencia > 0 && vueltoConfirmado && (afavorCajaActiva || document.getElementById('vueltoInput').value == diferencia)) {
-                btnConfirmar.disabled = false;
-            } else {
-                btnConfirmar.disabled = !(hayMontoValido && hayReferenciaValida);
-            }
         }
 
         function actualizarVueltoEnTiempoReal() {
@@ -2317,11 +2314,15 @@
                 document.getElementById('remainingAmount').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
                 document.getElementById('afavorCajaCheckbox').style.display = 'flex';
                 document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
+                document.getElementById('btnConfirmarCobro').disabled = true;
             } else if (vueltoRestante === 0) {
                 // Vuelto exacto
                 document.getElementById('remainingLabel').textContent = 'Vuelto a entregar:';
-                document.getElementById('remainingAmount').textContent = `Bs. 0.00 (completo)`;
+                document.getElementById('remainingAmount').textContent = `Bs. ${excedente.toFixed(2)} (completo)`;
                 document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                if (vueltoConfirmado) {
+                    document.getElementById('btnConfirmarCobro').disabled = false;
+                }
             } else {
                 // Se pasó de vuelto (ahora falta dinero)
                 document.getElementById('remainingDisplay').className = 'payment-mix-remaining faltante';
@@ -2330,6 +2331,7 @@
                 document.getElementById('afavorCajaCheckbox').style.display = 'none';
                 document.getElementById('condonacionCheckbox').style.display = 'flex';
                 document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
+                document.getElementById('btnConfirmarCobro').disabled = true;
             }
         }
 
