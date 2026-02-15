@@ -1,3 +1,6 @@
+Sí, el código está correcto, pero hay un pequeño error de sintaxis: la función `limpiarPedidosDiaAnterior()` está definida **dentro** de `cargarDatos()`. Debe estar fuera, a nivel global. Aquí está la versión corregida:
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -312,15 +315,15 @@
                     <p>Saki Sushi - Acceso Restringido</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Contraseña de Administrador</label>
+                    <label class="form-label">Contrase?a de Administrador</label>
                     <input type="password" class="form-input" id="adminPasswordInput" placeholder="******" onkeypress="handleLoginKeypress(event)">
-                    <div class="error-message" id="loginError">Contraseña incorrecta</div>
+                    <div class="error-message" id="loginError">Contrase?a incorrecta</div>
                 </div>
                 <button class="btn btn-primary" onclick="loginAdmin()">
                     <i class="fas fa-sign-in-alt"></i> Acceder
                 </button>
                 <div class="login-links">
-                    <a onclick="showRecovery()">Recuperar Contraseña</a>
+                    <a onclick="showRecovery()">Recuperar Contrase?a</a>
                 </div>
             </div>
 
@@ -328,7 +331,7 @@
             <div class="recovery-steps" id="recoveryEmailStep">
                 <div class="login-logo">
                     <i class="fas fa-envelope" style="color: var(--info);"></i>
-                    <h1>Recuperar Contraseña</h1>
+                    <h1>Recuperar Contrase?a</h1>
                     <p>Introduce tu correo electrónico registrado</p>
                 </div>
                 <div class="form-group">
@@ -372,15 +375,15 @@
             <div class="recovery-steps" id="recoverySuccessStep">
                 <div class="login-logo">
                     <i class="fas fa-unlock" style="color: var(--success);"></i>
-                    <h1>✅ Recuperación Exitosa!</h1>
-                    <p>Tu contraseña ha sido recuperada</p>
+                    <h1>? Recuperación Exitosa!</h1>
+                    <p>Tu contrase?a ha sido recuperada</p>
                 </div>
                 <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.5rem; margin: 1.5rem 0; border: 1px solid var(--border);">
-                    <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tu contraseña es:</div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tu contrase?a es:</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);" id="recoveredPassword">654321</div>
                 </div>
                 <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem; color: var(--warning);">
-                    <i class="fas fa-exclamation-triangle"></i> Por seguridad, anota esta contraseña en un lugar seguro. El sistema no permite recuperación adicional sin contacto directo con soporte técnico.
+                    <i class="fas fa-exclamation-triangle"></i> Por seguridad, anota esta contrase?a en un lugar seguro. El sistema no permite recuperación adicional sin contacto directo con soporte técnico.
                 </div>
                 <button class="btn btn-primary" onclick="backToLogin()">
                     <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
@@ -394,7 +397,7 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h2 style="margin-bottom: 1rem;">👋 ¡Buenos días!</h2>
+                <h2 style="margin-bottom: 1rem;">?? ?Buenos días!</h2>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Antes de iniciar actividades, por favor actualiza la <strong>tasa del dólar del día</strong>.</p>
                 <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Tasa del Día (Bs. por $1)</label>
@@ -410,7 +413,7 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-body" style="text-align: center; padding: 2rem;">
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h3 style="margin-bottom: 1rem;">¿Detener Aumento Diario?</h3>
+                <h3 style="margin-bottom: 1rem;">?Detener Aumento Diario?</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Vas a desactivar el aumento diario. A partir de ahora deberás cambiar el precio de la tasa manualmente. El sistema no aplicará incrementos automáticos hasta que vuelvas a activar esta opción.</p>
                 <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-confirmar-detener')">Cancelar</button><button class="btn-header btn-danger" onclick="confirmarDetenerAumento()">Sí, Detener</button></div>
             </div>
@@ -422,8 +425,8 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-body" style="text-align: center; padding: 2rem;">
                 <div class="alert-icon" style="color: var(--success);"><i class="fas fa-check-circle"></i></div>
-                <h3 style="margin-bottom: 1rem;">¿Reactivar Aumento Diario?</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">El aumento diario será activado. El sistema aplicará automáticamente el incremento a partir de mañana, usando el porcentaje especificado en el campo 'aumento diario'.</p>
+                <h3 style="margin-bottom: 1rem;">?Reactivar Aumento Diario?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">El aumento diario será activado. El sistema aplicará automáticamente el incremento a partir de ma?ana, usando el porcentaje especificado en el campo 'aumento diario'.</p>
                 <div style="display: flex; gap: 1rem; justify-content: center;"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-reactivar')">Cancelar</button><button class="btn-header btn-success" onclick="confirmarReactivarAumento()">Sí, Activar</button></div>
             </div>
         </div>
@@ -434,9 +437,9 @@
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header"><h3>Desbloquear Stock</h3><button class="close-btn" onclick="cerrarModal('modal-password')">&times;</button></div>
             <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contraseña de administrador:</p>
-                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contraseña" onkeypress="handlePasswordModalKeypress(event)"></div>
-                <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contraseña incorrecta</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Introduce la contrase?a de administrador:</p>
+                <div class="form-group"><input type="password" class="form-input" id="admin-password" placeholder="Contrase?a" onkeypress="handlePasswordModalKeypress(event)"></div>
+                <div id="password-error" style="color: var(--danger); font-size: 0.875rem; display: none;">Contrase?a incorrecta</div>
             </div>
             <div class="modal-footer"><button class="btn-header btn-secondary" onclick="cerrarModal('modal-password')">Cancelar</button><button class="btn-header btn-primary" onclick="verificarPassword()">Desbloquear</button></div>
         </div>
@@ -484,7 +487,7 @@
                         <option value="ensaladas">Ensaladas</option>
                         <option value="china">Comida China</option>
                         <option value="japonesa">Comida Japonesa</option>
-                        <option value="ninos">Para Niños</option>
+                        <option value="ninos">Para Ni?os</option>
                         <option value="ejecutivo">Combo Ejecutivo</option>
                     </select>
                 </div>
@@ -518,7 +521,7 @@
                 <div class="form-group"><label class="form-label">Nombre del Ingrediente</label><input type="text" class="form-input" id="ingrediente-nombre" placeholder="Ej: Salmón fresco" onkeypress="handleIngredienteKeypress(event)"></div>
                 
                 <div class="form-group password-field">
-                    <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contraseña de administrador."><i class="fas fa-lock"></i></span></label>
+                    <label class="form-label">Stock Actual <span class="help-tooltip" data-tooltip="Campo protegido. Solo editable con contrase?a de administrador."><i class="fas fa-lock"></i></span></label>
                     <div style="position: relative;">
                         <input type="number" step="0.001" class="form-input" id="ingrediente-stock" value="0" disabled>
                         <div class="password-overlay" id="stock-overlay" onclick="desbloquearStock()">
@@ -576,7 +579,7 @@
     <div class="main-content" id="mainContent">
         <!-- Header -->
         <header class="header">
-            <div class="logo">🍣 Saki Sushi Admin</div>
+            <div class="logo">?? Saki Sushi Admin</div>
             <div class="header-actions">
                 <!-- Botón de sincronización manual -->
                 <div class="sync-manual-btn" onclick="sincronizarManual()" title="Sincronizar con servidor">
@@ -623,13 +626,13 @@
         <div class="container">
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" onclick="cambiarTab('dashboard')">📊 Dashboard</button>
-                <button class="tab" onclick="cambiarTab('menu')">🍣 Menú & Precios</button>
-                <button class="tab" onclick="cambiarTab('inventario')">📦 Inventario</button>
-                <button class="tab" onclick="cambiarTab('usuarios')">👥 Usuarios</button>
-                <button class="tab" onclick="cambiarTab('config')">⚙️ Configuración</button>
-                <button class="tab" onclick="cambiarTab('qr')">📱 Códigos QR</button>
-                <button class="tab" onclick="cambiarTab('reportes')">📈 Reportes</button>
+                <button class="tab active" onclick="cambiarTab('dashboard')">?? Dashboard</button>
+                <button class="tab" onclick="cambiarTab('menu')">?? Menú & Precios</button>
+                <button class="tab" onclick="cambiarTab('inventario')">?? Inventario</button>
+                <button class="tab" onclick="cambiarTab('usuarios')">?? Usuarios</button>
+                <button class="tab" onclick="cambiarTab('config')">?? Configuración</button>
+                <button class="tab" onclick="cambiarTab('qr')">?? Códigos QR</button>
+                <button class="tab" onclick="cambiarTab('reportes')">?? Reportes</button>
             </div>
 
             <!-- Dashboard Tab -->
@@ -677,7 +680,7 @@
             <div id="menu" class="tab-content">
                 <div class="card" style="margin-bottom: 1.5rem; border: 2px solid var(--primary);">
                     <div class="card-header">
-                        <div><div class="card-title" style="color: var(--primary);">💰 Configuración de Precios</div><div class="card-subtitle">Los precios se ingresan en USD ($) y se convierten automáticamente</div></div>
+                        <div><div class="card-title" style="color: var(--primary);">?? Configuración de Precios</div><div class="card-subtitle">Los precios se ingresan en USD ($) y se convierten automáticamente</div></div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                         <div><div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tasa Base del Día</div><div style="font-size: 1.5rem; font-weight: 700;" id="tasa-base-menu">0.00</div></div>
@@ -738,7 +741,7 @@
                             <input type="text" class="form-input" id="newCashierUsername" placeholder="usuario123" onkeypress="handleNewUserKeypress(event)">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Contraseña Temporal</label>
+                            <label class="form-label">Contrase?a Temporal</label>
                             <input type="text" class="form-input" id="newCashierPassword" placeholder="******" onkeypress="handleNewUserKeypress(event)">
                         </div>
                         <button class="btn-header btn-success" onclick="createCashierUser()"><i class="fas fa-user-plus"></i> Crear Usuario Cajero</button>
@@ -752,30 +755,30 @@
                 <div class="grid grid-2">
                     <div class="card">
                         <div class="card-header">
-                            <div><div class="card-title">Cambiar Contraseña de Admin</div><div class="card-subtitle">Actualiza la contraseña de acceso al panel</div></div>
+                            <div><div class="card-title">Cambiar Contrase?a de Admin</div><div class="card-subtitle">Actualiza la contrase?a de acceso al panel</div></div>
                         </div>
                         <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
                             <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> 
-                            <span style="color: var(--warning); font-size: 0.875rem;">Advertencia: Guarda tu contraseña en un lugar seguro. Si la olvidas y no tienes acceso al correo registrado, deberás contactar soporte técnico para recuperación manual.</span>
+                            <span style="color: var(--warning); font-size: 0.875rem;">Advertencia: Guarda tu contrase?a en un lugar seguro. Si la olvidas y no tienes acceso al correo registrado, deberás contactar soporte técnico para recuperación manual.</span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Contraseña Actual</label>
+                            <label class="form-label">Contrase?a Actual</label>
                             <input type="password" class="form-input" id="currentAdminPass" placeholder="******" onkeypress="handlePasswordChangeKeypress(event)">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Nueva Contraseña</label>
+                            <label class="form-label">Nueva Contrase?a</label>
                             <input type="password" class="form-input" id="newAdminPass" placeholder="******" onkeypress="handlePasswordChangeKeypress(event)">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Confirmar Nueva Contraseña</label>
+                            <label class="form-label">Confirmar Nueva Contrase?a</label>
                             <input type="password" class="form-input" id="confirmAdminPass" placeholder="******" onkeypress="handlePasswordChangeKeypress(event)">
                         </div>
-                        <button class="btn-header btn-primary" onclick="changeAdminPassword()"><i class="fas fa-key"></i> Cambiar Contraseña</button>
+                        <button class="btn-header btn-primary" onclick="changeAdminPassword()"><i class="fas fa-key"></i> Cambiar Contrase?a</button>
                     </div>
                     
                     <div class="card">
                         <div class="card-header">
-                            <div><div class="card-title">Correo de Recuperación</div><div class="card-subtitle">Configura el correo para recuperación de contraseña</div></div>
+                            <div><div class="card-title">Correo de Recuperación</div><div class="card-subtitle">Configura el correo para recuperación de contrase?a</div></div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Correo Electrónico</label>
@@ -803,7 +806,7 @@
                 </div>
             </div>
 
-            <!-- Reportes Tab - TOTALMENTE FUNCIONAL CON GRÁFICAS -->
+            <!-- Reportes Tab - TOTALMENTE FUNCIONAL CON GRáFICAS -->
             <div id="reportes" class="tab-content">
                 <div class="grid grid-4">
                     <div class="card"><div style="color: var(--text-secondary); font-size: 0.875rem;">Ventas del Día</div><div class="stat-value" id="reporte-ventas-dia">$0</div><div class="card-subtitle" id="reporte-ordenes-dia">0 órdenes</div></div>
@@ -845,7 +848,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN Y ESTADO GLOBAL
+        // CONFIGURACIóN Y ESTADO GLOBAL
         // ==========================================
         const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69879d6e43b1c97be96d2b13';
         const JSONBIN_API_KEY = '$2a$10$.klBAMlOBlE9CoVh5iUFf.x3LEYKWiP6hhvvPETK9e8pyIuNB2F4K';
@@ -914,7 +917,7 @@
         };
 
         // ==========================================
-        // LOGIN Y AUTENTICACIÓN
+        // LOGIN Y AUTENTICACIóN
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarDatos();
@@ -969,7 +972,7 @@
         }
 
         // ==========================================
-        // RECUPERACIÓN DE CONTRASEÑA
+        // RECUPERACIóN DE CONTRASE?A
         // ==========================================
         function showRecovery() {
             document.getElementById('loginStep').classList.remove('active');
@@ -1039,15 +1042,46 @@
         }
 
         // ==========================================
-        // CARGA DE DATOS (SINCRONIZACIÓN NO BLOQUEANTE)
+        // CARGA DE DATOS (SINCRONIZACIóN NO BLOQUEANTE)
         // ==========================================
-        async function cargarDatos(skipCooldown = false) {
-            const ahora = Date.now();
-            if (!skipCooldown && (ahora - lastSyncTime < SYNC_COOLDOWN)) {
-                console.log('Carga omitida - en cooldown');
-                return false;
+        function limpiarPedidosDiaAnterior() {
+            if (!datos.pedidos) return;
+            
+            const hoy = new Date().toISOString().split('T')[0];
+            const pedidosHoy = [];
+            const pedidosArchivar = [];
+            
+            datos.pedidos.forEach(p => {
+                if (p.timestamp.startsWith(hoy)) {
+                    pedidosHoy.push(p);
+                } else if (['cobrado', 'entregado', 'enviado', 'reserva_completada'].includes(p.estado)) {
+                    pedidosArchivar.push(p);
+                } else {
+                    // Mantener pedidos de otros días que no estén completados
+                    pedidosHoy.push(p);
+                }
+            });
+            
+            // Archivar solo pedidos completados de días anteriores
+            if (pedidosArchivar.length > 0) {
+                if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
+                pedidosArchivar.forEach(p => {
+                    datos.ventas.diarias.push({ 
+                        fecha: p.timestamp, 
+                        pedidoId: p.id, 
+                        total: p.total, 
+                        items: p.items?.length || 0, 
+                        metodoPago: p.metodoPago, 
+                        tipo: p.tipo || 'mesa' 
+                    });
+                });
             }
             
+            // Actualizar pedidos (solo se eliminan los archivados)
+            datos.pedidos = pedidosHoy;
+        }
+
+        async function cargarDatos(skipCooldown = false) {
             try {
                 const response = await fetch(JSONBIN_URL, { 
                     headers: { 'X-Master-Key': JSONBIN_API_KEY } 
@@ -1055,20 +1089,43 @@
                 const result = await response.json();
                 
                 if (result.record) {
-                    // PRESERVAR ESTADO DE EDICIÓN: ingredientesPlato y modales abiertos
+                    // PRESERVAR QR EXISTENTES ANTES DE SOBRESCRIBIR
+                    const qrExistentes = datos.codigosQR || [];
+                    
+                    // PRESERVAR ESTADO DE EDICIÓN
                     const ingredientesGuardados = [...ingredientesPlato];
                     const modalPlatilloAbierto = document.getElementById('modal-platillo').classList.contains('active');
                     const modalIngredienteAbierto = document.getElementById('modal-ingrediente').classList.contains('active');
                     
-                    datos = { ...datos, ...result.record };
-                    if (!datos.config) datos.config = {};
+                    // Fusionar datos nuevos con existentes (NO sobrescribir completamente)
+                    const nuevosDatos = result.record;
+                    
+                    // Actualizar propiedades una por una para no perder arrays
+                    datos.config = { ...datos.config, ...(nuevosDatos.config || {}) };
+                    datos.menu = nuevosDatos.menu || [];
+                    datos.inventario = nuevosDatos.inventario || {};
+                    datos.pedidos = nuevosDatos.pedidos || [];
+                    datos.ventas = nuevosDatos.ventas || { diarias: [], semanales: [], mensuales: [] };
+                    datos.usuarios = nuevosDatos.usuarios || [];
+                    
+                    // IMPORTANTE: Preservar QR existentes y agregar los nuevos
+                    if (nuevosDatos.codigosQR) {
+                        // Si hay QR nuevos, fusionar con los existentes (sin duplicados por ID)
+                        const qrMap = new Map();
+                        [...qrExistentes, ...nuevosDatos.codigosQR].forEach(qr => {
+                            qrMap.set(qr.id, qr);
+                        });
+                        datos.codigosQR = Array.from(qrMap.values());
+                    } else {
+                        // Si no hay QR nuevos, mantener los existentes
+                        datos.codigosQR = qrExistentes;
+                    }
+                    
+                    // ===== GARANTIZAR ESTRUCTURAS MÍNIMAS =====
                     if (!datos.config.adminPassword) datos.config.adminPassword = DEFAULT_ADMIN_PASSWORD;
-                    if (!datos.menu) datos.menu = [];
-                    if (!datos.inventario) datos.inventario = {};
-                    if (!datos.pedidos) datos.pedidos = [];
-                    if (!datos.ventas) datos.ventas = { diarias: [], semanales: [], mensuales: [] };
-                    if (!datos.codigosQR) datos.codigosQR = [];
-                    if (!datos.usuarios) datos.usuarios = [];
+                    
+                    // Limpiar SOLO pedidos del día anterior, NO QR
+                    limpiarPedidosDiaAnterior();
                     
                     // RESTAURAR ESTADO DE EDICIÓN
                     if (modalPlatilloAbierto) {
@@ -1076,7 +1133,7 @@
                         renderIngredientesPlato();
                     }
                     
-                    lastSyncTime = ahora;
+                    lastSyncTime = Date.now();
                     return true;
                 }
             } catch (error) { 
@@ -1363,7 +1420,7 @@
         }
 
         // ==========================================
-        // GESTIÓN DE INVENTARIO - CON PASSWORD OVERLAY
+        // GESTIóN DE INVENTARIO - CON PASSWORD OVERLAY
         // ==========================================
         function desbloquearStock() {
             document.getElementById('modal-password').classList.add('active');
@@ -1478,7 +1535,7 @@
         }
 
         // ==========================================
-        // GESTIÓN DE INGREDIENTES - CON ACTUALIZACIÓN AUTOMÁTICA
+        // GESTIóN DE INGREDIENTES - CON ACTUALIZACIóN AUTOMáTICA
         // ==========================================
         async function guardarIngrediente() {
             const id = document.getElementById('ingrediente-id').value || 'ing_' + Date.now();
@@ -1593,7 +1650,7 @@
                 return;
             }
             
-            if (!confirm('¿Eliminar este ingrediente permanentemente?')) return;
+            if (!confirm('?Eliminar este ingrediente permanentemente?')) return;
             
             delete datos.inventario[id];
             cerrarModal('modal-ingrediente');
@@ -1603,7 +1660,7 @@
         }
 
         // ==========================================
-        // GESTIÓN DE PLATILLOS
+        // GESTIóN DE PLATILLOS
         // ==========================================
         function handleCategoryChange() {
             const categoria = document.getElementById('edit-categoria').value;
@@ -1875,7 +1932,7 @@
         }
 
         async function eliminarPlatillo(id) {
-            if (!confirm('¿Eliminar este platillo permanentemente?')) return;
+            if (!confirm('?Eliminar este platillo permanentemente?')) return;
             datos.menu = datos.menu.filter(p => p.id !== id);
             await guardarDatos();
             renderizarMenu();
@@ -1891,7 +1948,7 @@
         }
 
         // ==========================================
-        // GESTIÓN DE USUARIOS CAJEROS
+        // GESTIóN DE USUARIOS CAJEROS
         // ==========================================
         function handleNewUserKeypress(e) {
             if (e.key === 'Enter') createCashierUser();
@@ -1943,7 +2000,7 @@
         }
 
         async function deleteUser(userId) {
-            if (!confirm('¿Eliminar este usuario permanentemente?')) return;
+            if (!confirm('?Eliminar este usuario permanentemente?')) return;
             datos.usuarios = datos.usuarios.filter(u => u.id !== userId);
             await guardarDatos();
             renderizarUsuarios();
@@ -1979,7 +2036,7 @@
         }
 
         // ==========================================
-        // CONFIGURACIÓN
+        // CONFIGURACIóN
         // ==========================================
         function handlePasswordChangeKeypress(e) {
             if (e.key === 'Enter') changeAdminPassword();
@@ -1991,17 +2048,17 @@
             const confirm = document.getElementById('confirmAdminPass').value;
             
             if (current !== datos.config.adminPassword) {
-                mostrarNotificacion('Contraseña actual incorrecta', 'error');
+                mostrarNotificacion('Contrase?a actual incorrecta', 'error');
                 return;
             }
             
             if (newPass.length < 6) {
-                mostrarNotificacion('La nueva contraseña debe tener al menos 6 caracteres', 'error');
+                mostrarNotificacion('La nueva contrase?a debe tener al menos 6 caracteres', 'error');
                 return;
             }
             
             if (newPass !== confirm) {
-                mostrarNotificacion('Las contraseñas no coinciden', 'error');
+                mostrarNotificacion('Las contrase?as no coinciden', 'error');
                 return;
             }
             
@@ -2012,7 +2069,7 @@
             document.getElementById('newAdminPass').value = '';
             document.getElementById('confirmAdminPass').value = '';
             
-            mostrarNotificacion('Contraseña actualizada correctamente');
+            mostrarNotificacion('Contrase?a actualizada correctamente');
         }
 
         function handleEmailConfigKeypress(e) {
@@ -2032,7 +2089,7 @@
         }
 
         // ==========================================
-        // CÓDIGOS QR - CORREGIDO: USA EL NOMBRE INGRESADO
+        // CóDIGOS QR - CORREGIDO: USA EL NOMBRE INGRESADO
         // ==========================================
         function handleQRKeypress(e) {
             if (e.key === 'Enter') generarQR();
@@ -2132,14 +2189,14 @@
         }
 
         function eliminarQR(id) {
-            if (!confirm('¿Eliminar este código QR?')) return;
+            if (!confirm('?Eliminar este código QR?')) return;
             datos.codigosQR = datos.codigosQR.filter(q => q.id !== id);
             guardarDatos();
             renderizarQRs();
         }
 
         // ==========================================
-        // REPORTES Y GRÁFICAS - TOTALMENTE FUNCIONALES
+        // REPORTES Y GRáFICAS - TOTALMENTE FUNCIONALES
         // ==========================================
         function renderizarReportes() {
             const ahora = new Date();
@@ -2213,7 +2270,7 @@
             if (charts.metodos) charts.metodos.destroy();
             if (charts.horas) charts.horas.destroy();
             
-            // 1. VENTAS POR DÍA (últimos 7 días)
+            // 1. VENTAS POR DíA (últimos 7 días)
             const ventasPorDia = {};
             for (let i = 6; i >= 0; i--) {
                 const fecha = new Date();
@@ -2255,7 +2312,7 @@
                 }
             });
             
-            // 2. VENTAS POR CATEGORÍA
+            // 2. VENTAS POR CATEGORíA
             const ventasPorCategoria = {};
             pedidos.forEach(p => {
                 p.items?.forEach(item => {
@@ -2283,7 +2340,7 @@
                 }
             });
             
-            // 3. MÉTODOS DE PAGO
+            // 3. MéTODOS DE PAGO
             const metodosPago = {};
             pedidos.forEach(p => { 
                 metodosPago[p.metodoPago || 'Desconocido'] = (metodosPago[p.metodoPago || 'Desconocido'] || 0) + 1; 
@@ -2312,7 +2369,7 @@
                 }
             });
             
-            // 4. VENTAS POR HORA DEL DÍA
+            // 4. VENTAS POR HORA DEL DíA
             const ventasPorHora = Array(24).fill(0);
             pedidos.forEach(p => { 
                 const hora = new Date(p.timestamp).getHours();
@@ -2431,7 +2488,7 @@
                             <div style="font-weight: 600;">${ing.nombre}</div>
                             <div style="font-size: 0.75rem; color: var(--text-secondary);">
                                 ${formatearUnidad(ing.stock, ing.unidad || 'unidades')} 
-                                ${isLow ? '<span style="color: var(--danger);">⚠️ BAJO</span>' : ''} | 
+                                ${isLow ? '<span style="color: var(--danger);">?? BAJO</span>' : ''} | 
                                 Mín: ${formatearUnidad(ing.minimo, ing.unidad || 'unidades')} | 
                                 Costo: $${ing.precioCosto?.toFixed(2) || '0.00'} (${costoBs} Bs) |
                                 Venta: $${ing.precioUnitario?.toFixed(2) || '0.00'}
@@ -2480,7 +2537,7 @@
                         <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Mínimo: ${formatearUnidad(ing.minimo, ing.unidad || 'unidades')}</div>
                     </div>
                 `;
-            }).join('') || '<p style="color: var(--success); text-align: center; padding: 2rem;">✅ Todo el stock está en niveles óptimos</p>';
+            }).join('') || '<p style="color: var(--success); text-align: center; padding: 2rem;">? Todo el stock está en niveles óptimos</p>';
         }
 
         // ==========================================
@@ -2546,3 +2603,4 @@
     </script>
 </body>
 </html>
+```
