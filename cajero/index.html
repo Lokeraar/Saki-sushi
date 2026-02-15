@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Panel del Cajero - Saki Sushi</title>
+    <title>🧾 Panel del Cajero - Saki Sushi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -389,7 +389,8 @@
             align-items: center;
         }
         .payment-mix-remaining.paid { background: #E8F5E9; border-color: var(--success); }
-        .payment-mix-remaining.overpaid { background: #FFEBEE; border-color: var(--danger); }
+        .payment-mix-remaining.faltante { background: #FFEBEE; border-color: var(--danger); }
+        .payment-mix-remaining.excedente { background: #FFF3E0; border-color: var(--warning); }
         
         .payment-mix-add {
             width: 100%;
@@ -477,10 +478,6 @@
             align-items: center; 
             gap: 10px; 
             margin-bottom: 10px; 
-        }
-        .special-option input[type="radio"] { 
-            width: 20px; 
-            height: 20px; 
         }
         .special-option input[type="checkbox"] {
             width: 20px;
@@ -740,9 +737,9 @@
             margin-right: 8px;
         }
 
-        .condonacion-section {
-            background: #E8F5E9;
-            border: 2px solid var(--success);
+        .vuelto-section {
+            background: #FFF3E0;
+            border: 2px solid var(--warning);
             border-radius: 12px;
             padding: 15px;
             margin-top: 15px;
@@ -750,27 +747,26 @@
             justify-content: space-between;
             align-items: center;
         }
-        .condonacion-section .condonacion-label {
+        .vuelto-section .vuelto-label {
             font-weight: 600;
             color: var(--secondary);
         }
-        .condonacion-input {
+        .vuelto-input {
             width: 150px;
             padding: 8px 12px;
-            border: 2px solid var(--success);
+            border: 2px solid var(--warning);
             border-radius: 8px;
             font-size: 1rem;
             text-align: right;
             font-weight: 600;
             color: var(--secondary);
         }
-        .condonacion-input:focus {
+        .vuelto-input:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.2);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
         }
-
-        .condonacion-confirm-btn {
-            background: var(--success);
+        .vuelto-confirm-btn {
+            background: var(--warning);
             color: white;
             border: none;
             border-radius: 8px;
@@ -780,15 +776,15 @@
             transition: var(--transition);
             margin-left: 10px;
         }
-        .condonacion-confirm-btn:hover {
-            background: #2E7D32;
+        .vuelto-confirm-btn:hover {
+            background: #F57C00;
             transform: scale(1.05);
         }
-        .condonacion-confirm-btn.undo {
-            background: var(--warning);
+        .vuelto-confirm-btn.undo {
+            background: var(--info);
         }
         
-        .invitacion-checkbox {
+        .condonacion-checkbox {
             background: #f0f0f0;
             border-radius: 10px;
             padding: 15px;
@@ -796,7 +792,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            border: 2px solid var(--warning);
+            border: 2px solid var(--success);
         }
         
         .moneda-prefijo {
@@ -838,10 +834,10 @@
         <div class="modal-content">
             <div class="modal-body" style="padding: 2rem;">
                 <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h2 style="margin-bottom: 1rem; color: var(--secondary);">�Buenos d�as!</h2>
-                <p style="color: #666; margin-bottom: 1.5rem;">El administrador no ha establecido la <strong>tasa del d�lar del d�a</strong>. Por favor, introd�cela para continuar.</p>
+                <h2 style="margin-bottom: 1rem; color: var(--secondary);">¡Buenos días!</h2>
+                <p style="color: #666; margin-bottom: 1.5rem;">El administrador no ha establecido la <strong>tasa del dólar del día</strong>. Por favor, introdúcela para continuar.</p>
                 <div style="background: #f8f8f8; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--secondary);">Tasa del D�a (Bs. por $1)</label>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--secondary);">Tasa del Día (Bs. por $1)</label>
                     <input type="number" step="0.01" id="tasaInicialInput" placeholder="0.00" style="width: 100%; padding: 1rem; font-size: 1.5rem; text-align: center; font-weight: 700; border: 2px solid var(--primary); border-radius: 0.5rem;">
                 </div>
                 <button class="btn-cobrar" onclick="guardarTasaInicial()" style="width: 100%; justify-content: center;">Guardar y Continuar</button>
@@ -853,7 +849,7 @@
 
     <div class="notification" id="notification">
         <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></i>
-        <div><h4 style="margin: 0; color: var(--secondary);">�xito</h4><p id="notificationText" style="margin: 0; color: #666;">Operaci�n completada</p></div>
+        <div><h4 style="margin: 0; color: var(--secondary);">Éxito</h4><p id="notificationText" style="margin: 0; color: #666;">Operación completada</p></div>
     </div>
 
     <div class="modal-overlay confirm-modal" id="confirmEntregaModal">
@@ -916,19 +912,19 @@
                 </div>
                 
                 <div class="payment-mix-remaining" id="remainingDisplay">
-                    <span id="remainingLabel">Pendiente por pagar:</span>
+                    <span id="remainingLabel">Monto a cobrar:</span>
                     <span style="font-size: 1.5rem; font-weight: 700;" id="remainingAmount">Bs. 0.00</span>
                 </div>
                 
                 <div class="payment-mix-container" id="paymentMixContainer"></div>
                 
                 <button class="payment-mix-add" id="btnAddPayment" onclick="agregarMetodoPago()">
-                    <i class="fas fa-plus-circle"></i> Agregar M�todo de Pago
+                    <i class="fas fa-plus-circle"></i> Agregar Método de Pago
                 </button>
 
                 <div class="invitacion-checkbox" id="invitacionContainer" style="display: flex;">
                     <input type="checkbox" id="invitacionCheckbox" onchange="toggleInvitacion()">
-                    <label for="invitacionCheckbox"><strong>Por parte de la casa (invitaci�n)</strong> - El cliente no paga, total a $0</label>
+                    <label for="invitacionCheckbox"><strong>Por parte de la casa (invitación)</strong> - El cliente no paga, total a $0</label>
                 </div>
                 
                 <div class="payment-mix-summary" id="paymentSummary" style="display: none;">
@@ -937,37 +933,52 @@
                         <span id="totalRecibido">Bs. 0.00</span>
                     </div>
                     <div class="payment-mix-summary-item" id="faltanteRow" style="display: none;">
-                        <span>Faltante:</span>
+                        <span>Pendiente por cobrar:</span>
                         <span id="faltanteAmount" style="color: var(--danger);">Bs. 0.00</span>
                     </div>
                     <div class="payment-mix-summary-item" id="excedenteRow" style="display: none;">
-                        <span>Excedente:</span>
+                        <span>Vuelto a entregar:</span>
                         <span id="excedenteAmount" style="color: var(--warning);">Bs. 0.00</span>
                     </div>
                 </div>
                 
-                <div class="condonacion-section" id="condonacionSection" style="display: none;">
-                    <span class="condonacion-label"><i class="fas fa-hand-holding-heart"></i> Monto a condonar:</span>
+                <!-- SECCIÓN PARA VUELTO (CUANDO SOBRA DINERO) -->
+                <div class="vuelto-section" id="vueltoSection" style="display: none;">
+                    <span class="vuelto-label"><i class="fas fa-hand-holding-usd"></i> Vuelto a entregar:</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" step="0.01" class="condonacion-input" id="condonacionInput" placeholder="0.00" value="0.00" oninput="actualizarCondonacion()">
-                        <button class="condonacion-confirm-btn" id="confirmarCondonacionBtn" onclick="confirmarCondonacion()">Confirmar Condonaci�n</button>
-                        <button class="condonacion-confirm-btn undo" id="deshacerCondonacionBtn" style="display: none;" onclick="deshacerCondonacion()">Deshacer</button>
+                        <input type="number" step="0.01" class="vuelto-input" id="vueltoInput" placeholder="0.00" value="0.00" oninput="actualizarVueltoEnTiempoReal()">
+                        <button class="vuelto-confirm-btn" id="confirmarVueltoBtn" onclick="confirmarVuelto()">Confirmar Vuelto</button>
+                        <button class="vuelto-confirm-btn undo" id="deshacerVueltoBtn" style="display: none;" onclick="deshacerVuelto()">Deshacer</button>
                     </div>
                 </div>
 
-                <div class="invitacion-checkbox" id="clienteDebeCheckbox" style="display: none;">
-                    <input type="checkbox" id="clienteDebeInput" onchange="toggleClienteDebe()">
-                    <label for="clienteDebeInput">
-                        <strong>A favor del cliente/Cliente no pag�</strong>
-                        <span id="clienteDebeMontoDisplay" style="margin-left: 10px; color: var(--warning); font-weight: 600; display: none;"></span>
+                <!-- CHECKBOX PARA CONDONACIÓN (CUANDO FALTA DINERO) -->
+                <div class="condonacion-checkbox" id="condonacionCheckbox" style="display: none;">
+                    <input type="checkbox" id="condonacionInput" onchange="toggleCondonacion()">
+                    <label for="condonacionInput">
+                        <strong>Monto a condonar:</strong>
+                        <span id="condonacionMontoDisplay" style="margin-left: 10px; color: var(--success); font-weight: 600;"></span>
+                    </label>
+                </div>
+
+                <!-- CHECKBOX PARA A FAVOR DE CAJA (CUANDO SOBRA DINERO Y NO SE DEVUELVE TODO) -->
+                <div class="condonacion-checkbox" id="afavorCajaCheckbox" style="display: none;">
+                    <input type="checkbox" id="afavorCajaInput" onchange="toggleAfavorCaja()">
+                    <label for="afavorCajaInput">
+                        <strong>A favor de caja:</strong>
+                        <span id="afavorCajaMontoDisplay" style="margin-left: 10px; color: var(--warning); font-weight: 600;"></span>
                     </label>
                 </div>
 
                 <div class="special-options" id="specialOptions" style="display: none;">
                     <h3><i class="fas fa-exclamation-circle"></i> Opciones de Diferencia</h3>
                     <div class="special-option">
-                        <input type="checkbox" id="optAfavorCliente" value="afavor_cliente" onchange="toggleClienteDebeCheckbox()">
-                        <label for="optAfavorCliente">A favor del cliente/Cliente no pag�</label>
+                        <input type="checkbox" id="optCondonacion" value="condonacion" onchange="sincronizarCondonacion()">
+                        <label for="optCondonacion">Condonación (cliente no paga lo que falta)</label>
+                    </div>
+                    <div class="special-option">
+                        <input type="checkbox" id="optAfavorCaja" value="afavor_caja" onchange="sincronizarAfavorCaja()">
+                        <label for="optAfavorCaja">A favor de caja (sobrante no devuelto)</label>
                     </div>
                 </div>
             </div>
@@ -982,11 +993,11 @@
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, var(--danger), #B71C1C);"><h2><i class="fas fa-times-circle"></i> Rechazar Pedido</h2><button class="modal-close" onclick="closeModal('rechazoModal')"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
-                <p style="margin-bottom: 20px; color: #666;">Selecciona la raz�n del rechazo:</p>
+                <p style="margin-bottom: 20px; color: #666;">Selecciona la razón del rechazo:</p>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="referencia_invalida" style="width: 20px; height: 20px;"><span>Referencia de pago inv�lida o falsa</span></label>
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="referencia_invalida" style="width: 20px; height: 20px;"><span>Referencia de pago inválida o falsa</span></label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="monto_insuficiente" style="width: 20px; height: 20px;"><span>Monto insuficiente</span></label>
-                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="datos_incorrectos" style="width: 20px; height: 20px;"><span>Datos de contacto/direcci�n incorrectos</span></label>
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="datos_incorrectos" style="width: 20px; height: 20px;"><span>Datos de contacto/dirección incorrectos</span></label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="no_disponible" style="width: 20px; height: 20px;"><span>Producto no disponible</span></label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer;"><input type="radio" name="rejectionReason" value="fuera_horario" style="width: 20px; height: 20px;"><span>Fuera de horario de delivery</span></label>
                 </div>
@@ -997,7 +1008,7 @@
 
     <div class="container">
         <div class="header">
-            <div class="header-left"><h1><i class="fas fa-cash-register"></i> Panel del Cajero</h1><p>Saki Sushi - Gesti�n de pedidos y cobros</p></div>
+            <div class="header-left"><h1><i class="fas fa-cash-register"></i> Panel del Cajero</h1><p>Saki Sushi - Gestión de pedidos y cobros</p></div>
             <div class="header-right">
                 <div class="sync-manual-btn" onclick="sincronizarManual()" title="Sincronizar con servidor">
                     <i class="fas fa-sync-alt" id="manualSyncIcon"></i>
@@ -1012,18 +1023,18 @@
 
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="showSection('pedidos')"><i class="fas fa-clipboard-list"></i> Pedidos</button>
-            <button class="nav-tab" onclick="showSection('menu')"><i class="fas fa-utensils"></i> Ver Men�</button>
+            <button class="nav-tab" onclick="showSection('menu')"><i class="fas fa-utensils"></i> Ver Menú</button>
         </div>
 
         <div class="content">
             <div class="section active" id="section-pedidos">
-                <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Pedidos del D�a</h2>
+                <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Pedidos del Día</h2>
                 
                 <div class="stats-grid">
                     <div class="stat-card" onclick="verDetalleEstadistica('pendientes')">
                         <div class="stat-icon pendientes"><i class="fas fa-fire"></i></div>
                         <div class="stat-value" id="statPendientes">0</div>
-                        <div class="stat-label">En Preparaci�n</div>
+                        <div class="stat-label">En Preparación</div>
                     </div>
                     <div class="stat-card" onclick="verDetalleEstadistica('cobrados')">
                         <div class="stat-icon cobrados"><i class="fas fa-check-circle"></i></div>
@@ -1065,7 +1076,7 @@
 
                 <div class="section-subtitle">
                     <i class="fas fa-fire"></i> 
-                    Pedidos en preparaci�n:
+                    Pedidos en preparación:
                     <span class="count-badge" id="badgeEnPreparacion">0</span>
                 </div>
                 
@@ -1086,7 +1097,7 @@
             </div>
 
             <div class="section" id="section-menu">
-                <h2 class="section-title"><i class="fas fa-utensils"></i> Men� Actual</h2>
+                <h2 class="section-title"><i class="fas fa-utensils"></i> Menú Actual</h2>
                 <div id="menuViewContainer"></div>
             </div>
         </div>
@@ -1119,9 +1130,10 @@
         const SYNC_COOLDOWN = 60000;
 
         let invitacionActiva = false;
-        let condonacionConfirmada = false;
-        let condonacionValor = 0;
-        let clienteDebeActivo = false;
+        let vueltoConfirmado = false;
+        let vueltoValor = 0;
+        let condonacionActiva = false;
+        let afavorCajaActiva = false;
         let pagosConMonto = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1140,7 +1152,7 @@
             try {
                 await operation();
             } catch (error) {
-                console.error('Error en operaci�n:', error);
+                console.error('Error en operación:', error);
             } finally {
                 processingTimeout = setTimeout(() => {
                     isProcessing = false;
@@ -1220,7 +1232,7 @@
 
         async function sincronizarManual() {
             if (isManualSyncing) {
-                mostrarNotificacion('Ya hay una sincronizaci�n en curso...', 'info');
+                mostrarNotificacion('Ya hay una sincronización en curso...', 'info');
                 return;
             }
             
@@ -1307,7 +1319,7 @@
         async function guardarTasaInicial() {
             const tasa = parseFloat(document.getElementById('tasaInicialInput').value);
             if (!tasa || tasa <= 0) { 
-                mostrarNotificacion('Introduce una tasa v�lida', 'error'); 
+                mostrarNotificacion('Introduce una tasa válida', 'error'); 
                 return; 
             }
             
@@ -1319,7 +1331,7 @@
             document.getElementById('alertTasaModal').classList.remove('show');
             actualizarDisplayTasa();
             actualizarVista();
-            mostrarNotificacion('Tasa del d�a guardada correctamente');
+            mostrarNotificacion('Tasa del día guardada correctamente');
         }
 
         function actualizarDisplayTasa() {
@@ -1394,7 +1406,7 @@
         function renderColumnaEnPreparacion(columnId, pedidos, tipo) {
             const col = document.getElementById(columnId);
             if (pedidos.length === 0) {
-                col.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos en esta secci�n</p></div>`;
+                col.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos en esta sección</p></div>`;
                 return;
             }
             col.innerHTML = pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(p => crearCardPedidoEnPreparacion(p, tipo)).join('');
@@ -1493,12 +1505,12 @@
             const comprobante = comprobantes[pedidoId];
             
             if (!comprobante) {
-                mostrarNotificacion('No se encontr� comprobante en el almacenamiento local del navegador. El cliente debe enviarlo por WhatsApp.', 'error');
+                mostrarNotificacion('No se encontró comprobante en el almacenamiento local del navegador. El cliente debe enviarlo por WhatsApp.', 'error');
                 return null;
             }
             
             if (!comprobante.disponible) {
-                mostrarNotificacion('El comprobante era muy grande y no se guard�. Solicitar por WhatsApp.', 'warning');
+                mostrarNotificacion('El comprobante era muy grande y no se guardó. Solicitar por WhatsApp.', 'warning');
                 return null;
             }
             
@@ -1515,8 +1527,8 @@
             infoHtml += `<div><strong>Pedido:</strong> ${pedidoId}</div>`;
             infoHtml += `<div><strong>Tipo:</strong> ${pedido?.tipo === 'delivery' ? 'Delivery' : 'Reserva'}</div>`;
             if (pedido?.tipo === 'delivery') {
-                infoHtml += `<div><strong>Tel�fono:</strong> ${pedido.telefono}</div>`;
-                infoHtml += `<div><strong>Direcci�n:</strong> ${pedido.direccion}</div>`;
+                infoHtml += `<div><strong>Teléfono:</strong> ${pedido.telefono}</div>`;
+                infoHtml += `<div><strong>Dirección:</strong> ${pedido.direccion}</div>`;
                 infoHtml += `<div><strong>Parroquia:</strong> ${pedido.parroquia || 'N/A'}</div>`;
             } else {
                 infoHtml += `<div><strong>Cliente:</strong> ${pedido.clienteNombre}</div>`;
@@ -1597,8 +1609,8 @@
             let extraInfo = '';
             if (pedido.tipo === 'delivery') {
                 extraInfo = `<div style="background: #E3F2FD; border: 2px solid var(--info); border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85rem;">
-                    <div><strong><i class="fas fa-map-marker-alt"></i> Direcci�n:</strong> ${pedido.direccion}</div>
-                    <div><strong><i class="fas fa-phone"></i> Tel�fono:</strong> ${pedido.telefono}</div>
+                    <div><strong><i class="fas fa-map-marker-alt"></i> Dirección:</strong> ${pedido.direccion}</div>
+                    <div><strong><i class="fas fa-phone"></i> Teléfono:</strong> ${pedido.telefono}</div>
                     ${pedido.parroquia ? `<div><strong><i class="fas fa-building"></i> Parroquia:</strong> ${pedido.parroquia}</div>` : ''}
                     ${pedido.costoDelivery ? `<div><strong><i class="fas fa-truck"></i> Delivery:</strong> Bs. ${pedido.costoDelivery.toFixed(2)}</div>` : ''}
                     ${pedido.referencia ? `<div><strong><i class="fas fa-receipt"></i> Referencia:</strong> ${pedido.referencia}</div>` : ''}
@@ -1673,41 +1685,41 @@
             switch(tipo) {
                 case 'entrega':
                     titulo = 'Confirmar Entrega en Mesa';
-                    mensaje = '�Confirmas que el pedido ha sido entregado al cliente en la mesa?';
+                    mensaje = '¿Confirmas que el pedido ha sido entregado al cliente en la mesa?';
                     icono = 'fa-check-circle';
                     header.className = 'modal-header entrega';
                     notificacionCliente = {
-                        titulo: ' �Que aproveche!',
-                        texto: 'Tu pedido ha sido entregado en tu mesa. Esperamos que disfrutes cada bocado. �Gracias por elegir Saki Sushi!'
+                        titulo: '🍽️ ¡Que aproveche!',
+                        texto: 'Tu pedido ha sido entregado en tu mesa. Esperamos que disfrutes cada bocado. ¡Gracias por elegir Saki Sushi!'
                     };
                     break;
                 case 'envio':
-                    titulo = 'Confirmar Env�o a Delivery';
-                    mensaje = '�Confirmas que el pedido ha sido enviado al repartidor?';
+                    titulo = 'Confirmar Envío a Delivery';
+                    mensaje = '¿Confirmas que el pedido ha sido enviado al repartidor?';
                     icono = 'fa-motorcycle';
                     header.className = 'modal-header envio';
                     notificacionCliente = {
                         titulo: 'Tu delivery va en camino!',
-                        texto: 'El repartidor ya sali� con tu pedido. Prep�rate para disfrutar de tu comida.'
+                        texto: 'El repartidor ya salió con tu pedido. Prepárate para disfrutar de tu comida.'
                     };
                     break;
                 case 'reserva':
                     titulo = 'Confirmar Asistencia a Reserva';
-                    mensaje = '�Confirmas que el cliente ha llegado y est� siendo atendido?';
+                    mensaje = '¿Confirmas que el cliente ha llegado y está siendo atendido?';
                     icono = 'fa-user-check';
                     header.className = 'modal-header reserva';
                     notificacionCliente = {
-                        titulo: ' �Cliente confirmado!',
-                        texto: 'Has llegado y est�s siendo atendido. Por favor, espera en tu mesa asignada.'
+                        titulo: '✅ ¡Cliente confirmado!',
+                        texto: 'Has llegado y estás siendo atendido. Por favor, espera en tu mesa asignada.'
                     };
                     break;
                 case 'reserva_entrega':
                     titulo = 'Confirmar Entrega de Reserva';
-                    mensaje = '�Confirmas que el pedido ha sido servido al cliente reservado?';
+                    mensaje = '¿Confirmas que el pedido ha sido servido al cliente reservado?';
                     icono = 'fa-utensils';
                     header.className = 'modal-header entrega';
                     notificacionCliente = {
-                        titulo: ' �Que aproveche!',
+                        titulo: '🍽️ ¡Que aproveche!',
                         texto: 'Tu pedido de reserva ha sido servido. Esperamos que disfrutes tu experiencia en Saki Sushi.'
                     };
                     break;
@@ -1722,8 +1734,8 @@
             
             let detallesExtras = '';
             if (pedidoConfirmacion.tipo === 'delivery') {
-                detallesExtras = `<div class="info-row"><span>Direcci�n:</span><span>${pedidoConfirmacion.direccion}</span></div>
-                    <div class="info-row"><span>Tel�fono:</span><span>${pedidoConfirmacion.telefono}</span></div>
+                detallesExtras = `<div class="info-row"><span>Dirección:</span><span>${pedidoConfirmacion.direccion}</span></div>
+                    <div class="info-row"><span>Teléfono:</span><span>${pedidoConfirmacion.telefono}</span></div>
                     ${pedidoConfirmacion.parroquia ? `<div class="info-row"><span>Parroquia:</span><span>${pedidoConfirmacion.parroquia}</span></div>` : ''}
                     ${pedidoConfirmacion.costoDelivery ? `<div class="info-row"><span>Costo Delivery:</span><span>Bs. ${pedidoConfirmacion.costoDelivery.toFixed(2)}</span></div>` : ''}`;
             } else if (pedidoConfirmacion.tipo === 'reserva') {
@@ -1748,7 +1760,7 @@
                     </div>
                 </div>
                 <div style="background: #E8F5E9; border-left: 4px solid var(--success); padding: 15px; margin-top: 15px; border-radius: 8px;">
-                    <i class="fas fa-bell"></i> <strong>Notificaci�n al cliente:</strong><br>
+                    <i class="fas fa-bell"></i> <strong>Notificación al cliente:</strong><br>
                     <span style="color: var(--success);">${notificacionCliente.titulo}</span><br>
                     <span style="font-size: 0.9rem; color: #666;">${notificacionCliente.texto}</span>
                 </div>
@@ -1782,8 +1794,8 @@
                             pedidoActual.estado = 'entregado';
                             pedidoActual.fechaEntrega = new Date().toISOString();
                             mensajeNotificacion = {
-                                titulo: ' �Que aproveche!',
-                                texto: 'Tu pedido ha sido entregado en tu mesa. Esperamos que disfrutes cada bocado. �Gracias por elegir Saki Sushi!',
+                                titulo: '🍽️ ¡Que aproveche!',
+                                texto: 'Tu pedido ha sido entregado en tu mesa. Esperamos que disfrutes cada bocado. ¡Gracias por elegir Saki Sushi!',
                                 tipo: 'approved'
                             };
                             break;
@@ -1792,7 +1804,7 @@
                             pedidoActual.fechaEnvio = new Date().toISOString();
                             mensajeNotificacion = {
                                 titulo: 'Tu delivery va en camino!',
-                                texto: 'El repartidor ya sali� con tu pedido. Prep�rate para disfrutar de tu comida.',
+                                texto: 'El repartidor ya salió con tu pedido. Prepárate para disfrutar de tu comida.',
                                 tipo: 'approved'
                             };
                             break;
@@ -1800,8 +1812,8 @@
                             pedidoActual.estado = 'reserva_atendida';
                             pedidoActual.fechaAsistencia = new Date().toISOString();
                             mensajeNotificacion = {
-                                titulo: ' �Cliente confirmado!',
-                                texto: 'Has llegado y est�s siendo atendido. Por favor, espera en tu mesa asignada.',
+                                titulo: '✅ ¡Cliente confirmado!',
+                                texto: 'Has llegado y estás siendo atendido. Por favor, espera en tu mesa asignada.',
                                 tipo: 'approved'
                             };
                             break;
@@ -1809,7 +1821,7 @@
                             pedidoActual.estado = 'reserva_completada';
                             pedidoActual.fechaCompletado = new Date().toISOString();
                             mensajeNotificacion = {
-                                titulo: ' �Que aproveche!',
+                                titulo: '🍽️ ¡Que aproveche!',
                                 texto: 'Tu pedido de reserva ha sido servido. Esperamos que disfrutes tu experiencia en Saki Sushi.',
                                 tipo: 'approved'
                             };
@@ -1834,7 +1846,7 @@
                     renderPedidos();
                     
                 } catch (error) {
-                    console.error('Error en confirmaci�n:', error);
+                    console.error('Error en confirmación:', error);
                     mostrarNotificacion('Error al procesar. Intente nuevamente.', 'error');
                 } finally {
                     pedidoConfirmacion = null;
@@ -1860,9 +1872,9 @@
                 notificaciones.unshift(notificacion);
                 localStorage.setItem('sakiNotificaciones', JSON.stringify(notificaciones));
                 
-                console.log(' Notificaci�n enviada al cliente:', notificacion);
+                console.log('📬 Notificación enviada al cliente:', notificacion);
             } catch (e) {
-                console.error('Error guardando notificaci�n:', e);
+                console.error('Error guardando notificación:', e);
             }
         }
 
@@ -1900,15 +1912,21 @@
             if (!currentPedido) return;
             
             invitacionActiva = false;
-            condonacionConfirmada = false;
-            clienteDebeActivo = false;
+            vueltoConfirmado = false;
+            condonacionActiva = false;
+            afavorCajaActiva = false;
             pagosConMonto = false;
             document.getElementById('invitacionCheckbox').checked = false;
             document.getElementById('invitacionContainer').style.display = 'flex';
-            document.getElementById('clienteDebeCheckbox').style.display = 'none';
-            document.getElementById('clienteDebeInput').checked = false;
-            document.getElementById('clienteDebeMontoDisplay').style.display = 'none';
-            document.getElementById('condonacionSection').style.display = 'none';
+            document.getElementById('vueltoSection').style.display = 'none';
+            document.getElementById('condonacionCheckbox').style.display = 'none';
+            document.getElementById('afavorCajaCheckbox').style.display = 'none';
+            document.getElementById('condonacionInput').checked = false;
+            document.getElementById('afavorCajaInput').checked = false;
+            document.getElementById('condonacionMontoDisplay').style.display = 'none';
+            document.getElementById('afavorCajaMontoDisplay').style.display = 'none';
+            document.getElementById('optCondonacion').checked = false;
+            document.getElementById('optAfavorCaja').checked = false;
             
             const summary = document.getElementById('cobroSummary');
             
@@ -1944,6 +1962,8 @@
             </div>`;
             
             document.getElementById('totalPagarDisplay').textContent = `Bs. ${totalPagar.toFixed(2)}`;
+            document.getElementById('remainingLabel').textContent = 'Monto a cobrar:';
+            document.getElementById('remainingAmount').textContent = `Bs. ${totalPagar.toFixed(2)}`;
             
             pagosMixtos = [];
             renderPagosMixtos();
@@ -1979,12 +1999,12 @@
 
         function agregarMetodoPago() {
             if (pagosMixtos.length >= 10) {
-                mostrarNotificacion('M�ximo 10 m�todos de pago', 'error');
+                mostrarNotificacion('Máximo 10 métodos de pago', 'error');
                 return;
             }
             
             const metodosDisponibles = [
-                { id: 'pago_movil', nombre: 'Pago M�vil', icono: 'fa-mobile-alt' },
+                { id: 'pago_movil', nombre: 'Pago Móvil', icono: 'fa-mobile-alt' },
                 { id: 'efectivo_bs', nombre: 'Efectivo Bs', icono: 'fa-money-bill-wave' },
                 { id: 'efectivo_usd', nombre: 'Efectivo $', icono: 'fa-dollar-sign' },
                 { id: 'punto_venta', nombre: 'Punto de Venta', icono: 'fa-credit-card' }
@@ -2005,13 +2025,13 @@
             const container = document.getElementById('paymentMixContainer');
             
             if (pagosMixtos.length === 0) {
-                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Agrega un m�todo de pago para comenzar</p>';
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Agrega un método de pago para comenzar</p>';
                 document.getElementById('btnAddPayment').disabled = false;
                 return;
             }
             
             const metodosOptions = [
-                { id: 'pago_movil', nombre: 'Pago M�vil' },
+                { id: 'pago_movil', nombre: 'Pago Móvil' },
                 { id: 'efectivo_bs', nombre: 'Efectivo Bs' },
                 { id: 'efectivo_usd', nombre: 'Efectivo $' },
                 { id: 'punto_venta', nombre: 'Punto de Venta' }
@@ -2023,7 +2043,7 @@
                 ).join('');
                 
                 const showReferencia = pago.metodo === 'pago_movil';
-                const placeholderTexto = 'Referencia (6 d�gitos)';
+                const placeholderTexto = 'Referencia (6 dígitos)';
                 const monedaPrefijo = pago.metodo === 'efectivo_usd' ? '$' : 'Bs.';
                 
                 return `
@@ -2152,55 +2172,82 @@
                 }
             });
             
-            const pendiente = totalPagar - totalRecibido;
-            const excedente = totalRecibido > totalPagar ? totalRecibido - totalPagar : 0;
-            const faltante = totalRecibido < totalPagar ? totalPagar - totalRecibido : 0;
+            const diferencia = totalRecibido - totalPagar; // Negativo = falta, Positivo = sobra
             
             const remainingDisplay = document.getElementById('remainingDisplay');
             const remainingAmount = document.getElementById('remainingAmount');
             const remainingLabel = document.getElementById('remainingLabel');
             
-            if (pendiente > 0) {
-                remainingDisplay.className = 'payment-mix-remaining';
-                remainingLabel.textContent = 'Pendiente por pagar:';
-                remainingAmount.textContent = `Bs. ${pendiente.toFixed(2)}`;
-                remainingAmount.style.color = 'var(--warning)';
-                document.getElementById('clienteDebeCheckbox').style.display = 'none';
-                document.getElementById('clienteDebeMontoDisplay').style.display = 'none';
-                document.getElementById('condonacionSection').style.display = 'none';
-                document.getElementById('btnConfirmarCobro').disabled = true;
-            } else if (pendiente === 0) {
-                remainingDisplay.className = 'payment-mix-remaining paid';
-                remainingLabel.textContent = 'Pendiente por pagar:';
-                remainingAmount.textContent = '�PAGO COMPLETO!';
-                remainingAmount.style.color = 'var(--success)';
-                document.getElementById('clienteDebeCheckbox').style.display = 'none';
-                document.getElementById('clienteDebeMontoDisplay').style.display = 'none';
-                document.getElementById('condonacionSection').style.display = 'none';
-                document.getElementById('btnConfirmarCobro').disabled = false;
-            } else {
-                remainingDisplay.className = 'payment-mix-remaining overpaid';
-                remainingLabel.textContent = 'Excedente:';
-                remainingAmount.textContent = `Bs. ${Math.abs(pendiente).toFixed(2)}`;
+            // Actualizar labels según la situación
+            if (diferencia < 0) {
+                // FALTA DINERO
+                remainingDisplay.className = 'payment-mix-remaining faltante';
+                remainingLabel.textContent = 'Pendiente por cobrar:';
+                remainingAmount.textContent = `Bs. ${Math.abs(diferencia).toFixed(2)}`;
                 remainingAmount.style.color = 'var(--danger)';
                 
-                // Mostrar secci�n de condonaci�n y checkbox de cliente debe
-                document.getElementById('condonacionSection').style.display = 'flex';
-                document.getElementById('clienteDebeCheckbox').style.display = 'flex';
-                document.getElementById('condonacionInput').value = Math.abs(pendiente).toFixed(2);
+                // Ocultar sección de vuelto y mostrar checkbox de condonación
+                document.getElementById('vueltoSection').style.display = 'none';
+                document.getElementById('condonacionCheckbox').style.display = 'flex';
+                document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(diferencia).toFixed(2)}`;
+                document.getElementById('condonacionMontoDisplay').style.display = 'inline';
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
                 
-                const clienteDebeMonto = document.getElementById('clienteDebeMontoDisplay');
-                clienteDebeMonto.textContent = `(Bs. ${Math.abs(pendiente).toFixed(2)} a favor del cliente)`;
-                
-                // El bot�n de confirmar cobro se habilita solo si se confirma la condonaci�n o se activa cliente debe
-                if (!condonacionConfirmada && !clienteDebeActivo) {
+                // Deshabilitar confirmar cobro hasta que se active condonación
+                if (!condonacionActiva) {
                     document.getElementById('btnConfirmarCobro').disabled = true;
-                } else {
-                    document.getElementById('btnConfirmarCobro').disabled = false;
                 }
                 
-                document.getElementById('confirmarCondonacionBtn').style.display = 'inline-block';
-                document.getElementById('deshacerCondonacionBtn').style.display = 'none';
+            } else if (diferencia > 0) {
+                // SOBRA DINERO
+                remainingDisplay.className = 'payment-mix-remaining excedente';
+                remainingLabel.textContent = 'Vuelto a entregar:';
+                remainingAmount.textContent = `Bs. ${diferencia.toFixed(2)}`;
+                remainingAmount.style.color = 'var(--warning)';
+                
+                // Mostrar sección de vuelto
+                document.getElementById('vueltoSection').style.display = 'flex';
+                document.getElementById('vueltoInput').value = diferencia.toFixed(2);
+                document.getElementById('vueltoInput').disabled = false;
+                document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
+                document.getElementById('deshacerVueltoBtn').style.display = 'none';
+                document.getElementById('condonacionCheckbox').style.display = 'none';
+                
+                // Si hay vuelto pendiente y no está confirmado, deshabilitar confirmar cobro
+                if (!vueltoConfirmado) {
+                    document.getElementById('btnConfirmarCobro').disabled = true;
+                }
+                
+                // Calcular vuelto restante después de lo ingresado en el campo
+                const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
+                const vueltoRestante = diferencia - vueltoIngresado;
+                
+                if (vueltoRestante > 0) {
+                    // Aún falta devolver vuelto
+                    document.getElementById('afavorCajaCheckbox').style.display = 'flex';
+                    document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
+                    document.getElementById('afavorCajaMontoDisplay').style.display = 'inline';
+                } else if (vueltoRestante === 0) {
+                    // Vuelto exacto
+                    document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                } else {
+                    // Se pasó de vuelto (ahora falta dinero)
+                    document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                    document.getElementById('condonacionCheckbox').style.display = 'flex';
+                    document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
+                }
+                
+            } else {
+                // PAGO EXACTO
+                remainingDisplay.className = 'payment-mix-remaining paid';
+                remainingLabel.textContent = 'Pendiente por pagar:';
+                remainingAmount.textContent = '¡PAGO COMPLETO!';
+                remainingAmount.style.color = 'var(--success)';
+                
+                document.getElementById('vueltoSection').style.display = 'none';
+                document.getElementById('condonacionCheckbox').style.display = 'none';
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                document.getElementById('btnConfirmarCobro').disabled = false;
             }
             
             const summaryDiv = document.getElementById('paymentSummary');
@@ -2209,21 +2256,21 @@
                 
                 let resumenTexto = `Total recibido: Bs. ${totalRecibido.toFixed(2)}`;
                 if (totalRecibidoUsd > 0) {
-                    resumenTexto += ` ($${totalRecibidoUsd.toFixed(2)} � ${tasaEfectiva.toFixed(2)})`;
+                    resumenTexto += ` ($${totalRecibidoUsd.toFixed(2)} × ${tasaEfectiva.toFixed(2)})`;
                 }
                 document.getElementById('totalRecibido').textContent = resumenTexto;
                 
-                if (excedente > 0) {
-                    document.getElementById('excedenteRow').style.display = 'flex';
-                    document.getElementById('excedenteAmount').textContent = `Bs. ${excedente.toFixed(2)}`;
-                    document.getElementById('faltanteRow').style.display = 'none';
-                } else if (faltante > 0) {
+                if (diferencia < 0) {
                     document.getElementById('faltanteRow').style.display = 'flex';
-                    document.getElementById('faltanteAmount').textContent = `Bs. ${faltante.toFixed(2)}`;
+                    document.getElementById('faltanteAmount').textContent = `Bs. ${Math.abs(diferencia).toFixed(2)}`;
                     document.getElementById('excedenteRow').style.display = 'none';
-                } else {
-                    document.getElementById('excedenteRow').style.display = 'none';
+                } else if (diferencia > 0) {
+                    document.getElementById('excedenteRow').style.display = 'flex';
+                    document.getElementById('excedenteAmount').textContent = `Bs. ${diferencia.toFixed(2)}`;
                     document.getElementById('faltanteRow').style.display = 'none';
+                } else {
+                    document.getElementById('faltanteRow').style.display = 'none';
+                    document.getElementById('excedenteRow').style.display = 'none';
                 }
             } else {
                 summaryDiv.style.display = 'none';
@@ -2245,85 +2292,128 @@
                 return true;
             });
             
-            if (pendiente === 0) {
+            // Lógica para habilitar confirmar cobro
+            if (diferencia === 0) {
                 btnConfirmar.disabled = false;
-            } else if (pendiente < 0 && (condonacionConfirmada || clienteDebeActivo)) {
+            } else if (diferencia < 0 && condonacionActiva) {
+                btnConfirmar.disabled = false;
+            } else if (diferencia > 0 && vueltoConfirmado && (afavorCajaActiva || document.getElementById('vueltoInput').value == diferencia)) {
                 btnConfirmar.disabled = false;
             } else {
                 btnConfirmar.disabled = !(hayMontoValido && hayReferenciaValida);
             }
         }
 
-        function actualizarCondonacion() {
-            const condonacion = parseFloat(document.getElementById('condonacionInput').value) || 0;
+        function actualizarVueltoEnTiempoReal() {
+            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
             const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
             const excedente = totalRecibido - totalPagar;
             
-            if (condonacion > excedente) {
-                document.getElementById('condonacionInput').style.borderColor = 'var(--danger)';
+            const vueltoRestante = excedente - vueltoIngresado;
+            
+            if (vueltoRestante > 0) {
+                // Aún falta devolver vuelto
+                document.getElementById('remainingLabel').textContent = 'Restante por devolver:';
+                document.getElementById('remainingAmount').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
+                document.getElementById('afavorCajaCheckbox').style.display = 'flex';
+                document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${vueltoRestante.toFixed(2)}`;
+            } else if (vueltoRestante === 0) {
+                // Vuelto exacto
+                document.getElementById('remainingLabel').textContent = 'Vuelto a entregar:';
+                document.getElementById('remainingAmount').textContent = `Bs. 0.00 (completo)`;
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
             } else {
-                document.getElementById('condonacionInput').style.borderColor = 'var(--success)';
+                // Se pasó de vuelto (ahora falta dinero)
+                document.getElementById('remainingDisplay').className = 'payment-mix-remaining faltante';
+                document.getElementById('remainingLabel').textContent = 'Pendiente por cobrar:';
+                document.getElementById('remainingAmount').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
+                document.getElementById('afavorCajaCheckbox').style.display = 'none';
+                document.getElementById('condonacionCheckbox').style.display = 'flex';
+                document.getElementById('condonacionMontoDisplay').textContent = `Bs. ${Math.abs(vueltoRestante).toFixed(2)}`;
             }
         }
 
-        function confirmarCondonacion() {
-            const condonacion = parseFloat(document.getElementById('condonacionInput').value) || 0;
+        function confirmarVuelto() {
+            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
             const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
             const excedente = totalRecibido - totalPagar;
             
-            if (condonacion > excedente) {
-                mostrarNotificacion('La condonaci�n no puede ser mayor al excedente', 'error');
+            if (vueltoIngresado > excedente) {
+                mostrarNotificacion('El vuelto no puede ser mayor al excedente', 'error');
                 return;
             }
             
-            condonacionConfirmada = true;
-            condonacionValor = condonacion;
-            document.getElementById('confirmarCondonacionBtn').style.display = 'none';
-            document.getElementById('deshacerCondonacionBtn').style.display = 'inline-block';
-            document.getElementById('condonacionInput').disabled = true;
+            vueltoConfirmado = true;
+            vueltoValor = vueltoIngresado;
+            document.getElementById('confirmarVueltoBtn').style.display = 'none';
+            document.getElementById('deshacerVueltoBtn').style.display = 'inline-block';
+            document.getElementById('vueltoInput').disabled = true;
             
-            if (condonacion === excedente) {
+            // Verificar si con este vuelto se completa el pago
+            const vueltoRestante = excedente - vueltoIngresado;
+            if (vueltoRestante === 0) {
                 document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
                 document.getElementById('remainingLabel').textContent = 'Pendiente por pagar:';
-                document.getElementById('remainingAmount').textContent = '�PAGO COMPLETO!';
-                document.getElementById('remainingAmount').style.color = 'var(--success)';
+                document.getElementById('remainingAmount').textContent = '¡PAGO COMPLETO!';
+                document.getElementById('btnConfirmarCobro').disabled = false;
             }
             
-            document.getElementById('btnConfirmarCobro').disabled = false;
-            mostrarNotificacion(`Condonaci�n de Bs. ${condonacion.toFixed(2)} confirmada`, 'success');
+            mostrarNotificacion(`Vuelto de Bs. ${vueltoIngresado.toFixed(2)} confirmado`, 'success');
         }
 
-        function deshacerCondonacion() {
-            condonacionConfirmada = false;
-            document.getElementById('confirmarCondonacionBtn').style.display = 'inline-block';
-            document.getElementById('deshacerCondonacionBtn').style.display = 'none';
-            document.getElementById('condonacionInput').disabled = false;
+        function deshacerVuelto() {
+            vueltoConfirmado = false;
+            document.getElementById('confirmarVueltoBtn').style.display = 'inline-block';
+            document.getElementById('deshacerVueltoBtn').style.display = 'none';
+            document.getElementById('vueltoInput').disabled = false;
             actualizarResumenPago();
         }
 
-        function toggleClienteDebe() {
-            clienteDebeActivo = document.getElementById('clienteDebeInput').checked;
-            const clienteDebeMonto = document.getElementById('clienteDebeMontoDisplay');
+        function toggleCondonacion() {
+            condonacionActiva = document.getElementById('condonacionInput').checked;
             
-            if (clienteDebeActivo) {
+            if (condonacionActiva) {
                 const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-                const excedente = totalRecibido - totalPagar;
-                document.getElementById('remainingDisplay').className = 'payment-mix-remaining';
-                document.getElementById('remainingLabel').textContent = 'A favor del cliente:';
-                document.getElementById('remainingAmount').textContent = `Bs. ${excedente.toFixed(2)}`;
+                const pendiente = totalPagar - totalRecibido;
+                document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
+                document.getElementById('remainingLabel').textContent = 'Monto condonado:';
+                document.getElementById('remainingAmount').textContent = `Bs. ${pendiente.toFixed(2)}`;
                 document.getElementById('btnConfirmarCobro').disabled = false;
-                
-                clienteDebeMonto.style.display = 'none';
             } else {
                 actualizarResumenPago();
             }
+            
+            document.getElementById('optCondonacion').checked = condonacionActiva;
         }
 
-        function toggleClienteDebeCheckbox() {
-            // Esta funci�n sincroniza el checkbox antiguo con el nuevo
-            const optChecked = document.getElementById('optAfavorCliente').checked;
-            document.getElementById('clienteDebeInput').checked = optChecked;
-            toggleClienteDebe();
+        function toggleAfavorCaja() {
+            afavorCajaActiva = document.getElementById('afavorCajaInput').checked;
+            
+            if (afavorCajaActiva) {
+                const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
+                const excedente = totalRecibido - totalPagar;
+                const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
+                const restante = excedente - vueltoIngresado;
+                
+                document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
+                document.getElementById('remainingLabel').textContent = 'A favor de caja:';
+                document.getElementById('remainingAmount').textContent = `Bs. ${restante.toFixed(2)}`;
+                document.getElementById('btnConfirmarCobro').disabled = false;
+            } else {
+                actualizarResumenPago();
+            }
+            
+            document.getElementById('optAfavorCaja').checked = afavorCajaActiva;
+        }
+
+        function sincronizarCondonacion() {
+            document.getElementById('condonacionInput').checked = document.getElementById('optCondonacion').checked;
+            toggleCondonacion();
+        }
+
+        function sincronizarAfavorCaja() {
+            document.getElementById('afavorCajaInput').checked = document.getElementById('optAfavorCaja').checked;
+            toggleAfavorCaja();
         }
 
         async function confirmarCobro() {
@@ -2350,13 +2440,13 @@
                         agregarNotificacionCliente(
                             pedidoActual.id,
                             'approved',
-                            ' �Invitaci�n de la casa!',
-                            'Tu pedido es por cuenta de la casa. �Disfruta tu comida!'
+                            '🎉 ¡Invitación de la casa!',
+                            'Tu pedido es por cuenta de la casa. ¡Disfruta tu comida!'
                         );
                         
                         await guardarCambios();
                         closeModal('cobroModal');
-                        mostrarNotificacion(' Pedido procesado como invitaci�n');
+                        mostrarNotificacion('✅ Pedido procesado como invitación');
                         renderPedidos();
                         return;
                     }
@@ -2430,11 +2520,15 @@
                         referencia: p.referencia || null
                     }));
                     
-                    if (diferencia > 0) {
-                        pedidoActual.condonacionEntregada = condonacionConfirmada ? condonacionValor : 0;
-                        pedidoActual.excedente = diferencia;
-                        if (clienteDebeActivo) {
-                            pedidoActual.clienteDebe = diferencia;
+                    // Registrar acciones especiales
+                    if (diferencia < 0 && condonacionActiva) {
+                        pedidoActual.condonado = Math.abs(diferencia);
+                    } else if (diferencia > 0 && vueltoConfirmado) {
+                        pedidoActual.vueltoEntregado = vueltoValor;
+                        if (afavorCajaActiva) {
+                            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
+                            const restante = diferencia - vueltoIngresado;
+                            pedidoActual.aFavorCaja = restante;
                         }
                     }
                     
@@ -2452,24 +2546,18 @@
                     pedidoActual.montoRecibidoUsd = totalRecibidoUsd;
                     pedidoActual.tasaAplicada = tasaEfectiva;
                     
-                    if (diferencia < 0) {
-                        pedidoActual.diferencia = Math.abs(diferencia);
-                    } else if (diferencia > 0) {
-                        pedidoActual.excedente = diferencia;
-                    }
-                    
                     let mensajeNotificacion = {
-                        titulo: ' �Pago confirmado!',
+                        titulo: '🎉 ¡Pago confirmado!',
                         texto: '',
                         tipo: 'approved'
                     };
                     
                     if (pedidoActual.tipo === 'delivery') {
-                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. El repartidor saldr� pronto con tu pedido. �Gracias por elegir Saki Sushi!';
+                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. El repartidor saldrá pronto con tu pedido. ¡Gracias por elegir Saki Sushi!';
                     } else if (pedidoActual.tipo === 'reserva') {
-                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. Tu reserva est� confirmada. �Te esperamos en la fecha acordada!';
+                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. Tu reserva está confirmada. ¡Te esperamos en la fecha acordada!';
                     } else {
-                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. Nuestros chefs comenzar�n a preparar tu pedido inmediatamente.';
+                        mensajeNotificacion.texto = 'Tu pago ha sido verificado. Nuestros chefs comenzarán a preparar tu pedido inmediatamente.';
                     }
                     
                     agregarNotificacionCliente(pedidoActual.id, mensajeNotificacion.tipo, mensajeNotificacion.titulo, mensajeNotificacion.texto);
@@ -2477,7 +2565,7 @@
                     await guardarCambios();
                     
                     closeModal('cobroModal');
-                    mostrarNotificacion(' Cobro procesado. Stock descontado. Cliente notificado.');
+                    mostrarNotificacion('✅ Cobro procesado. Stock descontado. Cliente notificado.');
                     
                     renderPedidos();
                     
@@ -2515,7 +2603,7 @@
             
             const razon = document.querySelector('input[name="rejectionReason"]:checked')?.value;
             if (!razon) { 
-                alert('Selecciona una raz�n de rechazo'); 
+                alert('Selecciona una razón de rechazo'); 
                 return; 
             }
             
@@ -2536,8 +2624,8 @@
                     agregarNotificacionCliente(
                         pedidoActual.id,
                         'rejected',
-                        ' Pedido rechazado',
-                        `Motivo: ${traducirRazon(razon)}. Por favor, contacta al restaurante para m�s informaci�n.`
+                        '⚠️ Pedido rechazado',
+                        `Motivo: ${traducirRazon(razon)}. Por favor, contacta al restaurante para más información.`
                     );
                     
                     await guardarCambios();
@@ -2559,9 +2647,9 @@
 
         function traducirRazon(razon) {
             const razones = {
-                'referencia_invalida': 'Referencia de pago inv�lida o falsa',
+                'referencia_invalida': 'Referencia de pago inválida o falsa',
                 'monto_insuficiente': 'Monto insuficiente',
-                'datos_incorrectos': 'Datos de contacto/direcci�n incorrectos',
+                'datos_incorrectos': 'Datos de contacto/dirección incorrectos',
                 'no_disponible': 'Producto no disponible',
                 'fuera_horario': 'Fuera de horario de delivery'
             };
@@ -2599,7 +2687,7 @@
                         ${item.imagen ? `<img src="${item.imagen}" class="menu-item-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div class="menu-item-img" style="display: none;"><i class="fas fa-image"></i></div>` : '<div class="menu-item-img"><i class="fas fa-image"></i></div>'}
                         <div class="menu-item-info">
                             <div class="menu-item-name">${item.nombre}</div>
-                            <div class="menu-item-desc">${item.descripcion || 'Sin descripci�n'}</div>
+                            <div class="menu-item-desc">${item.descripcion || 'Sin descripción'}</div>
                             <span class="badge ${disponible ? 'badge-success' : 'badge-danger'}">${disponible ? 'Disponible' : 'AGOTADO'}${disponible ? ` (${stockReal} unidades)` : ''}</span>
                         </div>
                         <div class="menu-item-price">Bs. ${precioBs}<br><small style="color: #666; font-size: 0.75rem;">$${(item.precio || 0).toFixed(2)}</small></div>
@@ -2632,7 +2720,7 @@
             switch(estado) {
                 case 'online': iconEl.className = 'fas fa-check-circle'; textEl.textContent = 'Sincronizado'; break;
                 case 'syncing': iconEl.className = 'fas fa-sync-alt fa-spin'; textEl.textContent = 'Sincronizando...'; break;
-                case 'offline': iconEl.className = 'fas fa-exclamation-triangle'; textEl.textContent = 'Sin conexi�n'; break;
+                case 'offline': iconEl.className = 'fas fa-exclamation-triangle'; textEl.textContent = 'Sin conexión'; break;
             }
         }
         
