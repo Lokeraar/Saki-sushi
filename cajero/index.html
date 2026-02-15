@@ -2335,33 +2335,51 @@
             }
         }
 
-        function confirmarVuelto() {
-            const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
-            const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
-            const excedente = totalRecibido - totalPagar;
-            
-            if (vueltoIngresado > excedente) {
-                mostrarNotificacion('El vuelto no puede ser mayor al excedente', 'error');
-                return;
-            }
-            
-            vueltoConfirmado = true;
-            vueltoValor = vueltoIngresado;
-            document.getElementById('confirmarVueltoBtn').style.display = 'none';
-            document.getElementById('deshacerVueltoBtn').style.display = 'inline-block';
-            document.getElementById('vueltoInput').disabled = true;
-            
-            // Verificar si con este vuelto se completa el pago
-            const vueltoRestante = excedente - vueltoIngresado;
-            if (vueltoRestante === 0) {
-                document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
-                document.getElementById('remainingLabel').textContent = 'Pendiente por pagar:';
-                document.getElementById('remainingAmount').textContent = '¡PAGO COMPLETO!';
-                document.getElementById('btnConfirmarCobro').disabled = false;
-            }
-            
-            mostrarNotificacion(`Vuelto de Bs. ${vueltoIngresado.toFixed(2)} confirmado`, 'success');
-        }
+		function confirmarVuelto() {
+			const vueltoIngresado = parseFloat(document.getElementById('vueltoInput').value) || 0;
+			const totalRecibido = pagosMixtos.reduce((sum, p) => sum + convertirAMontoReal(p), 0);
+			const excedente = totalRecibido - totalPagar;
+			
+			// Validación: no puede ser mayor al excedente
+			if (vueltoIngresado > excedente) {
+				mostrarNotificacion('El vuelto no puede ser mayor al excedente', 'error');
+				return;
+			}
+			
+			// Validación: no puede ser negativo
+			if (vueltoIngresado < 0) {
+				mostrarNotificacion('El vuelto no puede ser negativo', 'error');
+				return;
+			}
+			
+			vueltoConfirmado = true;
+			vueltoValor = vueltoIngresado;
+			document.getElementById('confirmarVueltoBtn').style.display = 'none';
+			document.getElementById('deshacerVueltoBtn').style.display = 'inline-block';
+			document.getElementById('vueltoInput').disabled = true;
+			
+			// Calcular el nuevo estado después de entregar el vuelto
+			const nuevoExcedente = excedente - vueltoIngresado;
+			
+			if (nuevoExcedente === 0) {
+				// Vuelto exacto - PAGO COMPLETADO
+				document.getElementById('remainingDisplay').className = 'payment-mix-remaining paid';
+				document.getElementById('remainingLabel').textContent = 'Pendiente por pagar:';
+				document.getElementById('remainingAmount').textContent = '¡PAGO COMPLETO!';
+				document.getElementById('btnConfirmarCobro').disabled = false;
+				document.getElementById('afavorCajaCheckbox').style.display = 'none';
+				mostrarNotificacion(`Vuelto de Bs. ${vueltoIngresado.toFixed(2)} confirmado - PAGO COMPLETO`, 'success');
+			} else if (nuevoExcedente > 0) {
+				// Queda vuelto por entregar
+				document.getElementById('remainingDisplay').className = 'payment-mix-remaining excedente';
+				document.getElementById('remainingLabel').textContent = 'Restante por devolver:';
+				document.getElementById('remainingAmount').textContent = `Bs. ${nuevoExcedente.toFixed(2)}`;
+				document.getElementById('afavorCajaCheckbox').style.display = 'flex';
+				document.getElementById('afavorCajaMontoDisplay').textContent = `Bs. ${nuevoExcedente.toFixed(2)}`;
+				document.getElementById('btnConfirmarCobro').disabled = true;
+				mostrarNotificacion(`Vuelto de Bs. ${vueltoIngresado.toFixed(2)} confirmado, faltan Bs. ${nuevoExcedente.toFixed(2)} por devolver`, 'success');
+			}
+		}
 
         function deshacerVuelto() {
             vueltoConfirmado = false;
