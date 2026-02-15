@@ -424,6 +424,7 @@
             z-index: 1;
             color: white;
             letter-spacing: 1px;
+            cursor: pointer;
         }
 
         .subtitle {
@@ -437,6 +438,7 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
         }
 
         .tagline {
@@ -1696,12 +1698,20 @@
             border: 2px solid #E0E0E0;
             border-radius: 10px;
             font-size: 1rem;
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
+            background: white;
+            cursor: pointer;
         }
 
         .parroquia-select option {
-            padding: 10px;
+            padding: 12px;
+            cursor: pointer;
+        }
+
+        .parroquia-select option:checked {
+            background: var(--primary);
+            color: white;
         }
 
         .delivery-price-display {
@@ -1713,6 +1723,22 @@
             text-align: center;
             font-weight: 600;
             color: var(--success);
+        }
+
+        .selected-parroquia {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .selected-parroquia:hover {
+            background: #B71C1C;
         }
 
         @media (max-width: 768px) {
@@ -1808,6 +1834,7 @@
                 <div class="tagline-item">🐟 Fresco del día</div>
                 <div class="tagline-item">🎌 Tradicional</div>
                 <div class="tagline-item">👨‍🍳 Chef experto</div>
+                <div class="tagline-item">🔥 Ofertas Especiales</div>
             </div>
             
             <div class="search-container">
@@ -1916,9 +1943,9 @@
                 
                 <div class="payment-info">
                     <h3>Datos de Pago - Pago Móvil</h3>
-                    <div class="payment-detail"><span>Banco:</span> <strong>Banco de Venezuela</strong></div>
-                    <div class="payment-detail"><span>Teléfono:</span> <strong>0424-1232703</strong></div>
-                    <div class="payment-detail"><span>Cédula:</span> <strong>V-24203422</strong></div>
+                    <div class="payment-detail"><span>Banco:</span> <strong>Banesco</strong></div>
+                    <div class="payment-detail"><span>Teléfono:</span> <strong>0424-1525233</strong></div>
+                    <div class="payment-detail"><span>Rif:</span> <strong>J-501519838</strong></div>
                     <div class="payment-detail"><span>Monto:</span> <strong id="deliveryMonto">Bs. 0,00</strong></div>
                 </div>
                 
@@ -1927,15 +1954,18 @@
                 </p>
                 
                 <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px; font-style: italic;">
-                    <i class="fas fa-info-circle"></i> Si introduce mal la dirección y/o el número de contacto, la empresa no se hace responsable de que su pedido no llegue.
+                    <i class="fas fa-info-circle"></i> Por favor, asegúrese de que su dirección y teléfono sean los correctos para garantizar que su pedido llegue a sus manos sin inconvenientes.
                 </p>
 
-                <!-- NUEVO: Campo Parroquia con buscador -->
                 <div class="form-group">
                     <label>Parroquia a enviar: *</label>
                     <div class="search-select-wrapper">
-                        <input type="text" class="search-select-input" id="parroquiaSearch" placeholder="Buscar parroquia..." oninput="filtrarParroquias()">
-                        <select class="parroquia-select" id="parroquiaSelect" size="5" onchange="seleccionarParroquia()" onkeypress="handleParroquiaKeypress(event)">
+                        <input type="text" class="search-select-input" id="parroquiaSearch" placeholder="Buscar parroquia..." oninput="filtrarParroquias()" style="display: none;">
+                        <div id="selectedParroquiaDisplay" class="selected-parroquia" onclick="toggleParroquiaSelect()">
+                            <span id="selectedParroquiaText">San Bernardino</span>
+                            <i class="fas fa-chevron-down" id="parroquiaChevron"></i>
+                        </div>
+                        <select class="parroquia-select" id="parroquiaSelect" size="5" onchange="seleccionarParroquia()" onkeypress="handleParroquiaKeypress(event)" style="display: block;">
                             <option value="Altagracia">Altagracia</option>
                             <option value="Antímano">Antímano</option>
                             <option value="Candelaria">Candelaria</option>
@@ -1973,7 +2003,6 @@
                     <div class="error" id="parroquiaError">Debe seleccionar una parroquia</div>
                 </div>
 
-                <!-- NUEVO: Mostrar precio del delivery -->
                 <div class="delivery-price-display" id="deliveryPriceDisplay">
                     Costo de envío: Bs. 0,00
                 </div>
@@ -2037,9 +2066,9 @@
                 
                 <div class="payment-info">
                     <h3>Datos de Pago - Pago Móvil</h3>
-                    <div class="payment-detail"><span>Banco:</span> <strong>Banco de Venezuela</strong></div>
-                    <div class="payment-detail"><span>Teléfono:</span> <strong>0424-1232703</strong></div>
-                    <div class="payment-detail"><span>Cédula:</span> <strong>V-24203422</strong></div>
+                    <div class="payment-detail"><span>Banco:</span> <strong>Banesco</strong></div>
+                    <div class="payment-detail"><span>Teléfono:</span> <strong>0424-1525233</strong></div>
+                    <div class="payment-detail"><span>Rif:</span> <strong>J-501519838</strong></div>
                     <div class="payment-detail"><span>Monto:</span> <strong id="reservaMonto">Bs. 0,00</strong></div>
                 </div>
                 
@@ -2151,20 +2180,47 @@
 
         let pedidosConTimer = {};
 
-        // NUEVO: Matriz de distancias para cálculo de precio delivery
-        const parroquiasOrden = [
-            "San Bernardino", "San José", "San Agustín", "San Juan", "Catedral", 
-            "Santa Rosalía", "Candelaria", "El Recreo", "La Candelaria", "San Pedro",
-            "El Paraíso", "La Vega", "El Valle", "Coche", "Caricuao", "Antímano",
-            "Macarao", "23 de Enero", "La Pastora", "Altagracia", "Santa Teresa",
-            "Santa Rosalía de Palermo", "Chacao", "Leoncio Martínez", "Petare",
-            "La Dolorita", "Fila de Mariches", "Caucagüita", "El Cafetal",
-            "Las Minas", "Nuestra Señora del Rosario", "Sucre", "El Junquito"
+        let parroquiaSelectAbierto = false;
+
+        const parroquiasConDistancia = [
+            { nombre: "San Bernardino", distancia: 0, precioUSD: 2 },
+            { nombre: "San José", distancia: 1, precioUSD: 2 },
+            { nombre: "San Agustín", distancia: 2, precioUSD: 2 },
+            { nombre: "Candelaria", distancia: 3, precioUSD: 2 },
+            { nombre: "San Juan", distancia: 4, precioUSD: 3 },
+            { nombre: "Catedral", distancia: 5, precioUSD: 3 },
+            { nombre: "Santa Rosalía", distancia: 6, precioUSD: 3 },
+            { nombre: "El Recreo", distancia: 7, precioUSD: 4 },
+            { nombre: "La Candelaria", distancia: 8, precioUSD: 2 },
+            { nombre: "San Pedro", distancia: 9, precioUSD: 4 },
+            { nombre: "El Paraíso", distancia: 10, precioUSD: 4 },
+            { nombre: "La Vega", distancia: 11, precioUSD: 4 },
+            { nombre: "El Valle", distancia: 12, precioUSD: 5 },
+            { nombre: "Coche", distancia: 13, precioUSD: 5 },
+            { nombre: "Caricuao", distancia: 14, precioUSD: 7 },
+            { nombre: "Antímano", distancia: 15, precioUSD: 7 },
+            { nombre: "Macarao", distancia: 16, precioUSD: 7 },
+            { nombre: "23 de Enero", distancia: 17, precioUSD: 4 },
+            { nombre: "La Pastora", distancia: 18, precioUSD: 3 },
+            { nombre: "Altagracia", distancia: 19, precioUSD: 3 },
+            { nombre: "Santa Teresa", distancia: 20, precioUSD: 3 },
+            { nombre: "Santa Rosalía de Palermo", distancia: 21, precioUSD: 3 },
+            { nombre: "Chacao", distancia: 22, precioUSD: 5 },
+            { nombre: "Leoncio Martínez", distancia: 23, precioUSD: 6 },
+            { nombre: "Petare", distancia: 24, precioUSD: 6 },
+            { nombre: "La Dolorita", distancia: 25, precioUSD: 6 },
+            { nombre: "Fila de Mariches", distancia: 26, precioUSD: 6 },
+            { nombre: "Caucagüita", distancia: 27, precioUSD: 7 },
+            { nombre: "El Cafetal", distancia: 28, precioUSD: 6 },
+            { nombre: "Las Minas", distancia: 29, precioUSD: 5 },
+            { nombre: "Nuestra Señora del Rosario", distancia: 30, precioUSD: 7 },
+            { nombre: "Sucre", distancia: 31, precioUSD: 7 },
+            { nombre: "El Junquito", distancia: 32, precioUSD: 7 }
         ];
 
-        const distanciasDesdeSanBernardino = {};
-        parroquiasOrden.forEach((nombre, index) => {
-            distanciasDesdeSanBernardino[nombre] = index;
+        const preciosPorParroquia = {};
+        parroquiasConDistancia.forEach(p => {
+            preciosPorParroquia[p.nombre] = p.precioUSD;
         });
 
         function initApp() {
@@ -2543,7 +2599,8 @@
                     clienteNombre: pedido.clienteNombre || null,
                     tieneComprobante: !!comprobanteBase64,
                     comprobanteNombre: comprobanteNombre || null,
-                    costoDelivery: pedido.costoDelivery || 0
+                    costoDelivery: pedido.costoDelivery || 0,
+                    costoDeliveryUSD: pedido.costoDeliveryUSD || 0
                 };
 
                 let dataActual;
@@ -2958,6 +3015,7 @@
             document.getElementById('sidebarOverlay').classList.remove('show');
         }
 
+        // NUEVA FUNCIÓN renderSidebar actualizada con categoría Ofertas Especiales
         function renderSidebar() {
             const categories = [
                 { id: 'todos', name: '🍽️ Todos', subcategories: [] },
@@ -2989,6 +3047,7 @@
                     { id: 'pasta-udon', name: 'Pasta Udon' },
                     { id: 'churrasco', name: 'Churrasco' }
                 ]},
+                { id: 'ofertas', name: '🔥 Ofertas Especiales', subcategories: [] },
                 { id: 'ninos', name: '👶 Para Niños', subcategories: [] },
                 { id: 'ejecutivo', name: '💼 Combo Ejecutivo', subcategories: [] }
             ];
@@ -3476,7 +3535,25 @@
             return tasaBase;
         }
 
-        // NUEVO: Funciones para manejo de parroquias y cálculo de delivery
+        function toggleParroquiaSelect() {
+            const select = document.getElementById('parroquiaSelect');
+            const search = document.getElementById('parroquiaSearch');
+            const chevron = document.getElementById('parroquiaChevron');
+            
+            if (parroquiaSelectAbierto) {
+                select.style.display = 'none';
+                search.style.display = 'none';
+                chevron.className = 'fas fa-chevron-down';
+                parroquiaSelectAbierto = false;
+            } else {
+                select.style.display = 'block';
+                search.style.display = 'block';
+                chevron.className = 'fas fa-chevron-up';
+                parroquiaSelectAbierto = true;
+                search.focus();
+            }
+        }
+
         function filtrarParroquias() {
             const searchTerm = document.getElementById('parroquiaSearch').value.toLowerCase();
             const select = document.getElementById('parroquiaSelect');
@@ -3495,8 +3572,14 @@
         function seleccionarParroquia() {
             const select = document.getElementById('parroquiaSelect');
             const selectedValue = select.value;
+            const selectedText = select.options[select.selectedIndex]?.text || '';
+            
             if (selectedValue) {
-                document.getElementById('parroquiaSearch').value = selectedValue;
+                document.getElementById('selectedParroquiaText').textContent = selectedText;
+                document.getElementById('parroquiaSearch').value = selectedText;
+                
+                toggleParroquiaSelect();
+                
                 calcularCostoDelivery(selectedValue);
                 validateDeliveryForm();
             }
@@ -3513,19 +3596,18 @@
 
         function calcularCostoDelivery(parroquiaDestino) {
             const tasaEfectiva = obtenerTasaEfectiva();
-            const distancia = distanciasDesdeSanBernardino[parroquiaDestino] || 0;
-            const costoDeliveryUSD = Math.max(1, distancia); // $1 base + $1 por cada parroquia de distancia
-            const costoDeliveryBs = costoDeliveryUSD * tasaEfectiva;
+            const precioUSD = preciosPorParroquia[parroquiaDestino] || 2;
+            const costoDeliveryBs = precioUSD * tasaEfectiva;
             
-            document.getElementById('deliveryPriceDisplay').textContent = `Costo de envío: Bs. ${costoDeliveryBs.toFixed(2).replace('.', ',')} ($${costoDeliveryUSD.toFixed(2)})`;
+            document.getElementById('deliveryPriceDisplay').textContent = `Costo de envío: Bs. ${costoDeliveryBs.toFixed(2).replace('.', ',')} ($${precioUSD})`;
             
-            return { costoUSD: costoDeliveryUSD, costoBs: costoDeliveryBs };
+            return { costoUSD: precioUSD, costoBs: costoDeliveryBs };
         }
 
         function obtenerCostoDeliverySeleccionado() {
             const parroquia = document.getElementById('parroquiaSelect').value;
-            if (!parroquia) return 0;
-            return calcularCostoDelivery(parroquia).costoBs;
+            if (!parroquia) return { costoUSD: 0, costoBs: 0 };
+            return calcularCostoDelivery(parroquia);
         }
 
         function updateOrderSummary() {
@@ -3616,7 +3698,6 @@
                 onlineOptions.classList.add('show');
             }
             
-            // Actualizar montos en modales (sin delivery todavía)
             const totalSinDelivery = total;
             document.getElementById('deliveryMonto').textContent = `Bs. ${totalSinDelivery.toFixed(2).replace('.', ',')}`;
             document.getElementById('reservaMonto').textContent = `Bs. ${totalSinDelivery.toFixed(2).replace('.', ',')}`;
@@ -3744,6 +3825,13 @@
         }
 
         function showDeliveryModal() {
+            parroquiaSelectAbierto = false;
+            document.getElementById('parroquiaSelect').style.display = 'none';
+            document.getElementById('parroquiaSearch').style.display = 'none';
+            document.getElementById('parroquiaChevron').className = 'fas fa-chevron-down';
+            document.getElementById('selectedParroquiaText').textContent = 'San Bernardino';
+            document.getElementById('parroquiaSelect').value = 'San Bernardino';
+            
             document.getElementById('deliveryModal').classList.add('show');
             validateDeliveryForm();
         }
@@ -3821,7 +3909,6 @@
             const btnConfirm = document.getElementById('btnConfirmDelivery');
             if (btnConfirm) btnConfirm.disabled = !(parroquiaValid && direccionValid && telefonoValid && referenciaValid && comprobante);
             
-            // Actualizar monto total con delivery
             actualizarMontoTotalConDelivery();
         }
 
@@ -3829,7 +3916,6 @@
             const parroquia = document.getElementById('parroquiaSelect')?.value;
             if (!parroquia) return;
             
-            // Calcular total de platillos
             let totalPlatillos = 0;
             menuItems.forEach(item => {
                 if (item.instances) {
@@ -3840,7 +3926,7 @@
             });
             
             const costoDelivery = obtenerCostoDeliverySeleccionado();
-            const totalConDelivery = totalPlatillos + costoDelivery;
+            const totalConDelivery = totalPlatillos + costoDelivery.costoBs;
             
             document.getElementById('deliveryMonto').textContent = `Bs. ${totalConDelivery.toFixed(2).replace('.', ',')}`;
         }
@@ -3868,16 +3954,16 @@
             const pedido = crearPedidoBase();
             pedido.tipo = 'delivery';
             
-            // Agregar datos de delivery
-            pedido.parroquia = document.getElementById('parroquiaSelect')?.value || '';
+            const parroquia = document.getElementById('parroquiaSelect')?.value || '';
+            const costoDelivery = obtenerCostoDeliverySeleccionado();
+            
+            pedido.parroquia = parroquia;
             pedido.direccion = document.getElementById('deliveryDireccion')?.value.trim() || '';
             pedido.telefono = document.getElementById('deliveryTelefono')?.value.trim() || '';
             pedido.referencia = getReferenceCode('delivery');
-            
-            // Calcular y agregar costo de delivery
-            const costoDelivery = obtenerCostoDeliverySeleccionado();
-            pedido.costoDelivery = costoDelivery;
-            pedido.total += costoDelivery;
+            pedido.costoDelivery = costoDelivery.costoBs;
+            pedido.costoDeliveryUSD = costoDelivery.costoUSD;
+            pedido.total += costoDelivery.costoBs;
             
             const comprobanteFile = document.getElementById('deliveryComprobante')?.files[0];
             if (comprobanteFile) {
@@ -3894,13 +3980,13 @@
             const exito = await guardarPedido(pedido);
             
             if (exito) {
-                // Limpiar campos
                 document.getElementById('parroquiaSearch').value = '';
                 const parroquiaSelect = document.getElementById('parroquiaSelect');
                 for (let i = 0; i < parroquiaSelect.options.length; i++) {
                     parroquiaSelect.options[i].style.display = '';
                 }
                 parroquiaSelect.value = 'San Bernardino';
+                document.getElementById('selectedParroquiaText').textContent = 'San Bernardino';
                 
                 document.getElementById('deliveryDireccion').value = '';
                 document.getElementById('deliveryTelefono').value = '';
@@ -3942,7 +4028,7 @@
                     <div class="payment-info-text">
                         <i class="fas fa-clock"></i> 
                         Estamos verificando tu pago. Te notificaremos cuando tu pedido esté en camino.
-                        ${pedido.parroquia ? `<br><small>Envío a: ${pedido.parroquia}</small>` : ''}
+                        ${pedido.parroquia ? `<br><small>Envío a: ${pedido.parroquia} ($${pedido.costoDeliveryUSD})</small>` : ''}
                     </div>
                 `;
                 
